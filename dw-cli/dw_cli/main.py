@@ -28,6 +28,7 @@ from dw_cli.commands import file as file_cmds
 from dw_cli.commands import folder as folder_cmds
 from dw_cli.commands import instance as instance_cmds
 from dw_cli.commands import meta as meta_cmds
+from dw_cli.commands import meta_table as meta_table_cmds
 from dw_cli.commands import node as node_cmds
 from dw_cli.commands import raw as raw_cmds
 
@@ -74,6 +75,7 @@ def _setup_auth(
 
 # ── 平铺注册：各资源模块的子命令直接挂顶层，不加资源前缀（spec §9） ─────
 app.add_typer(meta_cmds.app, name="")
+app.add_typer(meta_table_cmds.app, name="")
 app.add_typer(file_cmds.app, name="")
 app.add_typer(folder_cmds.app, name="")
 app.add_typer(node_cmds.app, name="")

@@ -208,8 +208,8 @@
 | 操作(SDK方法)                         | 描述                                                                | 状态            | 废弃                                                     | 备注  |
 | --------------------------------- | ----------------------------------------------------------------- | ------------- | ------------------------------------------------------ | --- |
 | `add_meta_collection_entity`      | 该接口用于添加实体到集合中。                                                    | 待建(raw)       |                                                        |     |
-| `check_meta_partition`            | 该接口用于检查分区是否存在。                                                    | 待封装           |                                                        |     |
-| `check_meta_table`                | 该接口用于检查表是否存在。                                                     | 待封装           |                                                        |     |
+| `check_meta_partition`            | 该接口用于检查分区是否存在。                                                    | 已封装           |                                                        | 私有云须用 table_guid（非 table_name）；partition 传完整分区名如 dt=20260625/pt=biz_alarm/adm_div_code=310100     |
+| `check_meta_table`                | 该接口用于检查表是否存在。                                                     | 已封装           |                                                        | 私有云须用 table_guid（非 table_name，否则报 GuidFormat）     |
 | `create_export_migration`         | 使用CreateExportMigration，新建DataWorks导出任务且仅创建导出任务。                  | 待建(raw)       |                                                        |     |
 | `create_import_migration`         | 调用CreateImportMigration创建导入任务，导入任务包含数据源信息、任务、表等对象的DataWorks导入导出包。 | 待建(raw)       |                                                        |     |
 | `create_import_migration_advance` | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
@@ -219,15 +219,15 @@
 | `delete_meta_collection_entity`   | 该接口用于删除集合中的实体。                                                    | 剔除            |                                                        |     |
 | `get_meta_collection_detail`      | 该接口用于查询集合的详细信息。                                                   | 剔除            |                                                        |     |
 | `get_meta_dbinfo`                 | 该接口用于获取引擎实例的基本元数据信息。                                              | 剔除            |                                                        |     |
-| `get_meta_dbtable_list`           | 该接口用于获取引擎实例中的表。                                                   | 待封装           |                                                        |     |
-| `get_meta_table_basic_info`       | 该接口用于获取表的基础信息。                                                    | 待封装           |                                                        |     |
-| `get_meta_table_change_log`       | 该接口用于获取表的变更日志。                                                    | 待封装           |                                                        |     |
-| `get_meta_table_column`           | 该接口用于获取表的字段信息。                                                    | 待封装           |                                                        |     |
-| `get_meta_table_full_info`        | 获取表的完整信息（包括字段信息）。                                                 | 待封装           |                                                        |     |
-| `get_meta_table_intro_wiki`       | 该接口用于获取表的使用说明。                                                    | 待封装           |                                                        |     |
+| `get_meta_dbtable_list`           | 该接口用于获取引擎实例中的表。                                                   | 已封装           |                                                        | 私有云探活500 NoCalcEngine（服务器侧缺陷，非封装问题）     |
+| `get_meta_table_basic_info`       | 该接口用于获取表的基础信息。                                                    | 已封装           |                                                        | 私有云须用 table_guid；Data 单对象含 ColumnCount/Comment/LifeCycle 等     |
+| `get_meta_table_change_log`       | 该接口用于获取表的变更日志。                                                    | 已封装           |                                                        | 只要 table_guid；Data.DataEntityList[*].{ChangeType,Operator,...}     |
+| `get_meta_table_column`           | 该接口用于获取表的字段信息。                                                    | 已封装           |                                                        | 私有云须用 table_guid；Data.ColumnList[*]（非 DataEntityList）     |
+| `get_meta_table_full_info`        | 获取表的完整信息（包括字段信息）。                                                 | 已封装           |                                                        | 私有云须用 table_guid；Data 单对象含 TotalColumnCount+ColumnList     |
+| `get_meta_table_intro_wiki`       | 该接口用于获取表的使用说明。                                                    | 已封装           |                                                        | 只要 table_guid；表无 wiki 时 Data 为 null     |
 | `get_meta_table_list_by_category` | 该接口用于查询指定类目下的表。                                                   | 待建(raw)       |                                                        |     |
 | `get_meta_table_output`           | 该接口用于获取表的产出信息。                                                    | 待建(raw)       |                                                        |     |
-| `get_meta_table_partition`        | 该接口用于获取表的分区列表。                                                    | 待封装           |                                                        |     |
+| `get_meta_table_partition`        | 该接口用于获取表的分区列表。                                                    | 已封装           |                                                        | 私有云须用 table_guid；Data.DataEntityList[*]；含嵌套子对象 sort_criterion（拆 --sort-field/--sort-order）     |
 | `get_meta_table_producing_tasks`  | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
 | `get_migration_process`           | 调用GetMigrationProcess获取导入导出任务的进度状态。                               | 剔除            |                                                        |     |
 | `get_migration_summary`           | 调用GetMigrationSummary，获取导入导出任务的信息。                                | 待建(raw)       |                                                        |     |
@@ -241,7 +241,7 @@
 | `list_project_ids`                | 该接口用于查询指定阿里云账号（包括阿里云主账号或RAM用户）在目标地域下拥有角色权限的DataWorks工作空间的ID列表。    | 待封装           |                                                        |     |
 | `list_projects`                   | 该接口用于查询用户所在租户下的DataWorks工作空间列表。                                   | 已封装(doctor探活) |                                                        |     |
 | `mount_directory`                 | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
-| `search_meta_tables`              | 该接口用于根据条件搜索表。                                                     | 待封装           |                                                        |     |
+| `search_meta_tables`              | 该接口用于根据条件搜索表。                                                     | 已封装           |                                                        | Data.DataEntityList[*].{TableName,TableGuid,...}（非 Tables）     |
 | `start_migration`                 | 调用StartMigration启动执行导入导出任务。                                       | 待建(raw)       |                                                        |     |
 | `umount_directory`                | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
 | `update_meta_collection`          | 该接口用于更新集合对象的名称和注释。                                                | 剔除            |                                                        |     |

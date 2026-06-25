@@ -104,7 +104,23 @@ def emit_paginated(
     output: str = out_mod.OUTPUT_JSON,
     default_table_query: Optional[str] = None,
 ) -> None:
-    """把合并结果走三层输出。"""
+    """把合并结果走三层输出。
+
+    merged 结构 {items:[...], total, truncated}。table 模式下 default_table_query
+    是为「单页 body」写的（如 Data.ColumnList[*].{...}），与合并后的 {items} 基准不符；
+    故 table 模式自动把基准切到 items：把 default_table_query 的外层路径替换为 items[*]。
+    """
+    # table 模式 + 有默认 query + 用户没传 query：把 Data.Xxx[*] / Xxx[*] 对齐到 items[*]
+    if (
+        output == out_mod.OUTPUT_TABLE
+        and default_table_query
+        and not query
+    ):
+        # 提取 [*] 之后的部分（字段映射），拼到 items[*] 上
+        star_idx = default_table_query.find("[*]")
+        tail = default_table_query[star_idx + 3:] if star_idx >= 0 else ""
+        query = f"items[*]{tail}"
+        default_table_query = None  # 已转成 query，避免 emit 再叠加
     out_mod.emit(
         merged,
         query=query,
