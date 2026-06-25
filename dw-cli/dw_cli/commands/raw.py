@@ -24,6 +24,7 @@ import typer
 from alibabacloud_dataworks_public20200518 import models as dw_models
 
 from dw_cli.core import client, confirm, errors, output
+from dw_cli.core.load_arg import load_arg
 from dw_cli.commands import auth_params, output_option, query_option
 
 app = typer.Typer(help="raw 透传命令（任意 2020-05-18 API）", )
@@ -61,12 +62,12 @@ def _parse_kv_args(raw_args: list[str]) -> dict:
         # --key=val 单 token 形式
         if "=" in key:
             k, _, v = key.partition("=")
-            out[_kebab_to_snake(k)] = v
+            out[_kebab_to_snake(k)] = load_arg(v)
             i += 1
             continue
         # --key val 或 --flag（下一个 token 若是 -- 开头则视为 flag）
         if i + 1 < len(raw_args) and not raw_args[i + 1].startswith("--"):
-            out[_kebab_to_snake(key)] = raw_args[i + 1]
+            out[_kebab_to_snake(key)] = load_arg(raw_args[i + 1])
             i += 2
         else:
             out[_kebab_to_snake(key)] = True
@@ -203,7 +204,12 @@ def raw(
       dw-cli raw delete_file --file-id 123 --project-id 32890 --confirm
 
     字段名用 kebab-case，内部转 snake_case 填入 Request。非法字段会报错并列出合法字段。
-    写操作按方法名前缀判定高危（spec §7.2）。RegionId 注入不可绕过。
+    写操作按方法名前缀判定高危（delete_/deploy_/stop_/terminate_/offline_ 须 --confirm）。
+    RegionId 注入不可绕过。
+
+    file:// 取值：参数值以 file:// 开头时读文件内容填入（aws CLI 风格），
+    用于传大 JSON（如 List 字段、DI spec），避免 bash 转义：
+      dw-cli raw create_table --columns file://cols.json --project-id 32890
     """
     try:
         _run_raw(ctx, api_name, confirm_flag, dry_run, query, output_fmt)
