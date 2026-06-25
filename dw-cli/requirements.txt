@@ -1,0 +1,5 @@
+typer>=0.12.0
+alibabacloud-dataworks-public20200518
+alibabacloud-credentials
+alibabacloud-tea-openapi
+alibabacloud-tea-util
