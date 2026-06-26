@@ -11,6 +11,7 @@ import typer
 from alibabacloud_dataworks_public20200518 import models as dw_models
 
 from dw_cli.core import client, confirm, errors, output, paging
+from dw_cli.core.load_arg import load_arg
 from dw_cli.commands import auth_params, output_option, query_option
 
 app = typer.Typer(help="file 类命令")
@@ -239,6 +240,109 @@ def delete_file(
         return  # dry-run：已往 stderr 输出预览，不执行
     _call_file(ctx, "delete_file", dw_models.DeleteFileRequest(
         file_id=file_id, project_id=project_id,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("update-file")
+def update_file(
+    ctx: typer.Context,
+    file_id: int = typer.Option(..., "--file-id", help="文件 ID"),
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    # ── 基本属性 ──
+    file_name: str = typer.Option("", "--file-name", help="文件名"),
+    file_folder_path: str = typer.Option("", "--file-folder-path",
+        help="目录路径，带引擎子目录层，如 业务流程/dcb_test/MaxCompute/"),
+    file_description: str = typer.Option("", "--file-description", help="文件描述"),
+    owner: str = typer.Option("", "--owner", help="负责人"),
+    content: str = typer.Option("", "--content",
+        help="文件代码正文。大代码用 file://path 传文件，如 --content file://code.sql"),
+    # ── 调度配置 ──
+    cron_express: str = typer.Option("", "--cron-express", help="Cron 表达式，如 '00 30 00 * * ?'"),
+    cycle_type: str = typer.Option("", "--cycle-type", help="调度周期类型，如 DAY/HOUR/MONTH"),
+    scheduler_type: str = typer.Option("", "--scheduler-type", help="调度模式（节点级，与节点 run-mode 不同）"),
+    resource_group_identifier: str = typer.Option("", "--resource-group-identifier", help="资源组标识"),
+    connection_name: str = typer.Option("", "--connection-name", help="数据源连接名"),
+    para_value: str = typer.Option("", "--para-value", help="调度参数，如 'dt=$bizdate'"),
+    start_effect_date: int = typer.Option(None, "--start-effect-date", help="生效开始时间（毫秒时间戳）"),
+    end_effect_date: int = typer.Option(None, "--end-effect-date", help="生效结束时间（毫秒时间戳）"),
+    # ── 依赖与输入输出 ──
+    input_list: str = typer.Option("", "--input-list", help="上游依赖输出名，逗号分隔"),
+    output_list: str = typer.Option("", "--output-list", help="本节点输出名，逗号分隔"),
+    dependent_node_id_list: str = typer.Option("", "--dependent-node-id-list", help="依赖节点 ID，逗号分隔"),
+    dependent_type: str = typer.Option("", "--dependent-type", help="依赖类型，如 SAME_CYCLE/NORMAL"),
+    input_parameters: str = typer.Option("", "--input-parameters",
+        help="输入参数 JSON 串。可用 file://path，如 --input-parameters file://in.json"),
+    output_parameters: str = typer.Option("", "--output-parameters",
+        help="输出参数 JSON 串。可用 file://path"),
+    advanced_settings: str = typer.Option("", "--advanced-settings",
+        help="高级设置 JSON 串。可用 file://path"),
+    # ── 重跑与执行控制 ──
+    rerun_mode: str = typer.Option("", "--rerun-mode", help="重跑模式，如 ALL_ALLOWED"),
+    auto_rerun_times: int = typer.Option(None, "--auto-rerun-times", help="自动重跑次数"),
+    auto_rerun_interval_millis: int = typer.Option(None, "--auto-rerun-interval-millis", help="自动重跑间隔（毫秒）"),
+    stop: bool = typer.Option(False, "--stop", help="是否停止调度"),
+    auto_parsing: bool = typer.Option(False, "--auto-parsing", help="是否自动解析代码"),
+    start_immediately: bool = typer.Option(False, "--start-immediately", help="是否立即启动"),
+    apply_schedule_immediately: bool = typer.Option(False, "--apply-schedule-immediately", help="是否立即应用调度"),
+    ignore_parent_skip_running_property: bool = typer.Option(
+        False, "--ignore-parent-skip-running-property", help="是否忽略父节点跳过运行属性"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """[低危] 更新已创建的文件（update_ 前缀，默认执行，无需 --confirm）。
+
+    参数按语义分四组：基本属性 / 调度配置 / 依赖与输入输出 / 重跑与执行控制。
+    仅 file_id + project_id 必填，其余按需传，未传的字段保持原值。
+
+    大 JSON 字段（input_parameters / output_parameters / advanced_settings）
+    建议用 file:// 语法传文件避免 bash 转义。content 同理。
+
+    \b
+    🚀 Examples:
+      # 改文件代码正文
+      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+        --content file://new_code.sql
+
+      # 配置输入输出（SQL 节点提交前必填，否则 submit-file 报「输入输出不能为空」）
+      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+        --input-list "odps_first.dcb_test.upstream" \\
+        --output-list "odps_first.dcb_test.my_node"
+
+      # 设调度 cron + 资源组
+      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+        --cron-express "00 30 00 * * ?" --cycle-type DAY \\
+        --resource-group-identifier "Serverless_res_group_xxx"
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}
+    """
+    content = load_arg(content)
+    input_parameters = load_arg(input_parameters)
+    output_parameters = load_arg(output_parameters)
+    advanced_settings = load_arg(advanced_settings)
+    _call_file(ctx, "update_file", dw_models.UpdateFileRequest(
+        file_id=file_id, project_id=project_id,
+        file_name=file_name or None, file_folder_path=file_folder_path or None,
+        file_description=file_description or None, owner=owner or None,
+        content=content or None,
+        cron_express=cron_express or None, cycle_type=cycle_type or None,
+        scheduler_type=scheduler_type or None,
+        resource_group_identifier=resource_group_identifier or None,
+        connection_name=connection_name or None, para_value=para_value or None,
+        start_effect_date=start_effect_date, end_effect_date=end_effect_date,
+        input_list=input_list or None, output_list=output_list or None,
+        dependent_node_id_list=dependent_node_id_list or None,
+        dependent_type=dependent_type or None,
+        input_parameters=input_parameters or None,
+        output_parameters=output_parameters or None,
+        advanced_settings=advanced_settings or None,
+        rerun_mode=rerun_mode or None, auto_rerun_times=auto_rerun_times,
+        auto_rerun_interval_millis=auto_rerun_interval_millis,
+        stop=stop or None, auto_parsing=auto_parsing or None,
+        start_immediately=start_immediately or None,
+        apply_schedule_immediately=apply_schedule_immediately or None,
+        ignore_parent_skip_running_property=ignore_parent_skip_running_property or None,
     ), query=query, output_fmt=output_fmt)
 
 

@@ -1,0 +1,136 @@
+# -*- coding: utf-8 -*-
+"""udf 类命令（spec §9 按资源分文件，对外平铺）。
+
+函数（UDF）是 DataStudio 里注册的可复用函数文件。
+清单「待封装」udf 项（2）：create-udf-file / update-udf-file。
+
+字段规整：
+  - create-udf-file 必填 class_name/file_name/function_type/resources
+  - update-udf-file 必填 class_name/file_id(str!)/function_type/resources
+    （注意 file_id 在 udf 里是 str，与 delete-file/submit-file 的 int 不同）
+  - resources 是逗号分隔字符串（不是 JSON），多个资源名用逗号隔开
+  - function_type 枚举：MATH/AGGREGATE/STRING/DATE/ANALYTIC/OTHER
+  - file_folder_path 同样要带引擎子目录层（与 create-file 一致）
+"""
+from __future__ import annotations
+
+from typing import Optional
+
+import typer
+from alibabacloud_dataworks_public20200518 import models as dw_models
+
+from dw_cli.core import client, errors, output
+from dw_cli.commands import auth_params, output_option, query_option
+
+app = typer.Typer(help="udf 类命令")
+
+
+@app.command("create-udf-file")
+def create_udf_file(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    file_name: str = typer.Option(..., "--file-name", help="函数文件名"),
+    class_name: str = typer.Option(..., "--class-name", help="函数定义的类名"),
+    function_type: str = typer.Option(..., "--function-type",
+        help="函数类型：MATH / AGGREGATE / STRING / DATE / ANALYTIC / OTHER"),
+    resources: str = typer.Option(..., "--resources",
+        help="函数引用的资源名，多个用逗号分隔（如 res1,res2）"),
+    file_folder_path: str = typer.Option("", "--file-folder-path",
+        help="函数文件所在目录路径，带引擎子目录层，如 业务流程/dcb_test/MaxCompute/"),
+    cmd_description: str = typer.Option("", "--cmd-description", help="调用语法描述"),
+    return_value: str = typer.Option("", "--return-value", help="返回值描述"),
+    parameter_description: str = typer.Option("", "--parameter-description", help="输入参数描述"),
+    example: str = typer.Option("", "--example", help="调用示例"),
+    udf_description: str = typer.Option("", "--udf-description", help="函数描述"),
+    create_folder_if_not_exists: bool = typer.Option(
+        False, "--create-folder-if-not-exists", help="目录不存在时自动创建"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """[低危] 创建函数文件（create_ 前缀，默认执行，无需 --confirm）。
+
+    \b
+    🚀 Examples:
+      # 创建一个字符串类 UDF
+      dw-cli create-udf-file --project-id 32890 \\
+        --file-name my_udf --class-name com.example.MyUdf \\
+        --function-type STRING --resources my_res.jar \\
+        --file-folder-path "业务流程/dcb_test/MaxCompute/"
+
+    \b
+    📦 Output JSON Structure:
+      - 函数文件ID: Data (新建文件的 ID)
+      - 成功:       Success: true
+    """
+    _call_udf(ctx, "create_udf_file", dw_models.CreateUdfFileRequest(
+        project_id=project_id, file_name=file_name, class_name=class_name,
+        function_type=function_type, resources=resources,
+        file_folder_path=file_folder_path or None,
+        cmd_description=cmd_description or None,
+        return_value=return_value or None,
+        parameter_description=parameter_description or None,
+        example=example or None, udf_description=udf_description or None,
+        create_folder_if_not_exists=create_folder_if_not_exists or None,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("update-udf-file")
+def update_udf_file(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    file_id: str = typer.Option(..., "--file-id",
+        help="函数文件 ID（注意是字符串，不是 int！）"),
+    class_name: str = typer.Option(..., "--class-name", help="函数定义的类名"),
+    function_type: str = typer.Option(..., "--function-type",
+        help="函数类型：MATH / AGGREGATE / STRING / DATE / ANALYTIC / OTHER"),
+    resources: str = typer.Option(..., "--resources",
+        help="函数引用的资源名，多个用逗号分隔"),
+    file_folder_path: str = typer.Option("", "--file-folder-path",
+        help="函数文件所在目录路径，带引擎子目录层"),
+    cmd_description: str = typer.Option("", "--cmd-description", help="调用语法描述"),
+    return_value: str = typer.Option("", "--return-value", help="返回值描述"),
+    parameter_description: str = typer.Option("", "--parameter-description", help="输入参数描述"),
+    example: str = typer.Option("", "--example", help="调用示例"),
+    udf_description: str = typer.Option("", "--udf-description", help="函数描述"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """[低危] 更新函数文件（update_ 前缀，默认执行，无需 --confirm）。
+
+    file_id 在 UDF 接口里是字符串类型（与 delete-file/submit-file 的 int 不同）。
+    class_name/function_type/resources 为必填，更新时也需提供。
+
+    \b
+    🚀 Examples:
+      # 更新 UDF 的类名和资源
+      dw-cli update-udf-file --project-id 32890 \\
+        --file-id "abc123def" --class-name com.example.MyUdfV2 \\
+        --function-type STRING --resources my_res_v2.jar
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}
+    """
+    _call_udf(ctx, "update_udf_file", dw_models.UpdateUdfFileRequest(
+        project_id=project_id, file_id=file_id, class_name=class_name,
+        function_type=function_type, resources=resources,
+        file_folder_path=file_folder_path or None,
+        cmd_description=cmd_description or None,
+        return_value=return_value or None,
+        parameter_description=parameter_description or None,
+        example=example or None, udf_description=udf_description or None,
+    ), query=query, output_fmt=output_fmt)
+
+
+# ── 共用小工具 ─────────────────────────────────────────────────────────────
+def _call_udf(ctx: typer.Context, api_name: str, request, *, query, output_fmt):
+    """单对象/单动作 udf 命令的统一调用出口。"""
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+    method = getattr(dw_client, f"{api_name}_with_options")
+    try:
+        resp = method(request, runtime)
+        output.emit(resp, query=query, output=output_fmt)
+    except Exception as error:
+        errors.fail(error)

@@ -34,6 +34,8 @@ from dw_cli.commands import meta as meta_cmds
 from dw_cli.commands import meta_table as meta_table_cmds
 from dw_cli.commands import node as node_cmds
 from dw_cli.commands import raw as raw_cmds
+from dw_cli.commands import resource as resource_cmds
+from dw_cli.commands import udf as udf_cmds
 
 
 # ── 命令分组映射（顶层 help 按 rich Panel 展示，命令名仍平铺不加前缀，spec §9） ─────
@@ -55,11 +57,15 @@ _CMD_PANELS = {
     "list-files": _PANEL_FILE, "get-file": _PANEL_FILE, "create-file": _PANEL_FILE, "list-folders": _PANEL_FILE,
     "get-folder": _PANEL_FILE, "create-folder": _PANEL_FILE, "delete-folder": _PANEL_FILE,
     "submit-file": _PANEL_FILE, "delete-file": _PANEL_FILE,
+    "update-file": _PANEL_FILE,
+    "create-udf-file": _PANEL_FILE, "update-udf-file": _PANEL_FILE,
+    "create-resource-file": _PANEL_FILE, "create-resource-file-upload": _PANEL_FILE,
     "get-deployment": _PANEL_FILE,
     "get-business": _PANEL_NODE, "list-business": _PANEL_NODE,
     "create-business": _PANEL_NODE, "delete-business": _PANEL_NODE,
     "list-data-sources": _PANEL_META, "export-data-sources": _PANEL_META,
     "test-network-connection": _PANEL_META, "delete-data-source": _PANEL_META,
+    "create-data-source": _PANEL_META,
     "get-node": _PANEL_NODE, "get-node-code": _PANEL_NODE, "get-node-parents": _PANEL_NODE,
     "get-node-children": _PANEL_NODE, "list-nodes": _PANEL_NODE, "offline-node": _PANEL_NODE,
     "update-node-run-mode": _PANEL_NODE,
@@ -139,6 +145,8 @@ app.add_typer(folder_cmds.app, name="")
 app.add_typer(node_cmds.app, name="")
 app.add_typer(instance_cmds.app, name="")
 app.add_typer(raw_cmds.app, name="")
+app.add_typer(resource_cmds.app, name="")
+app.add_typer(udf_cmds.app, name="")
 
 
 def _apply_command_panels() -> None:

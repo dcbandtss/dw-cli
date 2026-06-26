@@ -20,6 +20,7 @@ import typer
 from alibabacloud_dataworks_public20200518 import models as dw_models
 
 from dw_cli.core import client, confirm, errors, output, paging
+from dw_cli.core.load_arg import load_arg
 from dw_cli.commands import auth_params, output_option, query_option
 from dw_cli.commands.node import _list_common  # 复用列表统一逻辑
 
@@ -185,6 +186,62 @@ def test_network_connection(
     _call_data_source(ctx, "test_network_connection", dw_models.TestNetworkConnectionRequest(
         project_id=project_id, datasource_name=datasource_name,
         resource_group=resource_group, env_type=env_type,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("create-data-source")
+def create_data_source(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    name: str = typer.Option(..., "--name", help="数据源名称"),
+    data_source_type: str = typer.Option(..., "--data-source-type",
+        help="数据源类型，如 odps / mysql / rds / oss / polardb 等"),
+    env_type: int = typer.Option(..., "--env-type", help="环境：1=生产 / 0=开发"),
+    content: str = typer.Option(..., "--content",
+        help="数据源连接配置 JSON 串（各类型结构不同，见下方示例）。"
+             "大 JSON 可用 file://path 传文件，如 --content file://ds.json"),
+    sub_type: str = typer.Option("", "--sub-type", help="数据源子类型（部分类型需要）"),
+    description: str = typer.Option("", "--description", help="数据源描述"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """[低危] 创建数据源（create_ 前缀，默认执行，无需 --confirm）。
+
+    content 是各数据源连接配置的 JSON 字符串，结构随类型而异。私有云里
+    odps/mysql/rds 常见格式如下（真调自 list-data-sources 返回的 Content 反推）：
+
+        # odps
+        {"accessId":"xxx","accessKey":"xxx","endpoint":"http://...","project":"xxx","authType":"1","region":"default"}
+
+        # mysql
+        {"username":"xxx","password":"xxx","jdbcUrl":"jdbc:mysql://host:3306/db","tag":"public"}
+
+        # rds
+        {"configType":1,"tag":"rds","database":"xxx","username":"xxx","password":"xxx","instanceName":"rm-xxx","rdsOwnerId":"xxx","regionId":"cn-..."}
+
+    大 JSON 建议用 file:// 语法避免 bash 转义：--content file://ds.json
+
+    \b
+    🚀 Examples:
+      # 创建 odps 数据源（content 行内 JSON）
+      dw-cli create-data-source --project-id 32890 --name my_odps \\
+        --data-source-type odps --env-type 1 \\
+        --content '{"accessId":"xxx","accessKey":"xxx","endpoint":"http://...","project":"my_prj","authType":"1"}'
+
+      # 用文件传大 content
+      dw-cli create-data-source --project-id 32890 --name my_mysql \\
+        --data-source-type mysql --env-type 1 --content file://mysql_ds.json
+
+    \b
+    📦 Output JSON Structure:
+      - 数据源ID: Data (新建数据源的 ID)
+      - 成功:     Success: true
+    """
+    content = load_arg(content)
+    _call_data_source(ctx, "create_data_source", dw_models.CreateDataSourceRequest(
+        project_id=project_id, name=name, data_source_type=data_source_type,
+        env_type=env_type, content=content,
+        sub_type=sub_type or None, description=description or None,
     ), query=query, output_fmt=output_fmt)
 
 
