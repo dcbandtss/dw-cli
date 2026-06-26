@@ -57,7 +57,22 @@ def check_meta_table(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """检查表是否存在。"""
+    """检查表是否存在（私有云须用 --table-guid）。
+
+    私有云 meta 服务只认 table_guid，只传 --table-name 会报 GuidFormat(400)。
+    可先用 search-meta-tables --keyword 拿到 TableGuid。
+
+    \b
+    🚀 Examples:
+      # 检查表是否存在（用 guid）
+      dw-cli check-meta-table --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table
+
+    \b
+    📦 Output JSON Structure:
+      - Data: bool（true=存在，false=不存在）
+    """
     _call_meta(ctx, "check_meta_table", dw_models.CheckMetaTableRequest(
         data_source_type=data_source_type, database_name=database_name,
         table_name=table_name or None, table_guid=table_guid or None,
@@ -70,14 +85,31 @@ def check_meta_partition(
     ctx: typer.Context,
     data_source_type: str = typer.Option(..., "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
-    partition: str = typer.Option(..., "--partition", help="分区名，如 ds=20260601"),
+    partition: str = typer.Option(..., "--partition", help="分区名，多级分区用完整路径如 dt=20260625/pt=biz_alarm/adm_div_code=310100"),
     table_name: str = typer.Option("", "--table-name", help=_TBL_HELP),
     table_guid: str = typer.Option("", "--table-guid", help=_GUID_HELP),
     cluster_id: str = typer.Option("", "--cluster-id", help=_CLUSTER_HELP),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """检查分区是否存在。"""
+    """检查分区是否存在（私有云须用 --table-guid + 完整分区名）。
+
+    私有云 meta 服务只认 table_guid。partition 须传完整分区路径
+    （多级分区如 dt=20260625/pt=biz_alarm/adm_div_code=310100），
+    只传一级分区会返回 false。
+
+    \b
+    🚀 Examples:
+      # 检查某分区是否存在
+      dw-cli check-meta-partition --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table \\
+        --partition "dt=20260625/pt=biz_alarm/adm_div_code=310100"
+
+    \b
+    📦 Output JSON Structure:
+      - Data: bool（true=分区存在，false=不存在）
+    """
     _call_meta(ctx, "check_meta_partition", dw_models.CheckMetaPartitionRequest(
         data_source_type=data_source_type, database_name=database_name,
         partition=partition,
@@ -99,7 +131,29 @@ def get_meta_table_basic_info(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取表的基础信息。"""
+    """获取表的基础信息（私有云须用 --table-guid）。
+
+    \b
+    🚀 Examples:
+      # 取表基础信息
+      dw-cli get-meta-table-basic-info --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table
+
+      # 只取表名和列数
+      dw-cli get-meta-table-basic-info --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table \\
+        --query "Data.{Name:TableName, Cols:ColumnCount}"
+
+    \b
+    📦 Output JSON Structure:
+      - 表名:   Data.TableName
+      - 列数:   Data.ColumnCount
+      - 注释:   Data.Comment
+      - 生命周期: Data.LifeCycle
+      - 是否分区表: Data.IsPartitionTable
+    """
     _call_meta(ctx, "get_meta_table_basic_info", dw_models.GetMetaTableBasicInfoRequest(
         data_source_type=data_source_type, database_name=database_name,
         table_name=table_name or None, table_guid=table_guid or None,
@@ -115,7 +169,17 @@ def get_meta_table_intro_wiki(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取表的使用说明（wiki）。"""
+    """获取表的使用说明（wiki）。表未写 wiki 时 Data 为 null。
+
+    \b
+    🚀 Examples:
+      # 取表 wiki（最新版）
+      dw-cli get-meta-table-intro-wiki --table-guid odps.my_project.my_table
+
+    \b
+    📦 Output JSON Structure:
+      - Data: 对象（wiki 内容）或 null（表无 wiki）
+    """
     _call_meta(ctx, "get_meta_table_intro_wiki", dw_models.GetMetaTableIntroWikiRequest(
         table_guid=table_guid, wiki_version=wiki_version or None,
     ), query=query, output_fmt=output_fmt)
@@ -132,12 +196,39 @@ def get_meta_table_column(
     cluster_id: str = typer.Option("", "--cluster-id", help=_CLUSTER_HELP),
     page_num: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 5000"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取表的字段信息（分页；SDK 字段名 page_num）。"""
+    """获取表的字段信息（分页；私有云须用 --table-guid）。
+
+    SDK 内部字段名是 page_num（非 page_number），封装已对齐，对外统一 --page-number。
+
+    \b
+    🚀 Examples:
+      # 取表全部字段（--all 合并）
+      dw-cli get-meta-table-column --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table \\
+        --all
+
+      # 只取字段名和类型（JMESPath 裁剪）
+      dw-cli get-meta-table-column --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table \\
+        --all \\
+        --query "Data.ColumnList[*].{Name:ColumnName, Type:ColumnType}"
+
+    \b
+    📦 Output JSON Structure:
+      - 字段列表: Data.ColumnList[] (数组)
+      - 字段名:   Data.ColumnList[*].ColumnName
+      - 字段类型: Data.ColumnList[*].ColumnType
+      - 字段注释: Data.ColumnList[*].Comment
+      - 是否分区列: Data.ColumnList[*].IsPartitionColumn
+      - 总数:     Data.TotalCount
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -169,12 +260,30 @@ def get_meta_table_full_info(
     cluster_id: str = typer.Option("", "--cluster-id", help=_CLUSTER_HELP),
     page_num: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 5000"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取表的完整信息（含字段，分页；SDK 字段名 page_num）。"""
+    """获取表的完整信息（含字段，分页；私有云须用 --table-guid）。
+
+    返回单对象，内含表基础信息 + ColumnList 字段列表。
+
+    \b
+    🚀 Examples:
+      # 取表完整信息（含字段）
+      dw-cli get-meta-table-full-info --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table
+
+    \b
+    📦 Output JSON Structure:
+      - 表名:       Data.TableName
+      - 注释:       Data.Comment
+      - 总列数:     Data.TotalColumnCount
+      - 字段列表:   Data.ColumnList[]（结构同 get-meta-table-column）
+      - 生命周期:   Data.LifeCycle
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -207,12 +316,31 @@ def get_meta_table_change_log(
     object_type: str = typer.Option("", "--object-type", help="对象类型过滤"),
     page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 5000"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取表的变更日志（分页；SDK 字段名 page_number）。"""
+    """获取表的变更日志（分页，按 table_guid 查）。
+
+    \b
+    🚀 Examples:
+      # 取表全部变更日志
+      dw-cli get-meta-table-change-log --table-guid odps.my_project.my_table --all
+
+      # 只取变更类型和操作人
+      dw-cli get-meta-table-change-log --table-guid odps.my_project.my_table \\
+        --all \\
+        --query "Data.DataEntityList[*].{Type:ChangeType, Op:Operator}"
+
+    \b
+    📦 Output JSON Structure:
+      - 变更列表: Data.DataEntityList[] (数组)
+      - 变更类型: Data.DataEntityList[*].ChangeType (如 ADD_PARTITION)
+      - 操作人:   Data.DataEntityList[*].Operator
+      - 变更时间: Data.DataEntityList[*].ModifiedTime
+      - 总数:     Data.TotalCount
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -246,16 +374,46 @@ def get_meta_table_partition(
     sort_order: str = typer.Option("", "--sort-order", help="排序方向：asc / desc"),
     page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 3600"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 3600"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
     """获取表的分区列表（分页；含嵌套子对象 sort_criterion）。
 
-    sort_criterion 是 SDK 嵌套子对象（order+sort_field），
-    封装拆成 --sort-field / --sort-order 两选项命令内组装（spec §8.2 嵌套子对象模式）。
-    不传排序则 sort_criterion=None，服务器按默认序返回。
+    底层 SDK 的嵌套对象 sort_criterion 已拍平为 --sort-field / --sort-order
+    两选项，命令内组装，无需传 JSON。不传排序则服务器按默认序返回。
+
+    \b
+    🚀 Examples:
+      # 1. 取某表全部分区（--all 合并分页）
+      dw-cli get-meta-table-partition --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table \\
+        --all
+
+      # 2. 只取分区名（JMESPath 裁剪，省 token）
+      dw-cli get-meta-table-partition --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table \\
+        --all \\
+        --query "Data.DataEntityList[*].PartitionName"
+
+      # 3. 按分区名降序取第一页（人看格式）
+      dw-cli get-meta-table-partition --data-source-type odps \\
+        --database-name my_project \\
+        --table-guid odps.my_project.my_table \\
+        --sort-field PartitionName \\
+        --sort-order desc \\
+        --output table
+
+    \b
+    📦 Output JSON Structure:
+      - 分区列表: Data.DataEntityList[] (数组)
+      - 分区名:   Data.DataEntityList[*].PartitionName (如 "dt=20260625/pt=biz_alarm/adm_div_code=310100")
+      - 分区GUID: Data.DataEntityList[*].PartitionGuid
+      - 总数:     Data.TotalCount
+      💡 只需分区名时务必用 --query "Data.DataEntityList[*].PartitionName" 大幅省 token。
     """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
@@ -294,12 +452,27 @@ def get_meta_dbtable_list(
     app_guid: str = typer.Option("", "--app-guid", help="应用 GUID（一般留空）"),
     page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 5000"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取引擎实例中的表列表（分页）。"""
+    """获取引擎实例中的表列表（分页）。
+
+    ⚠️ 私有云此接口报 500 NoCalcEngine（服务器侧缺陷，按 MaxCompute project
+    取计算引擎失败），非封装问题。如需查表，改用 search-meta-tables。
+
+    \b
+    🚀 Examples:
+      # 列出库下的表（私有云可能报 500，见上）
+      dw-cli get-meta-dbtable-list --database-name my_project --data-source-type odps
+
+    \b
+    📦 Output JSON Structure（私有云未探通，按 meta 统一规律推断）:
+      - 表列表: Data.DataEntityList[]
+      - 表名:   Data.DataEntityList[*].TableName
+      - 总数:   Data.TotalCount
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -332,12 +505,34 @@ def search_meta_tables(
     app_guid: str = typer.Option("", "--app-guid", help="应用 GUID（一般留空）"),
     page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 5000"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """根据条件搜索表（分页）。"""
+    """根据条件搜索表（分页）。拿 TableGuid 的首选方式。
+
+    拿到 TableGuid 后可喂给 check-meta-table / get-meta-table-* 等命令
+    （私有云 meta 系只认 table_guid）。
+
+    \b
+    🚀 Examples:
+      # 搜表，取表名和 guid
+      dw-cli search-meta-tables --keyword my_table --data-source-type odps \\
+        --query "Data.DataEntityList[*].{Name:TableName, Guid:TableGuid}"
+
+      # 取全量结果（--all）
+      dw-cli search-meta-tables --keyword my_table --all
+
+    \b
+    📦 Output JSON Structure:
+      - 结果列表: Data.DataEntityList[] (数组)
+      - 表名:     Data.DataEntityList[*].TableName
+      - 表GUID:   Data.DataEntityList[*].TableGuid (如 "odps.my_project.my_table")
+      - 项目名:   Data.DataEntityList[*].ProjectName
+      - 总数:     Data.TotalCount
+      💡 拿 guid 喂给其他 meta 命令：--query "Data.DataEntityList[*].TableGuid"
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()

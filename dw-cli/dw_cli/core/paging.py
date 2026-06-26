@@ -27,6 +27,7 @@ def fetch_all(
     items_path: str = "data",
     next_token_path: str = "next_token",
     page_number_path: str = "page_number",
+    envelope_path: Optional[str] = None,
 ) -> dict:
     """自动翻页合并器。
 
@@ -34,8 +35,11 @@ def fetch_all(
     对偏移分页：按 page_number 递增翻页，直到某页 items 为空或达到上限。
     对游标分页：若响应含 next_token_path，用游标继续，page_number 停止递增判断。
 
-    合并结果统一结构：
-      {items: [...], total: N, next_token?: ..., truncated: bool}
+    合并结果结构（保统一信封，spec §5）：
+      - 若给 envelope_path（如 "Data"）：返回首页 body，但 envelope_path 下的
+        items_path 换成全量合并列表，TotalCount 更新为合并数。
+        这样单页和 --all 的 --query 基准一致（都用 Data.DataEntityList[*] 等）。
+      - 否则（旧路径）：返回 {items:[...], total, truncated}。
     """
     effective_cap = limit if limit is not None else soft_cap
     merged: list = []
@@ -43,12 +47,15 @@ def fetch_all(
     page_no = 1
     truncated = False
     total: Any = None
+    first_page: Optional[dict] = None
     import jmespath
 
     while True:
         page = fetch_page(page_no, token)
         if not isinstance(page, dict):
             page = {"data": page} if page is not None else {}
+        if first_page is None:
+            first_page = page
         # items 路径默认 data；某些接口用 Files/Folders 等，由调用方在 fetch_page 内规整
         items = jmespath.search(items_path, page) if items_path else page
         if items is None:
@@ -91,6 +98,29 @@ def fetch_all(
             f"已输出前 {len(merged)} 条，可能非全量。"
         )
 
+    # 保统一信封：把全量 items 塞回 envelope_path 下，与单页同构
+    if envelope_path and isinstance(first_page, dict):
+        import copy
+        result = copy.deepcopy(first_page)
+        # 沿 envelope_path（如 "Data"）定位内层 dict，把 items_path 键替换为全量
+        parts = envelope_path.split(".")
+        node = result
+        for p in parts:
+            if isinstance(node, dict) and p in node:
+                node = node[p]
+            else:
+                node = None
+                break
+        if isinstance(node, dict):
+            # items_path 可能是 "DataEntityList"（envelope 内层键）
+            inner_key = items_path.split(".")[-1]
+            node[inner_key] = merged
+            # 更新 TotalCount 为实际合并数（更准）
+            if "TotalCount" in node:
+                node["TotalCount"] = len(merged)
+        return result
+
+    # 旧路径（无 envelope_path）：{items, total, truncated}
     result = {"items": merged, "total": total, "truncated": truncated}
     if token and truncated:
         result["next_token"] = token
@@ -106,21 +136,24 @@ def emit_paginated(
 ) -> None:
     """把合并结果走三层输出。
 
-    merged 结构 {items:[...], total, truncated}。table 模式下 default_table_query
-    是为「单页 body」写的（如 Data.ColumnList[*].{...}），与合并后的 {items} 基准不符；
-    故 table 模式自动把基准切到 items：把 default_table_query 的外层路径替换为 items[*]。
+    两种合并结构（取决于 fetch_all 是否给 envelope_path）：
+      - 保信封结构（envelope_path 给了）：与单页同构，default_table_query 的 Data.Xxx[*]
+        直接可用，无需转换。
+      - 旧 {items,total,truncated} 结构：table 模式下 default_table_query 的 Data.* 基准
+        与 {items} 不符，自动把外层路径替换为 items[*]。
     """
-    # table 模式 + 有默认 query + 用户没传 query：把 Data.Xxx[*] / Xxx[*] 对齐到 items[*]
+    is_envelope = isinstance(merged, dict) and "items" not in merged and "Data" in merged
+    # 仅旧 {items} 结构才需要把 default_table_query 对齐到 items[*]
     if (
-        output == out_mod.OUTPUT_TABLE
+        not is_envelope
+        and output == out_mod.OUTPUT_TABLE
         and default_table_query
         and not query
     ):
-        # 提取 [*] 之后的部分（字段映射），拼到 items[*] 上
         star_idx = default_table_query.find("[*]")
         tail = default_table_query[star_idx + 3:] if star_idx >= 0 else ""
         query = f"items[*]{tail}"
-        default_table_query = None  # 已转成 query，避免 emit 再叠加
+        default_table_query = None
     out_mod.emit(
         merged,
         query=query,

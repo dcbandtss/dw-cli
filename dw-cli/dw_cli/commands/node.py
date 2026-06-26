@@ -184,19 +184,22 @@ def _call_node(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
 
 def _list_common(*, dw_client, runtime, method, build_req, items_key,
                  page_number, page_size, all_pages, limit, query, output_fmt, table_query):
-    """列表命令统一逻辑：单页直发，--all 走 paging 翻页合并。"""
+    """列表命令统一逻辑：单页直发，--all 走 paging 翻页合并。
+
+    items_key 是 Data 内层的列表键名（如 Nodes/Instances/DataEntityList/ColumnList）。
+    --all 合并时保统一信封：fetch_page 返回原 body（不拆 Data），
+    fetch_all(envelope_path="Data") 把全量 items 塞回 Data.<items_key>，
+    使 --all 与单页的 --query 基准一致（都用 Data.<items_key>[*]）。
+    """
     if all_pages:
         def fetch_page(pn, token):
             resp = getattr(dw_client, f"{method}_with_options")(build_req(pn, token), runtime)
-            data = output._to_jsonable(resp)
-            if isinstance(data, dict):
-                inner = data.get("Data") or {}
-                if isinstance(inner, dict) and items_key in inner:
-                    data = {"data": inner.get(items_key) or [], **{k: v for k, v in data.items() if k != "Data"}}
-            return data
+            return output._to_jsonable(resp)
 
-        merged = paging.fetch_all(fetch_page=fetch_page, page_size=page_size,
-                                  limit=limit, items_path="data")
+        merged = paging.fetch_all(
+            fetch_page=fetch_page, page_size=page_size,
+            limit=limit, items_path=f"Data.{items_key}", envelope_path="Data",
+        )
         paging.emit_paginated(merged, query=query, output=output_fmt, default_table_query=table_query)
         return
 
