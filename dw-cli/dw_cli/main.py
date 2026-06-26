@@ -24,6 +24,9 @@ from typing import Optional
 import typer
 
 from dw_cli import __version__
+from dw_cli.commands import business as business_cmds
+from dw_cli.commands import data_source as data_source_cmds
+from dw_cli.commands import deployment as deployment_cmds
 from dw_cli.commands import file as file_cmds
 from dw_cli.commands import folder as folder_cmds
 from dw_cli.commands import instance as instance_cmds
@@ -50,9 +53,18 @@ _CMD_PANELS = {
     "get-meta-table-change-log": _PANEL_META, "get-meta-table-partition": _PANEL_META,
     "get-meta-dbtable-list": _PANEL_META, "search-meta-tables": _PANEL_META,
     "list-files": _PANEL_FILE, "get-file": _PANEL_FILE, "create-file": _PANEL_FILE, "list-folders": _PANEL_FILE,
+    "get-folder": _PANEL_FILE, "create-folder": _PANEL_FILE, "delete-folder": _PANEL_FILE,
+    "submit-file": _PANEL_FILE, "delete-file": _PANEL_FILE,
+    "get-deployment": _PANEL_FILE,
+    "get-business": _PANEL_NODE, "list-business": _PANEL_NODE,
+    "create-business": _PANEL_NODE, "delete-business": _PANEL_NODE,
+    "list-data-sources": _PANEL_META, "export-data-sources": _PANEL_META,
+    "test-network-connection": _PANEL_META, "delete-data-source": _PANEL_META,
     "get-node": _PANEL_NODE, "get-node-code": _PANEL_NODE, "get-node-parents": _PANEL_NODE,
     "get-node-children": _PANEL_NODE, "list-nodes": _PANEL_NODE, "offline-node": _PANEL_NODE,
     "update-node-run-mode": _PANEL_NODE,
+    "get-business": _PANEL_NODE, "list-business": _PANEL_NODE,
+    "create-business": _PANEL_NODE, "delete-business": _PANEL_NODE,
     "get-instance": _PANEL_INST, "get-instance-log": _PANEL_INST, "list-instances": _PANEL_INST,
     "list-instance-history": _PANEL_INST, "restart-instance": _PANEL_INST, "resume-instance": _PANEL_INST,
     "stop-instance": _PANEL_INST, "suspend-instance": _PANEL_INST,
@@ -117,6 +129,9 @@ def _setup_auth(
 
 
 # ── 平铺注册：各资源模块的子命令直接挂顶层，不加资源前缀（spec §9） ─────
+app.add_typer(business_cmds.app, name="")
+app.add_typer(data_source_cmds.app, name="")
+app.add_typer(deployment_cmds.app, name="")
 app.add_typer(meta_cmds.app, name="")
 app.add_typer(meta_table_cmds.app, name="")
 app.add_typer(file_cmds.app, name="")
