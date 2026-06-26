@@ -160,6 +160,47 @@
   `GmtCreate`、`ProjectId`。无效 deployment_id 报 400「发布包X不存在」。
 - 典型用法：delete-file 返回 DeploymentId 后循环 get-deployment 直到 Status 终态。
 
+### update-file 真调确认（31 参数，第 4 批）
+- **input_list / output_list 是逗号分隔字符串**（不是 JSON）：update-file 传
+  `--input-list "odps_first.dcb_test.upstream"` 真调生效，响应里
+  `Data.NodeConfiguration.InputList=[{Input:"...", ParseType:"MANUAL"}]`。
+  多个用逗号分隔。output_list 同理（本节点输出名）。
+- **input_parameters / output_parameters / advanced_settings 是 JSON 串**：
+  注释明确「configured in the JSON format」，封装支持 file:// 传大 JSON。
+  注意 input_list（逗号分隔输出名）≠ input_parameters（JSON 输入参数表），同名易混。
+- **content 改正文生效**：`--content "SELECT 2;"` 真调后 get-file 返回 `Data.File.Content="SELECT 2;"`。
+- **只传部分字段安全**：仅 file_id + project_id + 要改的字段，未传字段保持原值。
+- **get-file 的 IO 在 Data.NodeConfiguration，不在 Data.File**（存量 help 修正）：
+  - `Data.File`：FileName/FileType/Content/Owner/BusinessId/ConnectionName/...（基本属性）
+  - `Data.NodeConfiguration`：InputList/OutputList/InputParameters/OutputParameters/
+    CronExpress/CycleType/RerunMode/ResourceGroupId/SchedulerType/ParaValue/...（调度依赖IO）
+  - InputList 结构：`[{Input:"odps_first.xxx.upstream", ParseType:"MANUAL"}]`（数组对象）
+  - OutputList 结构：`[{Output:"odps_first.xxx.my_node"}]`（数组对象）
+
+### submit-file 需真实的已提交上游输出名
+- submit-file 链路通（封装正确），但 SQL 节点提交前须先 update-file 配好
+  input_list（上游输出名）+ output_list（本节点输出名），否则报
+  「输入输出不能为空」。
+- input_list 里的上游输出名必须是**已提交到调度的真实父节点输出名**，
+  编造的不存在输出名会报 400「父节点输出名:X 不存在，不能提交本节点」。
+  即 submit-file 真成功依赖一条真实的已提交上游链路。
+
+### create-resource-file 用 _with_options 版本（私有云铁律）
+- 普通版 `create_resource_file(request)` 内部自建空 `RuntimeOptions()`（无 RegionId），
+  私有云不可用。封装必须用 `create_resource_file_with_options(request, runtime)`，
+  runtime 经 build_runtime() 注入 RegionId。
+- 普通版支持三种内容来源：--content/--content-file（文本资源正文）、
+  --storage-url（已上传 OSS URL，私有云优先）。
+- **Advance 版（create_resource_file_advance）私有云风险**：内部先调
+  `openplatform.aliyuncs.com` 鉴权拿 OSS 上传凭证再传 OSS，私有隔离环境
+  通常无此公网通道，可能失败。help 已标注建议改用 --storage-url。
+
+### udf 接口 file_id 是 str（与 file 接口不同）
+- update-udf-file 的 `--file-id` 是**字符串**，而 delete-file/submit-file/update-file
+  的 file_id 是 int。封装时 Option 类型按类区分（udf.py 用 str，file.py 用 int）。
+- udf 的 resources 是逗号分隔字符串（文档明确「separated by commas」），
+  不是 JSON，直接收 str。
+
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
 

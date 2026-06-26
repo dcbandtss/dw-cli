@@ -88,7 +88,27 @@ def get_file(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """查询单个文件详情。"""
+    """查询单个文件详情。
+
+    响应分两部分：Data.File（基本属性）+ Data.NodeConfiguration（调度/依赖/IO）。
+
+    \b
+    🚀 Examples:
+      # 取文件代码正文
+      dw-cli get-file --project-id 32890 --file-id 30704854 \\
+        --query "Data.File.Content"
+
+      # 取节点的输入输出依赖（在 NodeConfiguration 下，不在 File 下）
+      dw-cli get-file --project-id 32890 --file-id 30704854 \\
+        --query "Data.NodeConfiguration.{In:InputList, Out:OutputList}"
+
+    \b
+    📦 Output JSON Structure:
+      - 基本属性: Data.File.{FileName, FileType, Content, Owner, BusinessId, ConnectionName}
+      - 调度依赖: Data.NodeConfiguration.InputList  (数组，每项 {Input, ParseType})
+      - 输出依赖: Data.NodeConfiguration.OutputList (数组，每项 {Output})
+      - 调度配置: Data.NodeConfiguration.{CronExpress, CycleType, RerunMode, ResourceGroupId, SchedulerType, ParaValue}
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()

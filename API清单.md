@@ -48,12 +48,12 @@
 | `check_file_deployment`                | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。            | 待建(raw) |                          |     |
 | `create_business`                      | 调用CreateBusiness，创建数据开发（DataStudio）的业务流程。                                                                                              | 已封装     |                          |     |
 | `create_connection`                    | 调用CreateConnection创建一个数据源。                                                                                                             | 废弃·不建议  | ⚠️                       |     |
-| `create_data_source`                   | 该接口用于创建DataWorks数据源。                                                                                                                   | 待封装     |                          |     |
+| `create_data_source`                   | 该接口用于创建DataWorks数据源。                                                                                                                   | 已封装     |                          |     |
 | `create_file`                          | 调用CreateFile，在数据开发中创建一个文件。目前不支持调用该接口创建数据集成节点任务。                                                                                        | 已封装     |                          |     |
 | `create_folder`                        | 调用CreateFolder创建文件夹。                                                                                                                   | 已封装     |                          |     |
-| `create_resource_file`                 | 调用CreateResourceFile接口，在数据开发中创建或上传一个资源文件，此API功能与IDE界面中新建资源功能保持一致。                                                                      | 待封装     |                          |     |
-| `create_resource_file_advance`         | _(官方网页未单独列出)_                                                                                                                          | 剔除      |                          |     |
-| `create_udf_file`                      | 调用CreateUdfFile，在数据开发中创建函数类型文件。                                                                                                        | 待封装     |                          |     |
+| `create_resource_file`                 | 调用CreateResourceFile接口，在数据开发中创建或上传一个资源文件，此API功能与IDE界面中新建资源功能保持一致。                                                                      | 已封装     |                          |     |
+| `create_resource_file_advance`         | _(官方网页未单独列出)_                                                                                                                          | 已封装     |                          |私有云可能因无OpenPlatform/OSS公网通道失败，建议用create-resource-file --storage-url|     |
+| `create_udf_file`                      | 调用CreateUdfFile，在数据开发中创建函数类型文件。                                                                                                        | 已封装     |                          |     |
 | `delete_business`                      | 调用DeleteBusiness删除业务流程。                                                                                                                | 已封装     |                          |     |
 | `delete_connection`                    | 调用DeleteConnection删除一个数据源。                                                                                                             | 废弃·不建议  | ⚠️                       |     |
 | `delete_data_source`                   | 该接口用于删除数据源。                                                                                                                            | 已封装     |                          |     |
@@ -82,9 +82,9 @@
 | `update_business`                      | 调用UpdateBusiness更新业务流程。                                                                                                                | 待建(raw) |                          |     |
 | `update_connection`                    | 调用UpdateConnection更新一个数据源。                                                                                                             | 废弃·不建议  | ⚠️                       |     |
 | `update_data_source`                   | 该接口用于更新数据源。                                                                                                                            | 待建(raw) |                          |     |
-| `update_file`                          | 调用UpdateFile更新已创建的文件。                                                                                                                  | 待封装     |                          |     |
+| `update_file`                          | 调用UpdateFile更新已创建的文件。                                                                                                                  | 已封装     |                          |     |
 | `update_folder`                        | 调用UpdateFolder更新文件夹的信息。                                                                                                                | 待建(raw) |                          |     |
-| `update_udf_file`                      | 调用UpdateUdfFile更新函数的文件信息。                                                                                                              | 待封装     |                          |     |
+| `update_udf_file`                      | 调用UpdateUdfFile更新函数的文件信息。                                                                                                              | 已封装     |                          |     |
 ### 数据集成 di（27）
 
 | 操作(SDK方法)                                  | 描述                                                    | 状态      | 废弃  | 备注  |
