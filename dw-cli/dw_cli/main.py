@@ -67,12 +67,16 @@ _AI_RULES = (
     "   dw-cli raw create_table --columns file://cols.json --project-id 32890\n\n"
     "3. SAFETY FIRST: [高危] 命令（delete_/deploy_/stop_/terminate_/offline_）\n"
     "   须 --confirm 或 --dry-run；默认拒绝（exit 2）。\n\n"
-    "4. ENV CHECK: 遇 401/403 或 endpoint 不通，先跑 dw-cli doctor 自排查，勿盲重试。"
+    "4. ENV CHECK: 遇 401/403 或 endpoint 不通，先跑 dw-cli doctor 自排查，勿盲重试。\n\n"
+    "5. FALLBACK 逃生舱: 若找不到特定的封装命令，或需调用未封装的 2020-05-18\n"
+    "   API，用 dw-cli raw <ActionName> --param1 value1 透传（kebab --key val）。\n"
+    "   raw 覆盖 91 项 API 全集，是封装命令未覆盖时的兜底。"
 )
 
 
 app = typer.Typer(
     help="DataWorks 私有云 CLI（基于 2020-05-18 SDK + 凭据链 + RegionId 注入）。",
+    add_completion=False,
 )
 
 
