@@ -144,7 +144,7 @@
 | `run_cycle_dag_nodes`            | 调用RunCycleDagNodes创建补数据工作流。                                 | 待建(raw) |     |     |
 | `run_manual_dag_nodes`           | 手动业务流程必须已在环境界面提交发布，之后运维中心才会显示对应手动业务流程，您才可以使用该接口，触发手动业务流程运行。 | 待建(raw) |     |     |
 | `set_success_instance`           | 调用SetSuccessInstance，重置失败状态的实例为成功。                          | 待建(raw) |     |     |
-| `stop_instance`                  | 调用StopInstance终止实例。                                         | 已封装     |     |     |
+| `stop_instance`                  | 调用StopInstance终止实例。                                         | 已封装     | 高危须--confirm；私有云只能停运行态(WAIT_RESOURCE/WAIT_TIME/RUNNING/CHECKING),对SUCCESS/FAILURE报400     |     |
 | `suspend_instance`               | 调用SuspendInstance暂停实例。                                      | 已封装     |     |     |
 | `top_ten_elapsed_time_instance`  | 获取实例运行时长排行。                                                 | 待建(raw) |     |     |
 | `top_ten_error_times_instance`   | 获取近一个月节点的出错排行。                                              | 待建(raw) |     |     |
@@ -163,11 +163,11 @@
 | `list_node_iowith_options`  | 查询上下游节点的信息，只能查询一层。                                                | 废弃·不建议  | ⚠️  |     |
 | `list_nodes`                | 调用ListNodes获取节点的列表。                                               | 已封装     |     |     |
 | `list_nodes_by_output`      | 根据节点的输出结果精确查询目标节点。                                                | 待建(raw) |     |     |
-| `offline_node`              | 调用OfflineNode下线节点。                                                | 已封装     |     |     |
+| `offline_node`              | 调用OfflineNode下线节点。                                                | 已封装     | 高危须--confirm；私有云探活404 NotFound,服务器未实现     |     |
 | `run_trigger_node`          | 调用RunTriggerNode运行一个触发式节点。                                        | 待建(raw) |     |     |
 | `search_nodes_by_output`    | 调用SearchNodesByOutput，根据输出精确查询节点。                                 | 废弃·不建议  | ⚠️  |     |
 | `update_node_owner`         | 修改目标节点的负责人。                                                       | 待建(raw) |     |     |
-| `update_node_run_mode`      | 调用UpdateNodeRunMode冻结或解冻目标节点。                                     | 已封装     |     |     |
+| `update_node_run_mode`      | 调用UpdateNodeRunMode冻结或解冻目标节点。                                     | 已封装     | 私有云SchedulerType:0=NORMAL,2=PAUSE;1非法(报InvalidSchedulerType)     |     |
 ### 告警 alarm（remind/alert/topic/值班）（12）
 
 | 操作(SDK方法)               | 描述                                      | 状态      | 废弃  | 备注  |

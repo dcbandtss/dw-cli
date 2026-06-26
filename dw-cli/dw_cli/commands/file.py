@@ -131,7 +131,7 @@ def create_file(
         「业务流程/dcb_test/MaxCompute/」。不要直接用 list-folders 返回的
         FolderPath（其为双斜杠且无引擎层，会导致「不合法的目录路径」错误）。
       - SQL 节点（file_type=10）的 input_list 为必填字段，无依赖时传空串。
-      - create 为低危写操作，默认执行（spec §7.2）。
+      - create 为低危写操作，默认执行，无需 --confirm。
     """
     if content is not None and content_file is not None:
         errors.usage_error("--content 与 --content-file 互斥，请只指定一个。")

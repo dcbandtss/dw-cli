@@ -38,7 +38,28 @@ def get_instance(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取实例的详细信息。"""
+    """获取实例的详细信息。
+
+    \b
+    🚀 Examples:
+      # 取实例详情
+      dw-cli get-instance --instance-id 15187465334 --project-env PROD
+
+      # 只取状态和节点名
+      dw-cli get-instance --instance-id 15187465334 --project-env PROD \\
+        --query "Data.{Status:Status, Node:NodeName, BizDate:Bizdate}"
+
+    \b
+    📦 Output JSON Structure:
+      - 实例ID:   Data.InstanceId
+      - 节点ID:   Data.NodeId
+      - 节点名:   Data.NodeName
+      - 状态:     Data.Status (NOT_RUN/RUNNING/WAIT_RESOURCE/SUCCESS/FAILURE/...)
+      - 业务日期: Data.Bizdate
+      - DAG ID:   Data.DagId
+      - 开始运行: Data.BeginRunningTime
+      - 完成时间: Data.FinishTime
+    """
     _call_instance(ctx, "get_instance", dw_models.GetInstanceRequest(
         instance_id=instance_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -48,13 +69,26 @@ def get_instance(
 def get_instance_log(
     ctx: typer.Context,
     instance_id: int = typer.Option(..., "--instance-id", help="实例 ID"),
-    instance_history_id: int = typer.Option(..., "--instance-history-id",
-                                            help="实例历史 ID（任务重跑每次生成一条历史）"),
+    instance_history_id: int = typer.Option(None, "--instance-history-id",
+                                            help="实例历史 ID（任务重跑每次生成一条历史）。私有云可省略，省略时返回最新一次运行的日志"),
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取实例的运行日志。"""
+    """获取实例的运行日志（Data 是日志字符串）。
+
+    私有云 instance_history_id 非必填（真调确认）：不传也能返回日志。
+    Data 是字符串（日志正文，含运行状态/SQL 执行过程/exit code 等），不是对象。
+
+    \b
+    🚀 Examples:
+      # 取实例最新日志（私有云可不传 history-id）
+      dw-cli get-instance-log --instance-id 15187465334 --project-env PROD
+
+    \b
+    📦 Output JSON Structure:
+      - Data: 字符串（运行日志正文，\r\n 分行）
+    """
     _call_instance(ctx, "get_instance_log", dw_models.GetInstanceLogRequest(
         instance_id=instance_id, instance_history_id=instance_history_id,
         project_env=project_env,
@@ -79,14 +113,34 @@ def list_instances(
     order_by: str = typer.Option("", "--order-by", help="排序字段"),
     page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 5000"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取实例的列表。
+    """获取实例的列表（分页）。
 
     bizdate 必填，格式 yyyy-MM-dd HH:mm:ss（只传日期会报 "too short"）。
+
+    \b
+    🚀 Examples:
+      # 查某业务日期的实例
+      dw-cli list-instances --project-id 32890 --project-env PROD \\
+        --bizdate "2026-06-26 00:00:00"
+
+      # 只取运行中和失败的实例
+      dw-cli list-instances --project-id 32890 --project-env PROD \\
+        --bizdate "2026-06-26 00:00:00" --status RUNNING \\
+        --query "Data.Instances[*].{Id:InstanceId, Node:NodeName, Status:Status}"
+
+    \b
+    📦 Output JSON Structure:
+      - 实例列表: Data.Instances[] (数组)
+      - 实例ID:   Data.Instances[*].InstanceId
+      - 节点名:   Data.Instances[*].NodeName
+      - 状态:     Data.Instances[*].Status (NOT_RUN/RUNNING/SUCCESS/FAILURE/...)
+      - 业务日期: Data.Instances[*].Bizdate
+      - 总数:     Data.TotalCount
     """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
@@ -120,7 +174,20 @@ def list_instance_history(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取实例的历史记录（任务重跑每次生成一条）。"""
+    """获取实例的历史记录（任务重跑每次生成一条）。
+
+    ⚠️ 私有云此接口报 404 InvalidAction.NotFound（服务器未实现 ListInstanceHistory）。
+    要看实例日志请用 get-instance-log（私有云可不传 instance-history-id）。
+
+    \b
+    🚀 Examples:
+      dw-cli list-instance-history --instance-id 15187465334 --project-env PROD
+
+    \b
+    📦 Output JSON Structure:
+      - 私有云未实现：404 InvalidAction.NotFound
+      - （官方结构：Data.DataEntityList[] 历史记录数组）
+    """
     _call_instance(ctx, "list_instance_history", dw_models.ListInstanceHistoryRequest(
         instance_id=instance_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -134,7 +201,18 @@ def restart_instance(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """重启实例（restart_ 不在高危前缀，低危默认执行）。"""
+    """[低危] 重启实例（restart_ 前缀，默认执行，无需 --confirm）。
+
+    重启后实例状态会变为 WAIT_RESOURCE → RUNNING（异步，查 get-instance 确认）。
+
+    \b
+    🚀 Examples:
+      dw-cli restart-instance --instance-id 15187465334 --project-env PROD
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}
+    """
     _call_instance(ctx, "restart_instance", dw_models.RestartInstanceRequest(
         instance_id=instance_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -148,7 +226,16 @@ def resume_instance(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """恢复暂停状态的实例（resume_ 低危默认执行）。"""
+    """[低危] 恢复暂停状态的实例（resume_ 前缀，默认执行）。
+
+    \b
+    🚀 Examples:
+      dw-cli resume-instance --instance-id 15187465334 --project-env PROD
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}
+    """
     _call_instance(ctx, "resume_instance", dw_models.ResumeInstanceRequest(
         instance_id=instance_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -159,14 +246,30 @@ def stop_instance(
     ctx: typer.Context,
     instance_id: int = typer.Option(..., "--instance-id", help="实例 ID"),
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
-    confirm_flag: bool = typer.Option(False, "--confirm", help="高危操作需显式确认"),
+    confirm_flag: bool = typer.Option(False, "--confirm", help="[高危] 显式确认执行"),
     dry_run: bool = typer.Option(False, "--dry-run", help="仅预览，不真执行"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """终止实例（高危：stop_ 前缀，须 --confirm）。
+    """[高危] 终止实例（stop_ 前缀，须 --confirm）。
 
-    终止运行中的实例会中断任务执行，影响数据产出。务必确认。
+    只能终止运行态实例（私有云真调确认）：合法状态
+    WAIT_RESOURCE / WAIT_TIME / RUNNING / CHECKING；对 SUCCESS/FAILURE 报 400。
+    stop 是异步的，几秒后实例状态变为 FAILURE。
+    无 --confirm 会被拦截（exit 2）；--dry-run 仅预览不执行。
+
+    \b
+    🚀 Examples:
+      # 预览（不执行）
+      dw-cli stop-instance --instance-id 15187465334 --project-env PROD --dry-run
+
+      # 真终止（须显式确认，且实例须在运行态）
+      dw-cli stop-instance --instance-id 15187465334 --project-env PROD --confirm
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}（状态几秒后变 FAILURE）
+      - 非运行态: 400 状态必须为 WAIT_RESOURCE|WAIT_TIME|RUNNING|CHECKING
     """
     try:
         decision = confirm.check_write("stop_instance", confirm=confirm_flag, dry_run=dry_run,
@@ -189,9 +292,18 @@ def suspend_instance(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """暂停实例（suspend_ 不在高危前缀，低危默认执行）。
+    """[低危] 暂停实例（suspend_ 前缀，默认执行）。
 
-    暂停实例使其停止后续调度但不终止当前运行。严格按前缀规则归低危。
+    暂停实例使其停止后续调度（对已 SUCCESS 的实例无可见状态变化）。
+    严格按前缀规则归低危（suspend_ 不在高危前缀）。
+
+    \b
+    🚀 Examples:
+      dw-cli suspend-instance --instance-id 15187465334 --project-env PROD
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}
     """
     _call_instance(ctx, "suspend_instance", dw_models.SuspendInstanceRequest(
         instance_id=instance_id, project_env=project_env,

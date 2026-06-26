@@ -71,6 +71,26 @@
 - `check_meta_table` / `check_meta_partition`：`Data` 是 bool（true/false）。
 - `get_meta_table_intro_wiki`：`Data` 是对象或 null（表没写 wiki 时为 null）。
 
+### node/instance 系私有云特性（3a 真调确认）
+- **update-node-run-mode 的 SchedulerType 私有云合法值不同**：
+  `0=NORMAL`（正常），`2=PAUSE`（冻结）。**`1` 在私有云非法**（报 400 InvalidSchedulerType）。
+  官方文档的 1=冻结 / 2=正常到下线 在私有云不适用。封装 help 已据此改。
+- **get-instance-log 的 instance_history_id 非必填**：私有云不传也返回日志（最新一次运行）。
+  封装已从必填改可选。注意：list-instance-history 私有云 404，拿不到 history_id，
+  故 get-instance-log 的 history-id 在私有云基本用不上，省略即可。
+- **get-node-code / get-instance-log 的 Data 是字符串**（不是对象）：
+  前者是 SQL/Python/Shell 代码正文，后者是日志正文（\r\n 分行）。不要写 Data.Code 之类路径。
+- **stop-instance 只能停运行态**：合法状态 `WAIT_RESOURCE|WAIT_TIME|RUNNING|CHECKING`，
+  对 SUCCESS/FAILURE 报 400「状态必须为...」。stop 是异步的，几秒后状态变 FAILURE。
+- **offline-node / list-instance-history 私有云 404**：服务器未实现这两个接口，
+  报 InvalidAction.NotFound。非封装问题。
+- **node/instance 响应结构**：
+  - get-node：`Data.{NodeId,NodeName,ProgramType,CronExpress,SchedulerType,ProjectId,Connection,ParamValues,...}`（单对象）。
+  - get-node-parents / get-node-children：`Data.Nodes[]`（每项同 get-node 的 Data 单对象；无依赖时空数组）。
+  - get-instance：`Data.{InstanceId,NodeId,NodeName,Status,DagId,Bizdate,BeginRunningTime,FinishTime,TaskType,...}`（单对象）。
+  - list-nodes：`Data.Nodes[]`；list-instances：`Data.Instances[]`（分页，TotalCount）。
+  - update-node-run-mode / restart / resume / suspend / stop：成功返回 `{Data:true, Success:true}`。
+
 ## 封装代码层注意（写 commands/*.py 时易踩的坑）
 
 ### 形参名 `output` 遮蔽 `core.output` 模块

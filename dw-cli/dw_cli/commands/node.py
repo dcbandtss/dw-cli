@@ -34,7 +34,27 @@ def get_node(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取节点的详情。"""
+    """获取节点的详情。
+
+    \b
+    🚀 Examples:
+      # 取节点详情
+      dw-cli get-node --node-id 2548063 --project-env PROD
+
+      # 只取节点名和类型
+      dw-cli get-node --node-id 2548063 --project-env PROD \\
+        --query "Data.{Name:NodeName, Type:ProgramType, Sched:SchedulerType}"
+
+    \b
+    📦 Output JSON Structure:
+      - 节点ID:   Data.NodeId
+      - 节点名:   Data.NodeName
+      - 节点类型: Data.ProgramType (如 ODPS_SQL / PYODPS3 / DI / SHELL)
+      - 调度状态: Data.SchedulerType (NORMAL / PAUSE)
+      - Cron表达式: Data.CronExpress
+      - 所属空间: Data.ProjectId
+      - 参数:     Data.ParamValues (如 "dt=$[yyyymmdd]")
+    """
     _call_node(ctx, "get_node", dw_models.GetNodeRequest(
         node_id=node_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -48,7 +68,19 @@ def get_node_code(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取节点的代码。"""
+    """获取节点的代码（SQL/Python/Shell 脚本正文）。
+
+    Data 是字符串（代码本身），不是对象，不要写 Data.Code 之类的路径。
+
+    \b
+    🚀 Examples:
+      # 取节点代码（原样输出字符串）
+      dw-cli get-node-code --node-id 2548063 --project-env PROD
+
+    \b
+    📦 Output JSON Structure:
+      - Data: 字符串（节点代码正文，可能是 SQL/Python/Shell）
+    """
     _call_node(ctx, "get_node_code", dw_models.GetNodeCodeRequest(
         node_id=node_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -62,7 +94,22 @@ def get_node_parents(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取节点上游列表。"""
+    """获取节点上游依赖列表。
+
+    \b
+    🚀 Examples:
+      # 取上游节点
+      dw-cli get-node-parents --node-id 2548063 --project-env PROD
+
+      # 只取上游节点名和ID
+      dw-cli get-node-parents --node-id 2548063 --project-env PROD \\
+        --query "Data.Nodes[*].{Id:NodeId, Name:NodeName}"
+
+    \b
+    📦 Output JSON Structure:
+      - 上游列表: Data.Nodes[] (数组；无上游时为空数组)
+      - 每项结构同 get-node 的 Data 单对象（NodeId/NodeName/ProgramType/...）
+    """
     _call_node(ctx, "get_node_parents", dw_models.GetNodeParentsRequest(
         node_id=node_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -76,7 +123,22 @@ def get_node_children(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取节点下游列表。"""
+    """获取节点下游依赖列表。
+
+    \b
+    🚀 Examples:
+      # 取下游节点
+      dw-cli get-node-children --node-id 2548063 --project-env PROD
+
+      # 只取下游节点名和类型
+      dw-cli get-node-children --node-id 2548063 --project-env PROD \\
+        --query "Data.Nodes[*].{Name:NodeName, Type:ProgramType}"
+
+    \b
+    📦 Output JSON Structure:
+      - 下游列表: Data.Nodes[] (数组；无下游时为空数组)
+      - 每项结构同 get-node 的 Data 单对象（NodeId/NodeName/ProgramType/...）
+    """
     _call_node(ctx, "get_node_children", dw_models.GetNodeChildrenRequest(
         node_id=node_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
@@ -91,15 +153,35 @@ def list_nodes(
     node_name: str = typer.Option("", "--node-name", help="节点名过滤"),
     owner: str = typer.Option("", "--owner", help="负责人过滤"),
     program_type: str = typer.Option("", "--program-type", help="节点类型过滤，如 ODPS_SQL/SHELL"),
-    scheduler_type: str = typer.Option("", "--scheduler-type", help="调度类型过滤"),
+    scheduler_type: str = typer.Option("", "--scheduler-type", help="调度类型过滤，如 NORMAL/PAUSE"),
     page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
-    all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，覆盖默认 5000"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """获取节点的列表。"""
+    """获取节点的列表（分页）。
+
+    \b
+    🚀 Examples:
+      # 列出空间下所有节点（--all 合并分页）
+      dw-cli list-nodes --project-id 116845 --project-env PROD --all
+
+      # 按类型过滤，只取ID和名
+      dw-cli list-nodes --project-id 116845 --project-env PROD \\
+        --program-type ODPS_SQL \\
+        --query "Data.Nodes[*].{Id:NodeId, Name:NodeName}"
+
+    \b
+    📦 Output JSON Structure:
+      - 节点列表: Data.Nodes[] (数组)
+      - 节点ID:   Data.Nodes[*].NodeId
+      - 节点名:   Data.Nodes[*].NodeName
+      - 节点类型: Data.Nodes[*].ProgramType
+      - 负责人:   Data.Nodes[*].Owner
+      - 总数:     Data.TotalCount
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -127,14 +209,31 @@ def offline_node(
     ctx: typer.Context,
     node_id: int = typer.Option(..., "--node-id", help="节点 ID"),
     project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
-    confirm_flag: bool = typer.Option(False, "--confirm", help="高危操作需显式确认"),
+    confirm_flag: bool = typer.Option(False, "--confirm", help="[高危] 显式确认执行"),
     dry_run: bool = typer.Option(False, "--dry-run", help="仅预览，不真执行"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """下线节点（高危：offline_ 前缀，须 --confirm）。
+    """[高危] 下线节点（offline_ 前缀，须 --confirm）。
 
-    下线节点会停止其在生产环境的调度，影响线上任务流。务必确认。
+    下线节点会停止其在生产环境的调度，影响线上任务流。
+    无 --confirm 会被拦截（exit 2）；--dry-run 仅预览不执行。
+
+    ⚠️ 私有云此接口可能报 404 InvalidAction.NotFound（服务器未实现 OfflineNode），
+    属私有云实现缺陷，非封装问题。
+
+    \b
+    🚀 Examples:
+      # 预览（不执行）
+      dw-cli offline-node --node-id 2549501 --project-id 116845 --dry-run
+
+      # 真下线（须显式确认）
+      dw-cli offline-node --node-id 2549501 --project-id 116845 --confirm
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}
+      - 私有云未实现时: 404 InvalidAction.NotFound
     """
     try:
         decision = confirm.check_write("offline_node", confirm=confirm_flag, dry_run=dry_run,
@@ -155,13 +254,30 @@ def update_node_run_mode(
     node_id: int = typer.Option(..., "--node-id", help="节点 ID"),
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
     scheduler_type: int = typer.Option(..., "--scheduler-type",
-                                       help="调度模式：0=正常调度, 1=冻结(暂停调度), 2=正常调度到下线"),
+                                       help="[低危] 调度模式：0=正常(NORMAL), 2=冻结(PAUSE)。私有云 1 非法"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """冻结或解冻目标节点（update_ 前缀，低危默认执行）。
+    """[低危] 冻结或解冻目标节点（update_ 前缀，默认执行，无需 --confirm）。
 
-    scheduler_type: 0=正常, 1=冻结, 2=正常到下线。冻结会暂停该节点调度但不删除。
+    私有云 SchedulerType 合法值（真调确认，与官方文档不同！）：
+      0 = 正常调度（NORMAL）
+      2 = 冻结/暂停调度（PAUSE）
+    ⚠️ 1 在私有云非法（报 InvalidSchedulerType）；官方文档的 1=冻结/2=正常到下线 在此不适用。
+    冻结会暂停该节点调度但不删除，可再用 0 解冻。
+
+    \b
+    🚀 Examples:
+      # 冻结节点
+      dw-cli update-node-run-mode --node-id 2583882 --project-env PROD --scheduler-type 2
+
+      # 解冻（恢复正常调度）
+      dw-cli update-node-run-mode --node-id 2583882 --project-env PROD --scheduler-type 0
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data: true, Success: true}
+      - 调度类型非法: 400 InvalidSchedulerType
     """
     _call_node(ctx, "update_node_run_mode", dw_models.UpdateNodeRunModeRequest(
         node_id=node_id, project_env=project_env, scheduler_type=scheduler_type,
