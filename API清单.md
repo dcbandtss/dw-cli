@@ -46,39 +46,39 @@
 | 操作(SDK方法)                              | 状态                                                                                                                                     | 废弃      | 备注                       |     |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------ | --- |
 | `check_file_deployment`                | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。            | 待建(raw) |                          |     |
-| `create_business`                      | 调用CreateBusiness，创建数据开发（DataStudio）的业务流程。                                                                                              | 待封装     |                          |     |
+| `create_business`                      | 调用CreateBusiness，创建数据开发（DataStudio）的业务流程。                                                                                              | 已封装     |                          |     |
 | `create_connection`                    | 调用CreateConnection创建一个数据源。                                                                                                             | 废弃·不建议  | ⚠️                       |     |
 | `create_data_source`                   | 该接口用于创建DataWorks数据源。                                                                                                                   | 待封装     |                          |     |
 | `create_file`                          | 调用CreateFile，在数据开发中创建一个文件。目前不支持调用该接口创建数据集成节点任务。                                                                                        | 已封装     |                          |     |
-| `create_folder`                        | 调用CreateFolder创建文件夹。                                                                                                                   | 待封装     |                          |     |
+| `create_folder`                        | 调用CreateFolder创建文件夹。                                                                                                                   | 已封装     |                          |     |
 | `create_resource_file`                 | 调用CreateResourceFile接口，在数据开发中创建或上传一个资源文件，此API功能与IDE界面中新建资源功能保持一致。                                                                      | 待封装     |                          |     |
 | `create_resource_file_advance`         | _(官方网页未单独列出)_                                                                                                                          | 剔除      |                          |     |
 | `create_udf_file`                      | 调用CreateUdfFile，在数据开发中创建函数类型文件。                                                                                                        | 待封装     |                          |     |
-| `delete_business`                      | 调用DeleteBusiness删除业务流程。                                                                                                                | 待建(raw) |                          |     |
+| `delete_business`                      | 调用DeleteBusiness删除业务流程。                                                                                                                | 已封装     |                          |     |
 | `delete_connection`                    | 调用DeleteConnection删除一个数据源。                                                                                                             | 废弃·不建议  | ⚠️                       |     |
-| `delete_data_source`                   | 该接口用于删除数据源。                                                                                                                            | 待建(raw) |                          |     |
-| `delete_file`                          | 调用DeleteFile删除数据开发中的文件。如果文件已经提交过，那么DeleteFile API会同时触发一个异步在调度系统删除的流程，需要用DeleteFile API返回的DeploymentId继续调用GetDeployment轮询被触发的异步删除流程的状态。 | 待封装     |                          |     |
-| `delete_folder`                        | 调用DeleteFolder删除数据开发页面的文件夹。                                                                                                            | 待封装     |                          |     |
+| `delete_data_source`                   | 该接口用于删除数据源。                                                                                                                            | 已封装     |                          |     |
+| `delete_file`                          | 调用DeleteFile删除数据开发中的文件。如果文件已经提交过，那么DeleteFile API会同时触发一个异步在调度系统删除的流程，需要用DeleteFile API返回的DeploymentId继续调用GetDeployment轮询被触发的异步删除流程的状态。 | 已封装     |                          |     |
+| `delete_folder`                        | 调用DeleteFolder删除数据开发页面的文件夹。                                                                                                            | 已封装     |                          |     |
 | `deploy_file`                          | 发布文件至生产环境。                                                                                                                             | 待建(raw) |                          |     |
 | `establish_relation_table_to_business` | 相当于在数据开发页面右键单击业务流程，选择导入表的操作。                                                                                                           | 待建(raw) |                          |     |
-| `export_data_sources`                  | 导出数据源列表。                                                                                                                               | 待封装     |                          |     |
-| `get_business`                         | 调用GetBusiness查询业务流程的详情。                                                                                                                | 待封装     |                          |     |
+| `export_data_sources`                  | 导出数据源列表。                                                                                                                               | 已封装     |                          |     |
+| `get_business`                         | 调用GetBusiness查询业务流程的详情。                                                                                                                | 已封装     |                          |     |
 | `get_data_source_meta`                 | 调用GetDataSourceMeta获取目标数据源的Meta信息。                                                                                                     | 待建(raw) |                          |     |
 | `get_file`                             | 该接口用于获取文件的详情。                                                                                                                          | 已封装     |                          |     |
 | `get_file_type_statistic`              | 获取节点任务类型的分布情况。                                                                                                                         | 待建(raw) |                          |     |
 | `get_file_version`                     | 调用GetFileVersion获取文件的版本详情。                                                                                                             | 待建(raw) |                          |     |
-| `get_folder`                           | 调用GetFolder获取文件夹的详情。                                                                                                                   | 待封装     |                          |     |
+| `get_folder`                           | 调用GetFolder获取文件夹的详情。                                                                                                                   | 已封装     |                          |     |
 | `import_data_sources`                  | 批量导入本地数据源至目标DataWorks工作空间。                                                                                                             | 待建(raw) |                          |     |
-| `list_business`                        | 调用ListBusiness查询业务流程的列表。                                                                                                               | 待封装     |                          |     |
+| `list_business`                        | 调用ListBusiness查询业务流程的列表。                                                                                                               | 已封装     |                          |     |
 | `list_connections`                     | 调用ListConnections查询数据源列表。                                                                                                              | 废弃·不建议  | ⚠️                       |     |
-| `list_data_sources`                    | 该接口用于查询DataWorks的数据源列表。                                                                                                                | 待封装     |                          |     |
+| `list_data_sources`                    | 该接口用于查询DataWorks的数据源列表。                                                                                                                | 已封装     |                          |     |
 | `list_file_type`                       | 查询任务节点的类型信息，包括类型Code和类型名称。                                                                                                             | 待建(raw) | 私有云探活404 NotFound,服务器未实现 |     |
 | `list_file_versions`                   | 调用ListFileVersions查询文件的版本列表。                                                                                                           | 待建(raw) |                          |     |
 | `list_files`                           | 调用ListFiles查询文件列表。                                                                                                                     | 已封装     |                          |     |
 | `list_folders`                         | 调用ListFolders查询文件夹的列表。                                                                                                                 | 已封装     |                          |     |
 | `set_data_source_share`                | 分享目标数据源至指定DataWorks工作空间或指定用户。                                                                                                          | 废弃·不建议  | ⚠️                       |     |
-| `submit_file`                          | 提交文件至调度系统的开发环境，生成对应的任务。                                                                                                                | 待封装     |                          |     |
-| `test_network_connection`              | 测试目标数据源与所使用资源组的网络连通性。                                                                                                                  | 待封装     |                          |     |
+| `submit_file`                          | 提交文件至调度系统的开发环境，生成对应的任务。                                                                                                                | 已封装     |                          |     |
+| `test_network_connection`              | 测试目标数据源与所使用资源组的网络连通性。                                                                                                                  | 已封装     |                          |     |
 | `update_business`                      | 调用UpdateBusiness更新业务流程。                                                                                                                | 待建(raw) |                          |     |
 | `update_connection`                    | 调用UpdateConnection更新一个数据源。                                                                                                             | 废弃·不建议  | ⚠️                       |     |
 | `update_data_source`                   | 该接口用于更新数据源。                                                                                                                            | 待建(raw) |                          |     |
@@ -253,7 +253,7 @@
 
 | 操作(SDK方法)                | 描述                                          | 状态  | 废弃  | 备注  |
 | ------------------------ | ------------------------------------------- | --- | --- | --- |
-| `get_deployment`         | 调用GetDeployment获取发布包的详情。                    | 待封装 |     |     |
+| `get_deployment`         | 调用GetDeployment获取发布包的详情。                    | 已封装 |     |     |
 | `list_deployments`       | 查询发布包列表信息。该功能与DataWorks控制台任务发布页面的发布包列表功能对应。 | 剔除  |     |     |
 | `list_measure_data`      | 该接口用于查询用户所在租户下最近30天电话告警、短信告警计量数据。           | 剔除  |     |     |
 | `query_default_template` | 调用QueryDefaultTemplate接口查询数据保护伞定义的默认分类分级模板。 | 剔除  |     |     |

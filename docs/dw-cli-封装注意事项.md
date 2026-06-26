@@ -101,6 +101,64 @@
   传给 helper 时用 `output_fmt=output_fmt`（helper 形参也叫 output_fmt）。
   仅最终调 `output.emit(resp, output=output_fmt)` 时关键字参数名是 `output`（emit 的形参名）。
 - node.py 的 `_call_node` / `_list_common`、instance.py 的 `_call_instance` 已据此命名。
+- 3c 第 1 批新增：business.py 的 `_call_business`、folder.py 的 `_call_folder`、
+  file.py 的 `_call_file`、data_source.py 的 `_call_data_source` 同据此命名。
+
+## 3c 封装注意（dev writes 批次，2026-06-26 起真调确认）
+
+### create-folder 路径必须带引擎子目录层（与 create-file 一致）
+- folder_path 用 `业务流程/dcb_test/MaxCompute/dwcli_sub`，**必须带引擎层**
+  （MaxCompute / DataIntegration 等）。直接用 `业务流程/dcb_test/dwcli_sub`
+  （缺引擎层）报 400「不合法的目录路径」。
+- 规则与 create-file 的 file_folder_path 完全一致（见上文 file_folder_path 小节）。
+- 响应：`Data` 是新建目录的 FolderId 字符串（不是 bool true）。
+
+### folder_id 是 str 不是 int
+- get-folder / delete-folder 的 `--folder-id` 是**字符串**（如 `k0uxr6h53rte6puale3ncxsi`），
+  不是数字。封装时 Option 类型用 `str`。
+- get-folder 支持 `--folder-id` 或 `--folder-path` 二选一（私有云用 path 更直观）；
+  响应只返回 `Data.FolderId`（路径已知时主要用来反查 ID）。
+
+### list_business 的 items_key 是 Business（不是 BusinessInfo）
+- `Data.Business[]`，每项 `BusinessId/BusinessName/Owner/ProjectId/UseType/Description`。
+- 分页字段在 Data 下：`PageSize` / `TotalCount`（注意没有 PageNumber，翻页靠这俩算）。
+- `_list_common` 的 items_key 传 `"Business"`。
+
+### create_business 返回 BusinessId 在顶层（不在 Data 里）
+- 响应：`{BusinessId: 34372, HttpStatusCode:200, Success:true}`，
+  BusinessId 直接在顶层，**不是** `Data.BusinessId`。Output Schema 要写顶层路径。
+
+### get_business 对已删除 ID 返回空壳（私有云特性）
+- 删除 business 后再 get-business 该 ID，不报错，返回 `Data:{Description:""}` 空壳。
+  不能用 get-business 判断 business 是否存在，要用 list-business 查。
+
+### list/export-data-sources 的 Content 含连接凭据（安全要点）
+- `Data.DataSources[*].Content` 是 JSON 字符串，私有云可能含**明文 accessKey/password**
+  （odps 数据源含 accessId 明文 + accessKey 脱敏；mysql 含 username + password 脱敏）。
+  两个接口对同一数据源返回的 accessId 甚至不同（服务端轮换或脱敏策略差异）。
+- 封装对策：table 模式默认 query **排除 Content**（只取 Id/Name/Type/SubType/EnvType/Status）；
+  json 模式在 help 里提示用 `--query` 裁剪，避免凭据进日志/上下文。
+- `Data.DataSources[*]` 其他常用字段：`Id/Name/DataSourceType/SubType/EnvType(1=生产0=开发)/
+  Status/BindingCalcEngineId/DefaultEngine/Shared/GmtCreate/GmtModified`。
+
+### delete_file 的 DeploymentId 机制（已提交 vs 未提交文件）
+- **未提交文件**（仅 create 态，未 submit）：delete-file 直接同步删除，
+  响应 `{HttpStatusCode:200, RequestId, Success:true}`，**无 DeploymentId**。
+- **已提交文件**（已 submit 进调度系统）：delete-file 触发异步删除流程，
+  响应 `Data` 是 DeploymentId，需配合 `get-deployment --deployment-id <id>` 轮询
+  直到 Status 变 SUCCESS/FAILURE。（场景封装待第 5 批。）
+- submit-file 对 SQL/SHELL 等节点要求先配 output_list（「输入输出不能为空」），
+  故 submit-file 真成功依赖 update-file（第 4 批）先配好输出。
+
+### test-network-connection 的 env_type 是 str（与其他 data_source 类不同）
+- `TestNetworkConnectionRequest.env_type` 是 **str**（"0"=开发 / "1"=生产），
+  而 create_data_source / list_data_sources / export_data_sources 的 env_type 是 **int**（0/1）。
+  封装时类型要按类区分，help 标注。
+
+### get_deployment 轮询用途
+- `Data` 是发布包详情对象，含 `Status`（INIT/RUNNING/SUCCESS/FAILURE 等）、
+  `GmtCreate`、`ProjectId`。无效 deployment_id 报 400「发布包X不存在」。
+- 典型用法：delete-file 返回 DeploymentId 后循环 get-deployment 直到 Status 终态。
 
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
