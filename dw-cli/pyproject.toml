@@ -15,6 +15,7 @@ dependencies = [
     "alibabacloud-tea-openapi",
     "alibabacloud-tea-util",
     "jmespath",
+    "pyodps",
 ]
 
 [project.scripts]
