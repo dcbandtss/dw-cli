@@ -33,23 +33,30 @@ def get_deployment(
     """获取发布包的详情（用于轮询异步操作状态）。
 
     典型用法：delete-file 返回 DeploymentId 后，循环调用 get-deployment 直到
-    Status 变为 SUCCESS / FAILURE。
+    Status 变为 SUCCESS / FAILURE。delete-file --wait 已内置此轮询，无需手写循环。
 
     \b
     🚀 Examples:
       # 查发布包状态
       dw-cli get-deployment --deployment-id 12345 --project-id 32890
 
-      # 只取状态
+      # 只取状态（注意 Status 在 Data.Deployment 下，不在 Data 顶层）
       dw-cli get-deployment --deployment-id 12345 --project-id 32890 \\
-        --query "Data.Status"
+        --query "Data.Deployment.Status"
+
+      # 查失败原因
+      dw-cli get-deployment --deployment-id 12345 --project-id 32890 \\
+        --query "Data.Deployment.ErrorMessage"
 
     \b
     📦 Output JSON Structure:
-      - 发布包详情: Data 对象
-      - 状态:      Data.Status (INIT / RUNNING / SUCCESS / FAILURE 等)
-      - 创建时间:  Data.GmtCreate
-      - 项目ID:    Data.ProjectId
+      - 发布包详情: Data.Deployment 对象
+      - 状态:      Data.Deployment.Status (INIT / RUNNING / SUCCESS / FAILURE)
+      - 失败原因:  Data.Deployment.ErrorMessage
+      - 创建时间:  Data.Deployment.CreateTime
+      - 创建者:    Data.Deployment.CreatorId
+      - 名称:      Data.Deployment.Name
+      - 已发布项:  Data.DeployedItems[]（数组）
     """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)

@@ -141,12 +141,21 @@
 - `Data.DataSources[*]` 其他常用字段：`Id/Name/DataSourceType/SubType/EnvType(1=生产0=开发)/
   Status/BindingCalcEngineId/DefaultEngine/Shared/GmtCreate/GmtModified`。
 
-### delete_file 的 DeploymentId 机制（已提交 vs 未提交文件）
+### delete_file 的 DeploymentId 机制（已提交 vs 未提交文件，3c 第 5 批场景封装）
 - **未提交文件**（仅 create 态，未 submit）：delete-file 直接同步删除，
   响应 `{HttpStatusCode:200, RequestId, Success:true}`，**无 DeploymentId**。
 - **已提交文件**（已 submit 进调度系统）：delete-file 触发异步删除流程，
-  响应 `Data` 是 DeploymentId，需配合 `get-deployment --deployment-id <id>` 轮询
-  直到 Status 变 SUCCESS/FAILURE。（场景封装待第 5 批。）
+  响应 `DeploymentId` 在**顶层**（与 HttpStatusCode/Success 同级，不在 Data 下），
+  需配合 `get-deployment --deployment-id <id> --project-id <pid>` 轮询
+  直到 Status 变 SUCCESS/FAILURE。
+- **delete-file --wait 内置轮询**：加 `--wait` 自动轮询 get-deployment 到终态，
+  无 DeploymentId（未提交文件）则同步删完直接返回；有则循环取 `Data.Deployment.Status`
+  直到 SUCCESS/FAILURE 或 `--timeout`（默认 300s）超时。SUCCESS 退出 0，FAILURE/超时退出 1。
+  轮询结果输出 `{delete_response, deployment_id, final_status, timed_out, deployment}`。
+  不加 `--wait` 则只返回 DeploymentId 由调用方自行轮询。
+- **Status 路径在 `Data.Deployment.Status`**（不在 Data 顶层，也不在 Data.Status）：
+  GetDeployment 响应是 `{Data:{Deployment:{Status,ErrorMessage,CreateTime,CreatorId,Name}, DeployedItems:[]}}`。
+  封装时取 status 要 `body["Data"]["Deployment"]["Status"]`，存量 help 曾误写 `Data.Status` 已修。
 - submit-file 对 SQL/SHELL 等节点要求先配 output_list（「输入输出不能为空」），
   故 submit-file 真成功依赖 update-file（第 4 批）先配好输出。
 
@@ -156,9 +165,10 @@
   封装时类型要按类区分，help 标注。
 
 ### get_deployment 轮询用途
-- `Data` 是发布包详情对象，含 `Status`（INIT/RUNNING/SUCCESS/FAILURE 等）、
-  `GmtCreate`、`ProjectId`。无效 deployment_id 报 400「发布包X不存在」。
+- 响应结构是 `{Data:{Deployment:{Status,ErrorMessage,CreateTime,CreatorId,Name,ExecuteTime,...}, DeployedItems:[]}}`。
+  **Status 在 `Data.Deployment.Status`**，不在 Data 顶层。无效 deployment_id 报 400「发布包X不存在」。
 - 典型用法：delete-file 返回 DeploymentId 后循环 get-deployment 直到 Status 终态。
+  3c 第 5 批已将此轮询内置进 `delete-file --wait`，无需手写循环。
 
 ### update-file 真调确认（31 参数，第 4 批）
 - **input_list / output_list 是逗号分隔字符串**（不是 JSON）：update-file 传

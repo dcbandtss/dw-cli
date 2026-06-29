@@ -227,14 +227,30 @@ def delete_file(
     project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
     confirm_flag: bool = typer.Option(False, "--confirm", help="[高危] 显式确认执行"),
     dry_run: bool = typer.Option(False, "--dry-run", help="仅预览，不真执行"),
+    wait: bool = typer.Option(
+        False, "--wait",
+        help="[AI 推荐] 已提交文件走异步删除时，自动轮询 get-deployment 直到终态。"
+             "未提交文件同步删完即返回，--wait 无副作用",
+    ),
+    timeout: int = typer.Option(
+        300, "--timeout",
+        help="--wait 的轮询超时秒数，默认 300。超时未到终态则退出码 1 并带当前状态",
+    ),
+    poll_interval: int = typer.Option(
+        3, "--poll-interval",
+        help="--wait 的轮询间隔秒数，默认 3",
+    ),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
     """[高危] 删除数据开发中的文件（delete_ 前缀，须 --confirm）。
 
-    删除未提交的文件时直接同步删除；删除已提交的文件时，会触发调度系统的
-    异步删除流程，返回 DeploymentId,需要用 get-deployment 轮询删除完成。
-    （已提交文件删完的场景封装后续会单独提供。）
+    两种删除路径，由文件是否已提交决定：
+      - 未提交文件（仅 create 态）：同步删除，响应 Success:true，无 DeploymentId。
+      - 已提交文件（已进调度系统）：触发异步删除流程，响应 DeploymentId；
+        须轮询 get-deployment 直到 Status=SUCCESS/FAILURE 才算删完。
+        加 --wait 自动轮询，否则只返回 DeploymentId 由你自行轮询。
+
     无 --confirm 会被拦截（exit 2）；--dry-run 仅预览不执行。
 
     \b
@@ -242,13 +258,24 @@ def delete_file(
       # 预览（不执行）
       dw-cli delete-file --file-id 30704827 --project-id 32890 --dry-run
 
-      # 真删除（须显式确认）
+      # 真删除未提交文件
       dw-cli delete-file --file-id 30704827 --project-id 32890 --confirm
+
+      # 删已提交文件并自动等异步删完（推荐）
+      dw-cli delete-file --file-id 30704827 --project-id 32890 --confirm --wait
+
+      # 等久一点
+      dw-cli delete-file --file-id 30704827 --project-id 32890 --confirm --wait --timeout 600
 
     \b
     📦 Output JSON Structure:
-      - 未提交文件: {HttpStatusCode:200, RequestId:..., Success:true}（直接删除）
-      - 已提交文件: {Data: <DeploymentId>, HttpStatusCode:200, Success:true}
+      - 未提交文件: {HttpStatusCode:200, RequestId:..., Success:true}（直接删除，无 DeploymentId）
+      - 已提交文件: {DeploymentId: <id>, HttpStatusCode:200, Success:true}
+        （DeploymentId 在顶层，不在 Data 下）
+      - --wait 到终态: 输出 {delete_response, deployment_id, final_status, timed_out, deployment}
+        final_status=SUCCESS 退出 0；FAILURE 或超时退出 1
+      - get-deployment 状态路径: Data.Deployment.Status（INIT/RUNNING/SUCCESS/FAILURE）
+        注意 Status 在 Data.Deployment 下，不在 Data 顶层
     """
     try:
         decision = confirm.check_write("delete_file", confirm=confirm_flag, dry_run=dry_run,
@@ -258,9 +285,142 @@ def delete_file(
         return
     if not decision.will_execute:
         return  # dry-run：已往 stderr 输出预览，不执行
+
+    # --wait 需要拿响应做轮询，不走 _call_file（它直接 emit 后无法回传响应）
+    if wait:
+        _delete_and_wait(ctx, file_id, project_id, timeout, poll_interval,
+                         query=query, output_fmt=output_fmt)
+        return
+
     _call_file(ctx, "delete_file", dw_models.DeleteFileRequest(
         file_id=file_id, project_id=project_id,
     ), query=query, output_fmt=output_fmt)
+
+
+def _delete_and_wait(
+    ctx: typer.Context, file_id: int, project_id: int,
+    timeout: int, poll_interval: int, *, query: Optional[str], output_fmt: str,
+):
+    """删文件 + 自动轮询 get-deployment 到终态（--wait 场景）。
+
+    流程：
+      1. 调 delete_file_with_options，解包响应取 DeploymentId。
+      2. 无 DeploymentId（未提交文件）→ 同步删完，直接 emit 原响应。
+      3. 有 DeploymentId → 循环 get-deployment 取 Data.Deployment.Status，
+         直到 SUCCESS/FAILURE 终态或 timeout 超时。
+      4. 终态 SUCCESS → 退出 0；FAILURE → 退出 1；超时 → 退出 1 并带当前状态。
+    所有 API 调用经 build_runtime() 注入 RegionId（spec §1 铁律）。
+    """
+    import time
+
+    from dw_cli.core import output as output_mod
+
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    # 1. 发起删除
+    try:
+        resp = dw_client.delete_file_with_options(
+            dw_models.DeleteFileRequest(file_id=file_id, project_id=project_id),
+            runtime,
+        )
+    except Exception as error:
+        errors.fail(error)
+        return
+
+    body = output_mod._to_jsonable(resp)
+    # DeploymentId 在响应顶层（与 HttpStatusCode/Success 同级），不在 Data 下。
+    deployment_id = None
+    if isinstance(body, dict):
+        deployment_id = body.get("DeploymentId") or body.get("deployment_id")
+
+    # 2. 未提交文件：无 DeploymentId，同步删完，原样输出
+    if not deployment_id:
+        output_mod.emit(resp, query=query, output=output_fmt)
+        return
+
+    # 3. 已提交文件：轮询 get-deployment 直到终态或超时
+    output_mod.diag(
+        f"[wait] 已提交文件触发异步删除，DeploymentId={deployment_id}，轮询中..."
+    )
+    deadline = _now_monotonic() + timeout
+    final_status = None
+    error_message = ""
+    deploy_detail = None
+    timed_out = False
+    while True:
+        try:
+            d_resp = dw_client.get_deployment_with_options(
+                dw_models.GetDeploymentRequest(
+                    deployment_id=deployment_id, project_id=project_id,
+                ),
+                runtime,
+            )
+        except Exception as error:
+            errors.fail(error)
+            return
+        d_body = output_mod._to_jsonable(d_resp)
+        # GetDeployment 响应: {Data: {Deployment: {Status, ErrorMessage, ...}, DeployedItems: [...]}}
+        # output 已解包到 body，故 Data 在 d_body 顶层，Deployment 在 Data 下。
+        data_obj = d_body.get("Data") if isinstance(d_body, dict) else None
+        deploy_detail = data_obj.get("Deployment") if isinstance(data_obj, dict) else None
+        # Status 在 Data.Deployment.Status 下
+        status = None
+        if isinstance(deploy_detail, dict):
+            status = deploy_detail.get("Status") or deploy_detail.get("status")
+            error_message = deploy_detail.get("ErrorMessage") or deploy_detail.get("error_message") or ""
+        final_status = status
+        if status in ("SUCCESS", "FAILURE"):
+            break
+        if _now_monotonic() >= deadline:
+            timed_out = True
+            break
+        time.sleep(poll_interval)
+
+    output_mod.diag(
+        f"[wait] 轮询结束: Status={final_status}"
+        + (f", ErrorMessage={error_message}" if error_message else "")
+        + (f"（超时 {timeout}s）" if timed_out else "")
+    )
+
+    # 合并输出：原删除响应 + 轮询结果
+    result = {
+        "delete_response": body,
+        "deployment_id": deployment_id,
+        "final_status": final_status,
+        "timed_out": timed_out,
+        "error_message": error_message or None,
+    }
+    if isinstance(deploy_detail, dict):
+        result["deployment"] = deploy_detail
+    output_mod.emit(result, query=query, output=output_fmt)
+
+    if final_status == "SUCCESS":
+        return
+    # FAILURE 或超时 → 业务错 exit 1
+    if final_status == "FAILURE":
+        errors.fail(errors.DwCliError(
+            f"异步删除失败（DeploymentId={deployment_id}, Status=FAILURE）"
+            + (f": {error_message}" if error_message else ""),
+            code="DeploymentFailed",
+            category=errors.CATEGORY_BUSINESS,
+            recommend="用 dw-cli get-deployment --deployment-id 查详情，或页面查看发布包。",
+        ))
+    else:
+        errors.fail(errors.DwCliError(
+            f"轮询超时（{timeout}s），当前 Status={final_status}（DeploymentId={deployment_id}）",
+            code="DeploymentTimeout",
+            category=errors.CATEGORY_BUSINESS,
+            recommend=f"用 dw-cli get-deployment --deployment-id {deployment_id} --project-id {project_id} 继续查。",
+        ))
+
+
+def _now_monotonic() -> float:
+    """单调时钟当前秒数（用于轮询超时判定，不受系统时钟回拨影响）。"""
+    import time
+
+    return time.monotonic()
 
 
 @app.command("update-file")
