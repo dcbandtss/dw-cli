@@ -324,6 +324,33 @@
 - ResidentArea=private（私有部署空间标识）。
 - Tags 私有云返回空数组 `[]`。
 
+### list-tables 改走 PyODPS 直连（2026-06-30，绕开私有云 API 404）
+- **背景**：DataWorks `list_tables` API 私有云 404（服务端未实现，与
+  list_file_type/offline_node 同类）。原封装命令私有云不可用。
+- **方案**：list-tables 命令改走 PyODPS `o.list_tables()` 直连 MaxCompute，
+  绕开 DataWorks OpenAPI 缺口。直连 SQL/PyODPS 节点也是用户日常取表清单的方式。
+- **连接层**：新增 `core/odps_client.py`，固化私有云 ODPS endpoint
+  (`http://service.cn-hangzhou-zjzwy01-d01.odps.cloud.zj.gov.cn:80/api`) +
+  tunnel_endpoint，AK/SK 复用现有凭据链（与 DataWorks 客户端共用
+  `client._build_credential_client`），不硬编码。
+- **pyodps 依赖与故障隔离**：pyodps 加进 `pyproject.toml` dependencies；
+  但代码用延迟导入（函数内 `from odps import ODPS`），缺失时仅 list-tables
+  报 `MissingDependency`（exit 2），不影响 get-node/create-file 等其它命令。
+- **几万表量控制**：PyODPS `o.list_tables()` 是惰性迭代器（generator），
+  不一次性拉全量。命令默认取前 100 条就停（`Truncated=true` + `NextOffset=100`），
+  `--limit`/`--offset` 偏移翻页、`--keyword` 客户端侧子串过滤、`--all` 拉全量
+  （软截断 5000 + 警告，与现有列表命令一致）。`--all` 优先于 `--limit`。
+- **输出结构对齐原 API**：响应体字段名沿用 `Data.TableEntityList[*].EntityContent.TableName`，
+  与原 DataWorks API 实现一致，agent 已有的 query 写法不用改。新增 `Truncated`/
+  `NextOffset` 字段辅助翻页（ODPS list_tables 不返回全量总数，Total 是本次返回数）。
+- **table 模式默认列**：`_TABLES_TABLE_QUERY` 改为只取 `Table`(TableName)+
+  `Project`(ProjectName)，因 PyODPS 响应不填 DatabaseName/EntityQualifiedName
+  （原 DataWorks API 才有这俩字段，直接套会显示 None 列）。
+- **keyword 在 offset 之前过滤**：先按子串过滤再 skip offset，保证 --offset
+  翻的是过滤后的结果集，不是原始迭代器。
+- **后续**：run-sql / run-pyodps 通用脚本执行命令复用 `core/odps_client.py`，
+  独立设计，不在本次。
+
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
 

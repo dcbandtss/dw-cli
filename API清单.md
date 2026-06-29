@@ -37,7 +37,7 @@
 | `create_table`            | 创建一个MaxCompute的表。                    | 已封装     |     |异步操作，返回TaskInfo在顶层；--wait自动轮询|
 | `delete_table`            | 删除MaxCompute表。                       | 已封装     |     |异步操作，返回TaskInfo在顶层；须--confirm；--wait自动轮询|
 | `get_ddljob_status`       | 调用GetDDLJobStatus获取创建表、更新表和删除表的任务状态。 | 已封装     |     |Data.{TaskId,Status,Content,NextTaskId}；Status=operating/success/failure|
-| `list_tables`             | 分页获取租户下面的数据源类型粒度的表名称。                | 已封装     |     |⚠️私有云404(服务端未实现)；游标分页next_token；公有云可用|
+| `list_tables`             | 分页获取租户下面的数据源类型粒度的表名称。                | 已封装     |     |⚠️DataWorks API私有云404；list-tables 改走 PyODPS 直连(私有云可用)，--odps-project/--limit/--offset/--keyword/--all|
 | `run_smoke_test`          | 创建冒烟测试工作流。                           | 待建(raw) |     |     |
 | `update_table`            | 调用UpdateTable更新MaxCompute表。          | 废弃·不建议  |     |     |
 | `update_table_add_column` | 更新MaxCompute表的字段信息。                  | 废弃·不建议  |     |     |
