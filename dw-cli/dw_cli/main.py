@@ -33,8 +33,10 @@ from dw_cli.commands import instance as instance_cmds
 from dw_cli.commands import meta as meta_cmds
 from dw_cli.commands import meta_table as meta_table_cmds
 from dw_cli.commands import node as node_cmds
+from dw_cli.commands import project as project_cmds
 from dw_cli.commands import raw as raw_cmds
 from dw_cli.commands import resource as resource_cmds
+from dw_cli.commands import table as table_cmds
 from dw_cli.commands import udf as udf_cmds
 
 
@@ -45,6 +47,8 @@ _PANEL_META = "🗄️ Meta 表元数据"
 _PANEL_FILE = "📁 File & Folder 文件与目录"
 _PANEL_NODE = "🧩 Node 节点调度"
 _PANEL_INST = "⚙️ Instance 实例运维"
+_PANEL_TABLE = "📊 Table 表管理"
+_PANEL_PROJ = "🏢 Project 工作空间"
 _PANEL_RAW = "🚀 Escape Hatch 逃生舱"
 
 _CMD_PANELS = {
@@ -63,6 +67,9 @@ _CMD_PANELS = {
     "get-deployment": _PANEL_FILE,
     "get-business": _PANEL_NODE, "list-business": _PANEL_NODE,
     "create-business": _PANEL_NODE, "delete-business": _PANEL_NODE,
+    "create-table": _PANEL_TABLE, "delete-table": _PANEL_TABLE,
+    "get-ddl-job-status": _PANEL_TABLE, "list-tables": _PANEL_TABLE,
+    "get-project": _PANEL_PROJ, "list-project-ids": _PANEL_PROJ,
     "list-data-sources": _PANEL_META, "export-data-sources": _PANEL_META,
     "test-network-connection": _PANEL_META, "delete-data-source": _PANEL_META,
     "create-data-source": _PANEL_META,
@@ -144,8 +151,10 @@ app.add_typer(file_cmds.app, name="")
 app.add_typer(folder_cmds.app, name="")
 app.add_typer(node_cmds.app, name="")
 app.add_typer(instance_cmds.app, name="")
+app.add_typer(project_cmds.app, name="")
 app.add_typer(raw_cmds.app, name="")
 app.add_typer(resource_cmds.app, name="")
+app.add_typer(table_cmds.app, name="")
 app.add_typer(udf_cmds.app, name="")
 
 

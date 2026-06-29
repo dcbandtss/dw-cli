@@ -287,6 +287,43 @@
 - delete-file --wait 链路全通：delete 取 DeploymentId → 轮询 get-deployment 取 Data.Deployment.Status
   → 数字终态判定 → SUCCESS 退出 0。
 
+## 3d 封装注意（tables + project，2026-06-30 真调确认）
+
+### create-table / delete-table 是异步操作，返回 TaskInfo
+- 响应结构**无 Data 包装层**：`{RequestId, TaskInfo:{TaskId, Status, Content, NextTaskId}}`。
+- TaskInfo.Status 是字符串枚举：`operating`(进行中) / `success`(成功) / `failure`(失败)。
+  （与 Deployment.Status 数字枚举不同，不要混用。）
+- NextTaskId 非空表示有后续子任务，需跟进该 ID 继续轮询 get-ddl-job-status。
+- 封装命令内置 `--wait` 轮询（类似 delete-file --wait），自动跟进子任务链到终态。
+  轮询结果附加 `ddl_poll` 字段到响应：`{task_id, status, timed_out, elapsed}`。
+
+### get-ddl-job-status 的响应结构与 create/delete 不同
+- 响应有 Data 包装层：`Data:{TaskId, Status, Content, NextTaskId}`。
+  （create/delete_table 是顶层 TaskInfo，get-ddl-job-status 是 Data 下。）
+- Status 同样为 operating/success/failure 字符串。
+
+### list-tables 私有云 404（服务端未实现）
+- `list_tables` 在私有云报 404 `InvalidAction.NotFound`，与 `list_file_type` /
+  `offline_node` / `list_instance_history` 同类——服务端未实现该接口。
+- 封装命令保留供公有云使用，help 标注私有云不可用。
+- 私有云查表替代方案：`search-meta-tables --keyword <表名>` 或 `get-meta-table-*` 系列。
+- 分页方式：list-tables 用游标分页（next_token），非传统 page_number/page_size。
+  --all 自动追踪 next_token 翻页（已实现）。
+
+### list-project-ids 响应结构特殊：ProjectIds 在顶层
+- 响应：`{ProjectIds: [32890, 32526, ...], RequestId: "xxx"}`，
+  **ProjectIds 直接在 body 顶层，不在 Data 里**。
+  （类似 create_business 的 BusinessId 在顶层。）
+- --query 路径：`ProjectIds[*]`（不要写 `Data.ProjectIds`）。
+
+### get-project 真调确认（32890/dqsc_prod）
+- Data 字段丰富：ProjectId/ProjectIdentifier/ProjectName/ProjectMode(2=基础/3=标准)/
+  Status(0=可用)/EnvTypes(List[str])/TenantId/DefaultDiResourceGroupIdentifier/...
+- EnvTypes 私有云返回 `["PRD"]`（单元素），标准模式应为 `["PRD","DEV"]`。
+- ProjectMode=2 表示基础模式（dqsc_prod 是基础模式空间）。
+- ResidentArea=private（私有部署空间标识）。
+- Tags 私有云返回空数组 `[]`。
+
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
 

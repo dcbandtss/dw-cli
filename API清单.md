@@ -34,10 +34,10 @@
 
 | 操作(SDK方法)                 | 描述                                   | 状态      | 废弃  | 备注  |
 | ------------------------- | ------------------------------------ | ------- | --- | --- |
-| `create_table`            | 创建一个MaxCompute的表。                    | 待封装     |     |     |
-| `delete_table`            | 删除MaxCompute表。                       | 待封装     |     |     |
-| `get_ddljob_status`       | 调用GetDDLJobStatus获取创建表、更新表和删除表的任务状态。 | 待封装     |     |     |
-| `list_tables`             | 分页获取租户下面的数据源类型粒度的表名称。                | 待封装     |     |     |
+| `create_table`            | 创建一个MaxCompute的表。                    | 已封装     |     |异步操作，返回TaskInfo在顶层；--wait自动轮询|
+| `delete_table`            | 删除MaxCompute表。                       | 已封装     |     |异步操作，返回TaskInfo在顶层；须--confirm；--wait自动轮询|
+| `get_ddljob_status`       | 调用GetDDLJobStatus获取创建表、更新表和删除表的任务状态。 | 已封装     |     |Data.{TaskId,Status,Content,NextTaskId}；Status=operating/success/failure|
+| `list_tables`             | 分页获取租户下面的数据源类型粒度的表名称。                | 已封装     |     |⚠️私有云404(服务端未实现)；游标分页next_token；公有云可用|
 | `run_smoke_test`          | 创建冒烟测试工作流。                           | 待建(raw) |     |     |
 | `update_table`            | 调用UpdateTable更新MaxCompute表。          | 废弃·不建议  |     |     |
 | `update_table_add_column` | 更新MaxCompute表的字段信息。                  | 废弃·不建议  |     |     |
@@ -231,14 +231,14 @@
 | `get_meta_table_producing_tasks`  | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
 | `get_migration_process`           | 调用GetMigrationProcess获取导入导出任务的进度状态。                               | 剔除            |                                                        |     |
 | `get_migration_summary`           | 调用GetMigrationSummary，获取导入导出任务的信息。                                | 待建(raw)       |                                                        |     |
-| `get_project`                     | 该接口用于查询一个DataWorks工作空间的详细信息。                                      | 待封装           |                                                        |     |
+| `get_project`                     | 该接口用于查询一个DataWorks工作空间的详细信息。                                      | 已封装           |                                                        | Data含ProjectId/ProjectMode(2=基础/3=标准)/EnvTypes/Status等 |
 | `get_project_detail`              | 查询一个DataWorks工作空间的信息。                                             | 废弃·不建议        | ⚠️                                                     |     |
 | `list_meta_collection_entities`   | 该接口用于查询集合中的实体。                                                    | 剔除            |                                                        |     |
 | `list_meta_collections`           | 查询集合信息。 集合的概念包括数据地图页面上的专辑、专辑中的子类目等。 通过本接口可以指定集合类型查询集合信息。          | 剔除            |                                                        |     |
 | `list_meta_db`                    | 该接口用于查询数据库列表。                                                     | 待建(raw)       | SDK无此方法名(有get_meta_dbtable_list/get_meta_dbinfo),疑清单笔误 |     |
 | `list_meta_dbwith_options`        | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
 | `list_migrations`                 | 获取导入导出迁移任务列表。                                                     | 待建(raw)       |                                                        |     |
-| `list_project_ids`                | 该接口用于查询指定阿里云账号（包括阿里云主账号或RAM用户）在目标地域下拥有角色权限的DataWorks工作空间的ID列表。    | 待封装           |                                                        |     |
+| `list_project_ids`                | 该接口用于查询指定阿里云账号（包括阿里云主账号或RAM用户）在目标地域下拥有角色权限的DataWorks工作空间的ID列表。    | 已封装           |                                                        | ProjectIds在顶层(不在Data里)，整数数组 |
 | `list_projects`                   | 该接口用于查询用户所在租户下的DataWorks工作空间列表。                                   | 已封装(doctor探活) |                                                        |     |
 | `mount_directory`                 | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
 | `search_meta_tables`              | 该接口用于根据条件搜索表。                                                     | 已封装           |                                                        | Data.DataEntityList[*].{TableName,TableGuid,...}（非 Tables）     |
