@@ -7,8 +7,9 @@ MaxCompute 表 DDL 管理（create/delete/get-ddl-job-status/list-tables）。
    Status 为 operating/success/failure。需配合 get-ddl-job-status 轮询任务终态。
    加 --wait 自动轮询到终态（类似 delete-file --wait）。
 
-⚠️ list-tables 用游标分页（next_token），非传统 page_number/page_size。
-   --all 自动翻页，--next-token 可手动取下一页。
+⚠️ list-tables 走 PyODPS 直连 MaxCompute（DataWorks list_tables API 私有云 404）。
+   用惰性迭代器按需取表，默认 100 条防几万表爆上下文。
+   --limit/--offset/--keyword 控制返回量，--all 拉全量（软截断 5000）。
 
 ⚠️ create-table 的 columns 是 List 类型，须传 JSON 数组字符串（或用 file:// 传文件）。
 
@@ -24,6 +25,7 @@ import typer
 from alibabacloud_dataworks_public20200518 import models as dw_models
 
 from dw_cli.core import client, confirm, errors, output
+from dw_cli.core import odps_client
 from dw_cli.core.load_arg import load_arg
 from dw_cli.commands import auth_params, output_option, query_option
 
@@ -268,104 +270,99 @@ def get_ddl_job_status(
 @app.command("list-tables")
 def list_tables(
     ctx: typer.Context,
-    data_source_type: str = typer.Option(..., "--data-source-type",
-        help="数据源类型，如 odps / mysql / hologres"),
-    page_size: int = typer.Option(100, "--page-size", help="每页数量"),
-    next_token: str = typer.Option("", "--next-token", help="分页标记（从上次响应的 Data.NextToken 取）"),
-    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
-    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，防返回过大；默认 5000"),
+    odps_project: str = typer.Option(..., "--odps-project",
+        help="MaxCompute 项目名，如 dqsc_prod"),
+    limit: int = typer.Option(100, "--limit", help="返回上限，默认 100 防几万表爆上下文"),
+    offset: int = typer.Option(0, "--offset", help="跳过前 N 个，偏移翻页"),
+    keyword: str = typer.Option("", "--keyword", help="表名包含子串过滤（客户端侧）"),
+    all_pages: bool = typer.Option(False, "--all", help="拉全量（软截断 5000 + 警告；忽略 --limit）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """分页获取表名称列表（游标分页，用 next_token 翻页）。
+    """列出 MaxCompute 表（PyODPS 直连，私有云可用）。
 
-    ⚠️ 注意：此接口用游标分页（next_token），不是传统 page_number/page_size。
-    手动翻页：从响应 Data.NextToken 取值传入下次 --next-token。
-    自动翻页：--all 自动追踪 next_token 直到无更多数据。
+    DataWorks list_tables API 私有云 404，本命令改走 PyODPS 直连 MaxCompute。
+    用惰性迭代器按需取，几万表场景默认只迭代到第 100 个就停，不一次性拉全量。
 
     \b
     🚀 Examples:
-      # 列出 MaxCompute 表（第一页）
-      dw-cli list-tables --data-source-type odps
+      # 列出表（默认前 100 个）
+      dw-cli list-tables --odps-project dqsc_prod
 
       # 只取表名
-      dw-cli list-tables --data-source-type odps \\
+      dw-cli list-tables --odps-project dqsc_prod \\
         --query "Data.TableEntityList[*].EntityContent.TableName"
 
-      # 自动翻页合并所有页
-      dw-cli list-tables --data-source-type odps --all
+      # 按关键字过滤
+      dw-cli list-tables --odps-project dqsc_prod --keyword user --limit 50
 
-      # 限制返回数量
-      dw-cli list-tables --data-source-type odps --all --limit 200
+      # 翻页：跳过前 200，取第 201~300
+      dw-cli list-tables --odps-project dqsc_prod --offset 200 --limit 100
+
+      # 拉全量（软截断 5000 + 警告）
+      dw-cli list-tables --odps-project dqsc_prod --all
 
     \b
     📦 Output JSON Structure:
-      - 表列表:       Data.TableEntityList[] (数组)
-      - 表限定名:     Data.TableEntityList[*].EntityQualifiedName
-      - 表名:         Data.TableEntityList[*].EntityContent.TableName
-      - 数据库名:     Data.TableEntityList[*].EntityContent.DatabaseName
-      - 项目名:       Data.TableEntityList[*].EntityContent.ProjectName
-      - 数据源ID:     Data.TableEntityList[*].EntityContent.DataSourceUniqueId
-      - 总数:         Data.Total
-      - 下一页标记:   Data.NextToken (非空表示有更多数据)
+      - 表列表:    Data.TableEntityList[] (数组)
+      - 表名:      Data.TableEntityList[*].EntityContent.TableName
+      - 项目名:    Data.TableEntityList[*].EntityContent.ProjectName
+      - 本次返回:  Data.Total (本次返回数，非全量总数)
+      - 是否截断:  Data.Truncated (true=还有更多表未返回)
+      - 下一页偏移: Data.NextOffset (Truncated 时给，传给下次 --offset)
     """
-    auth = auth_params(ctx)
-    dw_client = client.build_client(**auth)
-    runtime = client.build_runtime()
-
-    if all_pages:
-        # 游标分页：手动追踪 next_token
-        effective_cap = limit if limit is not None else 5000
-        merged: list = []
-        tok = next_token or None
-        truncated = False
-
-        while True:
-            request = dw_models.ListTablesRequest(
-                data_source_type=data_source_type,
-                page_size=page_size,
-                next_token=tok or None,
-            )
-            try:
-                resp = dw_client.list_tables_with_options(request, runtime)
-            except Exception as error:
-                errors.fail(error)
-                return
-            page = output._to_jsonable(resp)
-            items = (page.get("Data") or {}).get("TableEntityList") or []
-            merged.extend(items)
-
-            tok = (page.get("Data") or {}).get("NextToken") or None
-            if not tok or not items:
-                break
-            if len(merged) >= effective_cap:
-                merged = merged[:effective_cap]
-                truncated = True
-                output.diag(
-                    f"[WARN] 达到软截断上限 {effective_cap} 条（可用 --limit 覆盖），"
-                    f"已输出前 {len(merged)} 条，可能非全量。"
-                )
-                break
-
-        # 构造合并后的响应
-        data = (page.get("Data") or {})
-        data["TableEntityList"] = merged
-        data["Total"] = len(merged)
-        merged_resp = {**page, "Data": data}
-        output.emit(merged_resp, query=query, output=output_fmt,
-                    default_table_query=_TABLES_TABLE_QUERY)
+    if all_pages and limit != 100:
+        # --all 优先，提示忽略 --limit
+        output.diag(f"[INFO] --all 已忽略 --limit {limit}，改用软截断 5000")
+        effective_cap = 5000
+    elif all_pages:
+        effective_cap = 5000
     else:
-        request = dw_models.ListTablesRequest(
-            data_source_type=data_source_type,
-            page_size=page_size,
-            next_token=next_token or None,
+        effective_cap = limit
+
+    auth = auth_params(ctx)
+    try:
+        o = odps_client.build_odps(odps_project, **auth)
+    except Exception as error:
+        errors.fail(error)
+        return
+
+    tables_iter = o.list_tables()  # 惰性迭代器，不一次性拉全量
+    result: list = []
+    skipped = 0
+    truncated = False
+
+    for t in tables_iter:
+        # 客户端侧子串过滤（ODPS list_tables 的 prefix 是前缀匹配，非子串）
+        if keyword and keyword not in t.name:
+            continue
+        if skipped < offset:
+            skipped += 1
+            continue
+        result.append({
+            "EntityContent": {"TableName": t.name, "ProjectName": odps_project},
+        })
+        if len(result) >= effective_cap:
+            truncated = True
+            break
+
+    if truncated and all_pages:
+        output.diag(
+            f"[WARN] 达到软截断上限 {effective_cap} 条，已输出前 {len(result)} 条，"
+            f"可能非全量。可用 --offset 翻页继续。"
         )
-        try:
-            resp = dw_client.list_tables_with_options(request, runtime)
-            output.emit(resp, query=query, output=output_fmt,
-                        default_table_query=_TABLES_TABLE_QUERY)
-        except Exception as error:
-            errors.fail(error)
+
+    next_offset = (offset + len(result)) if truncated else None
+    resp = {
+        "Data": {
+            "TableEntityList": result,
+            "Total": len(result),
+            "Truncated": truncated,
+            "NextOffset": next_offset,
+        }
+    }
+    output.emit(resp, query=query, output=output_fmt,
+                default_table_query=_TABLES_TABLE_QUERY)
 
 
 # ── 共用小工具 ─────────────────────────────────────────────────────────────
