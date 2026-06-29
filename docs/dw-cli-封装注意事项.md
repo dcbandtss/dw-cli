@@ -164,6 +164,16 @@
   而 create_data_source / list_data_sources / export_data_sources 的 env_type 是 **int**（0/1）。
   封装时类型要按类区分，help 标注。
 
+### test-network-connection 的 resource-group 取值（2026-06-29 真调确认）
+- **必须用 type=4（数据集成）资源组的 Identifier**。调度资源组（type=1/7）、MaxCompute（type=2）
+  等其他 type 传入都返回 `"ResourceGroup:[xxx] is invalid"`。
+- 查资源组用 `raw list_resource_groups --resource-group-type <N>`：
+  - type=0 DataWorks / type=1 调度 / type=2 MaxCompute / type=3 PAI /
+    **type=4 数据集成** / type=7 独享调度 / type=9 DataService Studio
+- 32890 工作空间的默认 DI 资源组标识是 `group_10003`（IsDefault=True，type=4）。
+- 真调实例：`test-network-connection --datasource-name dcb_test_mysql_vpc --resource-group group_10003 --env-type "1"`
+  返回 `ConnectStatus: true`（mysql VPC 连通成功）。
+
 ### get_deployment 轮询用途
 - 响应结构是 `{Data:{Deployment:{Status,ErrorMessage,CreateTime,CreatorId,Name,ExecuteTime,...}, DeployedItems:[]}}`。
   **Status 在 `Data.Deployment.Status`**，不在 Data 顶层。无效 deployment_id 报 400「发布包X不存在」。

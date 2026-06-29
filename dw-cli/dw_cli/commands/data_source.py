@@ -173,15 +173,29 @@ def test_network_connection(
     私有云 env_type 取字符串 "0"/"1"（与 create_data_source 的 int 不同）。
     本接口为只读探测，不修改资源，但会触发异步网络检测任务。
 
+    resource-group 取值：用 `raw list_resource_groups --resource-group-type 4`
+    查数据集成资源组列表，取 Identifier 字段。type=4 是数据集成资源组，
+    test-network-connection 测的是 DI 网络连通（调度/MaxCompute 等其他 type 资源组
+    传入会返回 invalid）。32890 的默认 DI 资源组标识是 `group_10003`。
+
+    list_resource_groups 的 resource_group_type 数字含义（SDK 注释）：
+      0=DataWorks, 1=调度, 2=MaxCompute, 3=PAI, 4=数据集成, 7=独享调度, 9=DataService Studio
+
     \b
     🚀 Examples:
-      # 测试某数据源与资源组连通性
+      # 测 mysql VPC 数据源与默认 DI 资源组的连通性
       dw-cli test-network-connection --project-id 32890 \\
-        --datasource-name odps_first --resource-group S_res_group_xxx --env-type "1"
+        --datasource-name dcb_test_mysql_vpc --resource-group group_10003 --env-type "1"
+
+      # 测 odps 数据源
+      dw-cli test-network-connection --project-id 32890 \\
+        --datasource-name odps_first --resource-group group_10003 --env-type "1"
 
     \b
     📦 Output JSON Structure:
-      - 检测结果: Data 对象，含连通性状态/错误码等
+      - 连通结果: TaskList 对象
+      - 是否连通: TaskList.ConnectStatus (true/false)
+      - 消息:     TaskList.ConnectMessage (连通时可能含提示信息，失败时为错误原因)
     """
     _call_data_source(ctx, "test_network_connection", dw_models.TestNetworkConnectionRequest(
         project_id=project_id, datasource_name=datasource_name,
