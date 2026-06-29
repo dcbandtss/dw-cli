@@ -29,7 +29,7 @@ def output_option(
     """复用的 --output 选项工厂。"""
     import typer as _t
 
-    return _t.Option(default, "--output", help=help)
+    return _t.Option(default, "--output", "-o", help=help)
 
 
 def query_option(help: str = "JMESPath 表达式，在全量 JSON 上裁剪"):

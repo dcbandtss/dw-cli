@@ -354,54 +354,33 @@
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
 
-## 待办：help 改造 + @file 语法（2026-06-25 讨论，用户对每 CLI 还有想法，待齐后一起做）
+## help 改造 + file:// 语法（2026-06-25 规划，2026-06-26 已全部落地）
 
-### 1. help 展示分组（命令名仍平铺，不动 spec §9 铁律）
-- 现状：32 命令平铺一屏，3c/3d 后 50+，可读性差。
-- 方案：命令名保持平铺无前缀（`get-node` 不变，agent 猜名不受影响），
-  只在 `--help` 展示层用 rich panel 分组：Diagnostics / Meta / File&Node / Instance / Escape Hatch。
-- 实现：Typer `add_typer(name="")` 平铺后默认不分组，需自定义 help callback 或 rich markup。
-  不改命令注册，只改 help 渲染。
+> 原为待办清单，4 步均已实现并真调验证（提交 3a14e73→70ee995）。保留要点供回溯。
 
-### 2. AI AGENT MANDATORY RULES 面板（顶部）
-- 方向采纳，内容须校准（不能照抄样例）：
-  - ✅ SAFETY FIRST：高危（delete_/deploy_/stop_/terminate_/offline_ 前缀）须 `--confirm`/`--dry-run`。
-  - ✅ ENV CHECK：401/403/endpoint 不通先跑 `doctor`，不盲目重试。
-  - ⚠️ OUTPUT FORMAT：**默认即 json**（不是样例里的"加 -o json"，spec §4 已默认 json）。
-    应写"默认输出 json 机器可读；人看加 `-o table`"。
-  - ⚠️ file:// 语法：样例提到 `--body @file.json`，**现状未实现**，见下条实现后才能写进面板。
+### 1. help 展示分组 ✅
+- 命令名仍平铺无前缀（spec §9 铁律不动，`get-node` 照常直调），
+  只在 `--help` 渲染层按 rich panel 分 7 组：Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / Escape Hatch。
+- 见 `main.py` 的 `_PANEL_*` 常量与 `_CMD_PANELS` 映射；命令注册不变，只改展示。
 
-### 3. file:// 语法（raw 及封装命令 List 字段）— 新功能，待实现
-- 场景：大 JSON payload（create-table 的 columns、DI 节点 spec、raw 复杂参数）避免在 bash 拼转义。
-- **方案**：aws CLI 风格 `file://` 前缀（不用 curl `@path`：歧义更少、更规范、agent 对 aws 风格熟）。
-  raw 和封装命令**统一**用 `file://`，不区分场景。
-- 设计：参数值以 `file://` 开头时读文件内容填入，如 `raw create_table --columns file://cols.json`。
-- 实现位置：`core/` 加 `load_arg(value)` 工具（`file://path` → 读文件，否则原样），
-  raw 的 `_parse_kv_args` 和封装命令的 List 字段处理调它。
-- 边界：路径不存在 → `errors.fail`（InvalidField/business）；空文件 → 原样空串。
-- 实现后回填本节 + 写进 AI RULES 面板。
+### 2. AI AGENT MANDATORY RULES 面板 ✅
+- `main.py` 顶部 help callback 渲染 4 条校准后规则：
+  - SAFETY FIRST：高危（delete_/stop_/offline_ 等前缀）须 `--confirm`/`--dry-run`。
+  - ENV CHECK：401/403/endpoint 不通先跑 `doctor`，不盲目重试。
+  - OUTPUT FORMAT：默认即 json（机器可读），人看加 `-o table`（`-o` 是 `--output` 短别名，已注册）。
+  - file:// 语法提示 + Escape Hatch 真实用法。
+
+### 3. file:// 语法 ✅
+- aws CLI 风格 `file://` 前缀，raw 与封装命令统一用。值以 `file://` 开头 → 读其后路径文件内容填入，否则原样。
+- `core/load_arg.py` 的 `load_arg(value)` 实现：raw `_parse_kv_args` 每个值经它，封装命令 List 字段（如 create-table `--columns`）也经它。
+- 边界：路径不存在 → `errors.fail`；空文件 → 原样空串。
 
 ### 4. 默认输出格式
-- 保持 json（spec §4，agent 友好）。样例里"默认 table / 全局 -o"不采纳。
+- 保持 json（spec §4，agent 友好），样例里"默认 table / 全局 -o"未采纳。
 
-### 5. raw 用法说明（Escape Hatch 框）
-- 定位"逃生舱"准确：清单 91 项 raw 覆 90 项。
-- 真实用法须照实写：`raw get_node --node-id 12345 --project-env PROD`（kebab --key val），
-  不是样例里的 `--params @args.json`（那是 @file 实现后的可选写法，且参数名也不是 --params）。
+### 5. raw 用法说明（Escape Hatch 框）✅
+- 真实用法：`raw get_node --node-id 12345 --project-env PROD`（kebab `--key val`）。
 
-### 6. 单命令 help 增强：Examples + Output Schema + 去 spec 引用（2026-06-25 讨论）
-用户样例方向采纳，三点校准（已确认）：
-- **Examples（🚀 区块）**：放 docstring，Typer 渲染进 --help。2-3 个覆盖核心场景的 bash 调用。
-  **字段路径/JSON 结构必须用真调确认的真实值**（如 `Data.DataEntityList[*].PartitionName`），
-  不用 snake_case 占位（照占位写 query 会拿不到数据）。代价：每命令加示例前须真调过。
-  3b 已全调过，可直接补；3c/3d 边封边调边加。
-- **Output Schema（📦 区块）**：docstring 末尾提示返回 JSON 核心字段路径（PascalCase 真实名）。
-  如 `Data.DataEntityList[*].PartitionName`、`Data.TotalCount`。附 Tip 引导用 `--query` 裁剪省 token。
-- **去 spec 引用留解释**：删 `（spec §8.2 ...）` 这类内部文档引用（agent 看不到 spec，是噪音），
-  但**保留拍平机制的口语解释**（如"嵌套对象 sort_criterion 已拍平为 --sort-field / --sort-order"，
-  这句对 agent 极有价值——遇 SDK 子对象字段时知道该传拆分选项而非 JSON）。
-- **Choices 枚举提示**：`--data-source-type` 等 help 文本里列 `[odps, rds, mysql, ...]` 提示，
-  但**不用 Typer Enum 卡死**（私有云可能有别的值，保持 str）。
-- **标签**：`[AI 推荐]`（如 --all）、`[高危]`（须 --confirm）、`[低危]` 贯穿单命令 help 和顶层分组。
-
-> 用户备注：对每个 CLI 还有一些想法，待全部说清后一起规划本节。
+### 6. 单命令 help 增强 ✅
+- 各命令 docstring 已加 🚀 Examples（真实真调值）+ 📦 Output Schema（PascalCase 真实字段路径）+ 去 `（spec §X）` 引用保留口语解释 + `[AI 推荐]`/`[高危]`/`[低危]` 标签。
+- 覆盖：3b meta_table（10）、3a node/instance、3c/3d 各批。
