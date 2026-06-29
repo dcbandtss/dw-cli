@@ -34,7 +34,7 @@ app = typer.Typer(help="table 类命令（MaxCompute 表 DDL）")
 # table 默认精简列
 _TABLES_TABLE_QUERY = (
     "Data.TableEntityList[*].{Table:EntityContent.TableName, "
-    "Database:EntityContent.DatabaseName, Qualified:EntityQualifiedName}"
+    "Project:EntityContent.ProjectName}"
 )
 
 # DDL 任务轮询终态
