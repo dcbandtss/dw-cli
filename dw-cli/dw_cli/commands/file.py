@@ -126,7 +126,8 @@ def create_file(
     project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
     file_name: str = typer.Option(..., help="文件名，如 123456789.sql"),
     file_type: int = typer.Option(
-        ..., help="文件类型：10=ODPS SQL, 6=Shell, 1221=PyODPS3 等"
+        ..., help="文件类型：10=ODPS SQL, 6=Shell, 1221=PyODPS3 节点；"
+                  "资源类 12=Python, 13=JAR, 14=ARCHIVE, 15=FILE；17=UDF 函数"
     ),
     file_folder_path: str = typer.Option(
         ...,
@@ -145,13 +146,17 @@ def create_file(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """新建文件。
+    """新建文件（也用于私有云建资源）。
 
     注意：
       - file_folder_path 必须用单斜杠并带引擎子目录层，例如
         「业务流程/dcb_test/MaxCompute/」。不要直接用 list-folders 返回的
         FolderPath（其为双斜杠且无引擎层，会导致「不合法的目录路径」错误）。
       - SQL 节点（file_type=10）的 input_list 为必填字段，无依赖时传空串。
+      - 资源类（file_type=12/13/14/15）建后须 submit-file 提交上线才能被 UDF 引用；
+        ConnectionName 服务端自动填 odps_first，无需显式传。
+      - **私有云建资源用本命令（create-file），不用 create-resource-file**
+        （后者 SDK 缺 ConnectionName 字段，私有云报 400）。
       - create 为低危写操作，默认执行，无需 --confirm。
     """
     if content is not None and content_file is not None:
@@ -248,7 +253,7 @@ def delete_file(
     两种删除路径，由文件是否已提交决定：
       - 未提交文件（仅 create 态）：同步删除，响应 Success:true，无 DeploymentId。
       - 已提交文件（已进调度系统）：触发异步删除流程，响应 DeploymentId；
-        须轮询 get-deployment 直到 Status=SUCCESS/FAILURE 才算删完。
+        须轮询 get-deployment 直到 Status=1(成功)/2(失败) 才算删完。
         加 --wait 自动轮询，否则只返回 DeploymentId 由你自行轮询。
 
     无 --confirm 会被拦截（exit 2）；--dry-run 仅预览不执行。
@@ -273,9 +278,9 @@ def delete_file(
       - 已提交文件: {DeploymentId: <id>, HttpStatusCode:200, Success:true}
         （DeploymentId 在顶层，不在 Data 下）
       - --wait 到终态: 输出 {delete_response, deployment_id, final_status, timed_out, deployment}
-        final_status=SUCCESS 退出 0；FAILURE 或超时退出 1
-      - get-deployment 状态路径: Data.Deployment.Status（INIT/RUNNING/SUCCESS/FAILURE）
-        注意 Status 在 Data.Deployment 下，不在 Data 顶层
+        final_status=1 退出 0；2(失败) 或超时退出 1
+      - get-deployment 状态路径: Data.Deployment.Status（数字枚举）
+        0=待执行(进行中), 1=成功, 2=失败。注意 Status 在 Data.Deployment 下，不在 Data 顶层
     """
     try:
         decision = confirm.check_write("delete_file", confirm=confirm_flag, dry_run=dry_run,
@@ -307,8 +312,8 @@ def _delete_and_wait(
       1. 调 delete_file_with_options，解包响应取 DeploymentId。
       2. 无 DeploymentId（未提交文件）→ 同步删完，直接 emit 原响应。
       3. 有 DeploymentId → 循环 get-deployment 取 Data.Deployment.Status，
-         直到 SUCCESS/FAILURE 终态或 timeout 超时。
-      4. 终态 SUCCESS → 退出 0；FAILURE → 退出 1；超时 → 退出 1 并带当前状态。
+         直到 1(成功)/2(失败) 终态或 timeout 超时。Status=0 表示进行中，继续轮询。
+      4. 终态 1 → 退出 0；2 → 退出 1；超时 → 退出 1 并带当前状态。
     所有 API 调用经 build_runtime() 注入 RegionId（spec §1 铁律）。
     """
     import time
@@ -365,13 +370,21 @@ def _delete_and_wait(
         # output 已解包到 body，故 Data 在 d_body 顶层，Deployment 在 Data 下。
         data_obj = d_body.get("Data") if isinstance(d_body, dict) else None
         deploy_detail = data_obj.get("Deployment") if isinstance(data_obj, dict) else None
-        # Status 在 Data.Deployment.Status 下
+        # Status 在 Data.Deployment.Status 下。私有云 Status 是数字枚举：
+        # 0=待执行(进行中), 1=成功, 2=失败（SDK 注释明确）。服务端可能返回 int 或 str，
+        # 统一转 int 比较，避免类型不一致导致判定失效。
         status = None
         if isinstance(deploy_detail, dict):
-            status = deploy_detail.get("Status") or deploy_detail.get("status")
+            raw_status = deploy_detail.get("Status")
+            if raw_status is not None:
+                try:
+                    status = int(raw_status)
+                except (TypeError, ValueError):
+                    status = raw_status
             error_message = deploy_detail.get("ErrorMessage") or deploy_detail.get("error_message") or ""
         final_status = status
-        if status in ("SUCCESS", "FAILURE"):
+        # 终态: 1(成功) / 2(失败)；0(进行中) 继续轮询
+        if status in (1, 2):
             break
         if _now_monotonic() >= deadline:
             timed_out = True
@@ -396,12 +409,12 @@ def _delete_and_wait(
         result["deployment"] = deploy_detail
     output_mod.emit(result, query=query, output=output_fmt)
 
-    if final_status == "SUCCESS":
-        return
-    # FAILURE 或超时 → 业务错 exit 1
-    if final_status == "FAILURE":
+    if final_status == 1:
+        return  # 成功，退出 0
+    # 2=失败 或超时 → 业务错 exit 1
+    if final_status == 2:
         errors.fail(errors.DwCliError(
-            f"异步删除失败（DeploymentId={deployment_id}, Status=FAILURE）"
+            f"异步删除失败（DeploymentId={deployment_id}, Status=2）"
             + (f": {error_message}" if error_message else ""),
             code="DeploymentFailed",
             category=errors.CATEGORY_BUSINESS,

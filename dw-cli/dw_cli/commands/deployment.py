@@ -51,9 +51,9 @@ def get_deployment(
     \b
     📦 Output JSON Structure:
       - 发布包详情: Data.Deployment 对象
-      - 状态:      Data.Deployment.Status (INIT / RUNNING / SUCCESS / FAILURE)
-      - 失败原因:  Data.Deployment.ErrorMessage
-      - 创建时间:  Data.Deployment.CreateTime
+      - 状态:      Data.Deployment.Status (数字: 0=待执行, 1=成功, 2=失败)
+      - 失败原因:  Data.Deployment.ErrorMessage (Status=2 时才有)
+      - 创建时间:  Data.Deployment.CreateTime (毫秒时间戳)
       - 创建者:    Data.Deployment.CreatorId
       - 名称:      Data.Deployment.Name
       - 已发布项:  Data.DeployedItems[]（数组）

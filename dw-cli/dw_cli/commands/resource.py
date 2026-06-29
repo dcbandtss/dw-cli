@@ -1,19 +1,28 @@
 # -*- coding: utf-8 -*-
 """resource 类命令（spec §9 按资源分文件，对外平铺）。
 
-资源文件（Resource）是 DataStudio 里可被节点引用的 jar/py/archive 等文件。
+资源文件（Resource）是 DataStudio 里可被节点/UDF 引用的 jar/py/archive 等文件。
 清单「待封装」resource 项：create-resource-file（含 Advance 上传分支）。
 
-两条封装路径：
+⚠️ 私有云重要约束（2026-06-29 真调确认）：
+  create-resource-file 在私有云**打不通**——服务端要求 ConnectionName，但 SDK
+  2020-05-18 的 CreateResourceFileRequest 模型缺该字段，封装/raw 都传不进。
+  **私有云建资源改用 create-file --file-type <资源类型>**（资源本质是 file，
+  CreateFileRequest 有 connection_name 字段，file_type=12 等服务端自动填 odps_first）。
+  本封装命令保留供公有云使用，私有云场景请走 create-file。
+
+两条封装路径（公有云）：
   - create-resource-file（普通版）：文本类资源（py/sql/sh）用 --content 或
     --content-file 传正文；二进制资源用 --storage-url 指向已上传的 OSS URL。
   - create-resource-file-upload（Advance 版）：上传本地二进制文件流。
     ⚠️ 私有云可能因无 OpenPlatform/OSS 公网通道而失败（Advance 内部调
     openplatform.aliyuncs.com 鉴权 + OSS 上传，私有隔离环境通常不通）。
-    私有云建议优先用普通版 + --storage-url，或页面上传后拿 URL。
 
-file_type 取值（资源类型）：6=Java jar，99=Python，7=Shell，100=Archive 等
-（具体以 DataStudio 页面「新建资源」为准）。
+资源 file_type 取值（真调确认，对应 page「资源上传」选项）：
+  12=Python, 13=JAR, 14=ARCHIVE(zip), 15=FILE(txt)。
+  注意：6 是 Shell 节点（不是资源），10 是 ODPS SQL 节点，1221 是 PyODPS3 节点
+  （带代码正文的 Python 节点，≠ 资源 Python=12），99 是虚拟节点，17 是 UDF 函数文件。
+  节点类型 ≠ 资源类型，同为 Python 时节点=1221、资源=12，不可混用。
 """
 from __future__ import annotations
 
@@ -34,7 +43,7 @@ def create_resource_file(
     project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
     file_name: str = typer.Option(..., "--file-name", help="资源文件名，如 my_udf.py"),
     file_type: int = typer.Option(..., "--file-type",
-        help="资源类型：6=Java, 99=Python, 7=Shell, 100=Archive 等"),
+        help="资源类型：12=Python, 13=JAR, 14=ARCHIVE(zip), 15=FILE(txt)"),
     file_folder_path: str = typer.Option(..., "--file-folder-path",
         help="目录路径，带引擎子目录层，如 业务流程/dcb_test/MaxCompute/"),
     origin_resource_name: str = typer.Option(..., "--origin-resource-name",
@@ -57,31 +66,39 @@ def create_resource_file(
 ):
     """[低危] 创建资源文件（普通版，create_ 前缀，默认执行）。
 
-    三种内容来源三选一：
+    ⚠️ 私有云不可用：服务端要求 ConnectionName，但 SDK 2020-05-18 的 Request 模型
+    缺该字段，私有云报 400 `ConnectionName is mandatory`。**私有云建资源改用
+    create-file --file-type <12/13/14/15>**（create-file 有 connection_name 字段，
+    资源类服务端自动填 odps_first）。本命令保留供公有云使用。
+
+    三种内容来源三选一（公有云）：
       - --content / --content-file：文本类资源（py/sql/sh），直接传正文
       - --storage-url：二进制资源（jar/archive），指向已上传的 OSS URL
-        （私有云建议此方式，避免 Advance 上传走公网 OSS 失败）
 
     \b
     🚀 Examples:
-      # 创建 Python 资源（文本正文行内）
+      # 创建 Python 资源（文本正文行内）— 公有云
       dw-cli create-resource-file --project-id 32890 \\
-        --file-name my_util.py --file-type 99 \\
+        --file-name my_util.py --file-type 12 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_util.py --content "def hello():\\n    return 1"
 
-      # 从本地文件读正文
+      # 从本地文件读正文 — 公有云
       dw-cli create-resource-file --project-id 32890 \\
-        --file-name my_util.py --file-type 99 \\
+        --file-name my_util.py --file-type 12 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_util.py --content-file ./my_util.py
 
-      # 二进制 jar 资源（用已上传的 OSS URL）
+      # 二进制 jar 资源（用已上传的 OSS URL）— 公有云
       dw-cli create-resource-file --project-id 32890 \\
-        --file-name my_udf.jar --file-type 6 \\
+        --file-name my_udf.jar --file-type 13 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_udf.jar \\
         --storage-url "http://bucket.../my_udf.jar" --register-to-calc-engine
+
+      # ⚠️ 私有云建资源改用 create-file（推荐）：
+      dw-cli create-file --project-id 32890 --file-name my_util.py --file-type 12 \\
+        --file-folder-path "业务流程/dcb_test/MaxCompute/" --content-file ./my_util.py
 
     \b
     📦 Output JSON Structure:
@@ -128,7 +145,8 @@ def create_resource_file_upload(
     ctx: typer.Context,
     project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
     file_name: str = typer.Option(..., "--file-name", help="资源文件名"),
-    file_type: int = typer.Option(..., "--file-type", help="资源类型：6=Java, 99=Python 等"),
+    file_type: int = typer.Option(..., "--file-type",
+        help="资源类型：12=Python, 13=JAR, 14=ARCHIVE, 15=FILE"),
     file_folder_path: str = typer.Option(..., "--file-folder-path",
         help="目录路径，带引擎子目录层"),
     origin_resource_name: str = typer.Option(..., "--origin-resource-name", help="原始资源名"),
@@ -151,7 +169,7 @@ def create_resource_file_upload(
     🚀 Examples:
       # 上传本地 jar（私有云可能失败）
       dw-cli create-resource-file-upload --project-id 32890 \\
-        --file-name my_udf.jar --file-type 6 \\
+        --file-name my_udf.jar --file-type 13 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_udf.jar --file ./my_udf.jar \\
         --register-to-calc-engine

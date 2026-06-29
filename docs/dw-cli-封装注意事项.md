@@ -211,6 +211,72 @@
 - udf 的 resources 是逗号分隔字符串（文档明确「separated by commas」），
   不是 JSON，直接收 str。
 
+### 资源与 UDF 真调确认（3c 第 5 批，2026-06-29 真调）
+
+#### ⚠️ create-resource-file 私有云半残，建资源改用 create-file
+- **create-resource-file 在私有云打不通**：服务端报 400 `ConnectionName is mandatory for this action`，
+  但 SDK 2020-05-18 的 `CreateResourceFileRequest` 模型**没有 `connection_name` 字段**
+  （to_map/from_map/动态设属性都不认这字段）。封装命令和 raw 都基于 SDK Request 类构造，
+  都传不进去——raw 直接判非法字段拒绝。这是 SDK 与私有云服务端的版本差异，非封装 bug。
+- **正确路径：用 create-file 建资源**。资源本质也是一种 file，page 建的资源在 list-files 里
+  就是普通 file（带 ConnectionName 字段）。create-file 的 `CreateFileRequest` **有 connection_name
+  字段**，且 file_type=12（Python 资源）时服务端会自动填 odps_first，无需显式传。
+- 真调对比：CLI 用 create-file --file-type 12 建的 `dcb_test_udf.py` 与 page 建的 `resource_test.py`
+  结构完全一致（FileType/ConnectionName/FileFolderId/Content 全对齐）。
+- **结论**：create-resource-file 封装保留（公有云可能可用），但 help 须标注「私有云建资源改用
+  create-file --file-type <资源类型>」。
+
+#### 资源 file_type 取值表（真调确认，对应 page「资源上传」选项）
+| file_type | 资源类型 | page 选项 | 实例 |
+|-----------|---------|-----------|------|
+| 12 | Python | Python | resource_test.py / dcb_test_udf.py |
+| 13 | JAR | JAR | resource_test.jar |
+| 14 | ARCHIVE | ARCHIVE | resource_test.zip |
+| 15 | FILE | FILE | resource_test.txt |
+| 17 | UDF 函数 | （非资源，函数文件） | DCBTest |
+- 注意区分：file_type=6 是 **Shell 节点**（不是 jar 资源，Content 是 #!/bin/bash 脚本）；
+  file_type=10 是 ODPS SQL 节点；file_type=1221 是 PyODPS3 节点（带代码正文的 Python 节点，
+  ≠ 资源类 Python=12）；file_type=99 是虚拟节点；file_type=23 是数据集成节点。
+- **节点类型 ≠ 资源类型**：同样是 Python，节点（PyODPS3）是 1221，资源是 12，不可混用。
+
+#### Python UDF 完整创建链路（4 步，真调全通）
+```
+1. create-file --file-type 12 --content <python正文>   → 建 Python 资源，拿 FileId
+2. submit-file --file-id <资源FileId>                   → 提交资源上线（必须！否则 udf 引用不到）
+3. create-udf-file --resources <资源名.py> --class-name <资源名.类名> --file-name <类名>
+                                                         → 注册 udf 函数，拿 FileId
+4. submit-file --file-id <udf FileId>                    → 提交 udf 上线
+```
+真调实例（32890/dcb_test）：
+- 资源 `dcb_test_udf.py`（FileId 30704892, Type 12）→ submit → DeploymentId 981079
+- udf `DCBTest`（FileId 30704909, Type 17）→ submit → DeploymentId 981088
+- 页面 `select DCBTest('xxx')` 执行成功 ✅
+
+#### UDF 命名规则（用户 2026-06-29 确认，易踩坑）
+- **函数名（file_name）必须 = 类名，且不带资源名**：如类名 DCBTest，file_name 用 `DCBTest`，
+  调用时 `select DCBTest('xxx')`。若 file_name 带资源名（如 `dcb_test_udf`）则调用时得
+  `select dcb_test_udf('xxx')`，不符合规范。
+- **class_name（Python UDF）必须带资源名**：格式 `资源名.类名`，如 `dcb_test_udf.DCBTest`。
+  裸类名 `DCBTest` 不行（注册能成功但引用不到资源）。
+- **class_name（Jar UDF）不带资源名**：直接类名或带包路径，如 `com.example.MyUdf`。
+  （Python 带资源名、Jar 不带——这是两类 UDF 的区别，封装 help 须分别说明。）
+- udf 的 Content 是 JSON 串：`{functionType, className, name, resources, description, cmdDesc, returnValue}`，
+  create-udf-file 的各参数被服务端序列化进这个 JSON 存。get-file 取 `Data.File.Content` 反序列化可查。
+
+#### Deployment.Status 是数字枚举（不是字符串，SDK 注释佐证）
+- `GetDeploymentResponseBodyDataDeployment.status` 注释明确：
+  **0=待执行(进行中), 1=成功, 2=失败**（Valid values: 0, 1, and 2）。
+- error_message 注释：「Status=2 时才有错误信息」。
+- delete-file --wait 轮询代码已据此修正：终态判定 `status in (1, 2)`（1 成功退出 0，2 失败退出 1），
+  0 继续轮询。原代码误判字符串 `"SUCCESS"/"FAILURE"`，已修。
+- help/文档里 Status 描述统一改为「数字: 0=待执行, 1=成功, 2=失败」。
+
+#### delete-file --wait 真调验证（已提交 udf 文件删除）
+- 删已提交 udf（FileId 30704894，旧错误命名）：触发异步删除，返回 DeploymentId=981086（顶层）。
+- 轮询 get-deployment：Status 从 0→1（成功），文件 DeletedStatus 变 `RECYCLE_BIN`（回收站）。
+- delete-file --wait 链路全通：delete 取 DeploymentId → 轮询 get-deployment 取 Data.Deployment.Status
+  → 数字终态判定 → SUCCESS 退出 0。
+
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
 
