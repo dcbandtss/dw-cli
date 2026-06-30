@@ -128,7 +128,7 @@ def create_file(
     file_type: int = typer.Option(
         ..., help="文件类型（节点编码），常用：10=ODPS SQL, 24=ODPS Script, "
                   "225=ODPS Spark, 11=ODPS MR, 221=PyODPS 2, 1221=PyODPS 3, "
-                  "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1100=赋值节点, "
+                  "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1089=跨租户节点, "
                   "1115=参数节点, 1106=for-each, 1103=do-while, 1101=分支, "
                   "1102=归并；资源：12=Python, 13=JAR, 14=ARCHIVE, 15=FILE, "
                   "17=UDF 函数"
@@ -595,7 +595,7 @@ def create_and_submit_file(
     file_type: int = typer.Option(
         ..., help="文件类型（节点编码），常用：10=ODPS SQL, 24=ODPS Script, "
                   "225=ODPS Spark, 11=ODPS MR, 221=PyODPS 2, 1221=PyODPS 3, "
-                  "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1100=赋值节点, "
+                  "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1089=跨租户节点, "
                   "1115=参数节点, 1106=for-each, 1103=do-while, 1101=分支, "
                   "1102=归并；资源：12=Python, 13=JAR, 14=ARCHIVE, 15=FILE, "
                   "17=UDF 函数"
