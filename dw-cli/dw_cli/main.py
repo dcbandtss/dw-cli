@@ -61,7 +61,7 @@ _CMD_PANELS = {
     "list-files": _PANEL_FILE, "get-file": _PANEL_FILE, "create-file": _PANEL_FILE, "list-folders": _PANEL_FILE,
     "get-folder": _PANEL_FILE, "create-folder": _PANEL_FILE, "delete-folder": _PANEL_FILE,
     "submit-file": _PANEL_FILE, "delete-file": _PANEL_FILE,
-    "update-file": _PANEL_FILE,
+    "update-file": _PANEL_FILE, "create-and-submit-file": _PANEL_FILE,
     "create-udf-file": _PANEL_FILE, "update-udf-file": _PANEL_FILE,
     "create-resource-file": _PANEL_FILE, "create-resource-file-upload": _PANEL_FILE,
     "get-deployment": _PANEL_FILE,

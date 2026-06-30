@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """file 类命令（spec §9 按资源分文件，对外平铺）。
 
-当前：list-files / get-file / create-file（+ 后续 create-and-submit-file 场景命令）。
+当前：list-files / get-file / create-file / submit-file / update-file / delete-file / create-and-submit-file（场景封装）。
 """
 from __future__ import annotations
 
@@ -126,12 +126,17 @@ def create_file(
     project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
     file_name: str = typer.Option(..., help="文件名，如 123456789.sql"),
     file_type: int = typer.Option(
-        ..., help="文件类型：10=ODPS SQL, 6=Shell, 1221=PyODPS3 节点；"
-                  "资源类 12=Python, 13=JAR, 14=ARCHIVE, 15=FILE；17=UDF 函数"
+        ..., help="文件类型（节点编码），常用：10=ODPS SQL, 24=ODPS Script, "
+                  "225=ODPS Spark, 11=ODPS MR, 221=PyODPS 2, 1221=PyODPS 3, "
+                  "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1100=赋值节点, "
+                  "1115=参数节点, 1106=for-each, 1103=do-while, 1101=分支, "
+                  "1102=归并；资源：12=Python, 13=JAR, 14=ARCHIVE, 15=FILE, "
+                  "17=UDF 函数"
     ),
     file_folder_path: str = typer.Option(
         ...,
-        help="目录路径，单斜杠，带引擎子目录，如 业务流程/dcb_test/MaxCompute/",
+        help="目录路径（单斜杠），如 业务流程/dcb_test/folderMaxCompute。"
+             "也可用引擎名 业务流程/dcb_test/MaxCompute/（服务端自动映射）",
     ),
     file_description: str = typer.Option("", help="文件描述"),
     input_list: str = typer.Option(
@@ -146,18 +151,40 @@ def create_file(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """新建文件（也用于私有云建资源）。
+    """[低危] 新建文件（create_ 前缀，默认执行，无需 --confirm）。
 
     注意：
-      - file_folder_path 必须用单斜杠并带引擎子目录层，例如
-        「业务流程/dcb_test/MaxCompute/」。不要直接用 list-folders 返回的
-        FolderPath（其为双斜杠且无引擎层，会导致「不合法的目录路径」错误）。
+      - file_folder_path 用 list-folders 返回的精确路径（单斜杠），如
+        「业务流程/dcb_test/folderMaxCompute」。也可用引擎名写法
+        「业务流程/dcb_test/MaxCompute/」（服务端自动映射到 folderMaxCompute），
+        但推荐用精确路径，与 list-folders 一致。
       - SQL 节点（file_type=10）的 input_list 为必填字段，无依赖时传空串。
       - 资源类（file_type=12/13/14/15）建后须 submit-file 提交上线才能被 UDF 引用；
         ConnectionName 服务端自动填 odps_first，无需显式传。
       - **私有云建资源用本命令（create-file），不用 create-resource-file**
         （后者 SDK 缺 ConnectionName 字段，私有云报 400）。
-      - create 为低危写操作，默认执行，无需 --confirm。
+
+    \b
+    🚀 Examples:
+      # 建 ODPS SQL 节点
+      dw-cli create-file --project-id 32890 --file-name my_node.sql \\
+        --file-type 10 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --content "SELECT 1;"
+
+      # 建虚拟节点（file_type=99）
+      dw-cli create-file --project-id 32890 --file-name start_node \\
+        --file-type 99 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --content ""
+
+      # 建资源文件（大代码用 file://）
+      dw-cli create-file --project-id 32890 --file-name my_udf.py \\
+        --file-type 12 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --content file://udf_code.py
+
+    \b
+    📦 Output JSON Structure:
+      - 文件 ID: Data (直接是数字，如 30705114)
+      - 成功: {Data: <file_id>, Success: true}
     """
     if content is not None and content_file is not None:
         errors.usage_error("--content 与 --content-file 互斥，请只指定一个。")
@@ -207,17 +234,33 @@ def submit_file(
 ):
     """[低危] 提交文件至调度系统（submit_ 前缀，默认执行，无需 --confirm）。
 
-    SQL/SHELL/PYODPS 等节点在提交前需配置输入输出依赖（input_list / output_list）。
-    提交后该文件会生成对应的调度节点（节点 ID 可用 list-nodes 查）。
+    SQL/SHELL/PYODPS 等节点在提交前**必须先用 update-file 配好输入输出依赖**：
+      - input_list：上游节点的输出名（必须是已提交的真实节点输出名）
+      - output_list：本节点的输出名（如 项目标识.节点名）
+      未配置会报「输入输出不能为空」；上游输出名不存在会报「父节点输出名:X不存在」。
+
+    提交后该文件会生成对应的调度节点（节点 ID 可用 list-nodes 查），
+    同时生成一个发布包（DeploymentId），可用 get-deployment 轮询状态。
 
     \b
     🚀 Examples:
+      # 提交前：先用 update-file 配 input/output（SQL 节点必填）
+      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+        --input-list "dqsc_prod_root" \\
+        --output-list "dqsc_prod.my_node_output"
+
       # 提交文件
       dw-cli submit-file --file-id 30704830 --project-id 32890 --comment "提交测试"
 
+      # 查发布包状态
+      dw-cli get-deployment --deployment-id <DeploymentId> --project-id 32890 \\
+        --query "Data.Deployment.Status"
+
     \b
     📦 Output JSON Structure:
-      - 成功: {Data: true, Success: true}
+      - 成功: {Data: <DeploymentId>, Success: true}
+        Data 是发布包 ID（整数），不是 true
+      - 发布包状态: Data.Deployment.Status（0=待执行, 1=成功, 2=失败）
     """
     _call_file(ctx, "submit_file", dw_models.SubmitFileRequest(
         file_id=file_id, project_id=project_id, comment=comment or None,
@@ -452,7 +495,7 @@ def update_file(
     # ── 调度配置 ──
     cron_express: str = typer.Option("", "--cron-express", help="Cron 表达式，如 '00 30 00 * * ?'"),
     cycle_type: str = typer.Option("", "--cycle-type", help="调度周期类型，如 DAY/HOUR/MONTH"),
-    scheduler_type: str = typer.Option("", "--scheduler-type", help="调度模式（节点级，与节点 run-mode 不同）"),
+    scheduler_type: str = typer.Option("", "--scheduler-type", help="调度模式：NORMAL=正常调度, MANUAL=手动任务（不被日常调度）, PAUSE=暂停, SKIP=空跑（被日常调度但启动时直接置为成功）"),
     resource_group_identifier: str = typer.Option("", "--resource-group-identifier", help="资源组标识"),
     connection_name: str = typer.Option("", "--connection-name", help="数据源连接名"),
     para_value: str = typer.Option("", "--para-value", help="调度参数，如 'dt=$bizdate'"),
@@ -498,13 +541,18 @@ def update_file(
 
       # 配置输入输出（SQL 节点提交前必填，否则 submit-file 报「输入输出不能为空」）
       dw-cli update-file --file-id 30704830 --project-id 32890 \\
-        --input-list "odps_first.dcb_test.upstream" \\
-        --output-list "odps_first.dcb_test.my_node"
+        --input-list "dqsc_prod_root" \\
+        --output-list "dqsc_prod.my_node_output"
 
-      # 设调度 cron + 资源组
+      # 设调度 cron + 资源组 + 调度参数
       dw-cli update-file --file-id 30704830 --project-id 32890 \\
         --cron-express "00 30 00 * * ?" --cycle-type DAY \\
-        --resource-group-identifier "Serverless_res_group_xxx"
+        --resource-group-identifier "Serverless_res_group_xxx" \\
+        --para-value "dt=$bizdate"
+
+      # 设调度模式（NORMAL=正常, PAUSE=暂停, SKIP=空跑, MANUAL=手动）
+      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+        --scheduler-type "PAUSE"
 
     \b
     📦 Output JSON Structure:
@@ -537,6 +585,246 @@ def update_file(
         apply_schedule_immediately=apply_schedule_immediately or None,
         ignore_parent_skip_running_property=ignore_parent_skip_running_property or None,
     ), query=query, output_fmt=output_fmt)
+
+
+@app.command("create-and-submit-file")
+def create_and_submit_file(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
+    file_name: str = typer.Option(..., help="文件名，如 123456789.sql"),
+    file_type: int = typer.Option(
+        ..., help="文件类型（节点编码），常用：10=ODPS SQL, 24=ODPS Script, "
+                  "225=ODPS Spark, 11=ODPS MR, 221=PyODPS 2, 1221=PyODPS 3, "
+                  "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1100=赋值节点, "
+                  "1115=参数节点, 1106=for-each, 1103=do-while, 1101=分支, "
+                  "1102=归并；资源：12=Python, 13=JAR, 14=ARCHIVE, 15=FILE, "
+                  "17=UDF 函数"
+    ),
+    file_folder_path: str = typer.Option(
+        ...,
+        help="目录路径（单斜杠），如 业务流程/dcb_test/folderMaxCompute",
+    ),
+    file_description: str = typer.Option("", help="文件描述"),
+    input_list: str = typer.Option(
+        "", help="上游依赖输出名，无依赖传空串（SQL 节点必填字段，留空即可）"
+    ),
+    content: Optional[str] = typer.Option(
+        None, help="文件内容（行内）。与 --content-file 二选一"
+    ),
+    content_file: Optional[str] = typer.Option(
+        None, help="从文件读取内容（多行 SQL 推荐）。与 --content 二选一"
+    ),
+    comment: str = typer.Option("", "--comment", help="提交备注"),
+    # ── 调度参数（可选，任意一个非空时自动插一步 update-file）──
+    scheduler_type: str = typer.Option("", "--scheduler-type",
+        help="调度模式：NORMAL=正常调度, MANUAL=手动任务, PAUSE=暂停, SKIP=空跑"),
+    cron_express: str = typer.Option("", "--cron-express",
+        help="Cron 表达式，如 '00 30 00 * * ?'"),
+    cycle_type: str = typer.Option("", "--cycle-type",
+        help="调度周期类型，如 DAY/HOUR/MONTH"),
+    para_value: str = typer.Option("", "--para-value",
+        help="调度参数，如 'dt=$bizdate'"),
+    output_list: str = typer.Option("", "--output-list",
+        help="本节点输出名，逗号分隔"),
+    input_parameters: str = typer.Option("", "--input-parameters",
+        help="输入参数 JSON 串。可用 file://path"),
+    output_parameters: str = typer.Option("", "--output-parameters",
+        help="输出参数 JSON 串。可用 file://path"),
+    resource_group_identifier: str = typer.Option("", "--resource-group-identifier",
+        help="资源组标识"),
+    connection_name: str = typer.Option("", "--connection-name",
+        help="数据源连接名"),
+    rerun_mode: str = typer.Option("", "--rerun-mode",
+        help="重跑模式，如 ALL_ALLOWED"),
+    auto_rerun_times: int = typer.Option(None, "--auto-rerun-times",
+        help="自动重跑次数"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """[场景封装] 新建文件并立即提交到调度系统（= create-file + [update-file] + submit-file）。
+
+    按需三步操作：
+      - Step 1 create-file：失败直接退出，无残留文件。
+      - Step 2 update-file（条件触发）：带了调度参数时自动插入，配置调度/依赖。
+      - Step 3 submit-file：失败退出码非 0，错误信息带 file_id 方便人工清理。
+
+    与单步 create-file 的区别：
+      - 单步 create-file 后需再调 update-file + submit-file，中间断了会留孤儿文件。
+      - 本命令按需原子化，省多次 agent 调用，降低孤儿文件概率。
+
+    update-file 步骤**仅在传了调度参数时触发**（--scheduler-type / --cron-express
+    / --cycle-type / --para-value / --output-list / --input-parameters /
+    --output-parameters / --resource-group-identifier / --connection-name /
+    --rerun-mode / --auto-rerun-times 任意一个非空）。资源文件不需要 update。
+
+    低危（create_/submit_ 前缀，默认执行，无需 --confirm）。
+
+    \b
+    🚀 Examples:
+      # 建并提交 SQL 节点，配调度周期 + 上游依赖
+      dw-cli create-and-submit-file --project-id 32890 \\
+        --file-name my_node.sql --file-type 10 \\
+        --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --content "SELECT 1;" --input-list "dqsc_prod_root" \\
+        --cron-express "00 30 00 * * ?" --cycle-type DAY \\
+        --para-value "dt=$bizdate"
+
+      # 建并提交资源文件（无需调度参数，跳过 update 步骤）
+      dw-cli create-and-submit-file --project-id 32890 \\
+        --file-name my_udf.py --file-type 12 \\
+        --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --content file://udf_code.py
+
+      # 建并提交虚拟节点（暂停调度）
+      dw-cli create-and-submit-file --project-id 32890 \\
+        --file-name start_node --file-type 99 \\
+        --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --content "" --scheduler-type PAUSE
+
+    \b
+    📦 Output JSON Structure:
+      - step: "submit"（最终步骤标识）
+      - file_id: 第一步 create 返回的 FileId
+      - updated: 是否执行了 update-file 步骤
+      - create_response: create-file 的原始响应
+      - update_response: update-file 的原始响应（仅 updated=true 时有）
+      - submit_response: submit-file 的原始响应
+    """
+    # 1. 参数校验（与 create-file 一致）
+    if content is not None and content_file is not None:
+        errors.usage_error("--content 与 --content-file 互斥，请只指定一个。")
+    if content is None and content_file is None:
+        errors.usage_error("必须提供 --content 或 --content-file 之一。")
+
+    if content_file is not None:
+        try:
+            with open(content_file, "r", encoding="utf-8") as f:
+                file_content = f.read()
+        except OSError as e:
+            errors.usage_error(f"读取 --content-file 失败: {e}")
+    else:
+        file_content = content
+
+    # 处理 file:// 大 JSON 字段
+    ip = load_arg(input_parameters)
+    op = load_arg(output_parameters)
+
+    # 判断是否需要 update 步骤：任意调度参数非空即触发
+    need_update = any([
+        scheduler_type, cron_express, cycle_type, para_value,
+        output_list, ip, op,
+        resource_group_identifier, connection_name,
+        rerun_mode, auto_rerun_times is not None,
+    ])
+    total_steps = 3 if need_update else 2
+    step_label = "1/3" if need_update else "1/2"
+
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    # 2. Step 1: create-file
+    output.diag(f"[step {step_label}] 创建文件 ...")
+    create_request = dw_models.CreateFileRequest(
+        project_id=project_id,
+        file_name=file_name,
+        file_type=file_type,
+        file_folder_path=file_folder_path,
+        file_description=file_description,
+        content=file_content,
+        input_list=input_list,
+    )
+    try:
+        create_resp = dw_client.create_file_with_options(create_request, runtime)
+    except Exception as error:
+        errors.fail(error)
+        return
+
+    create_body = output._to_jsonable(create_resp)
+    file_id = None
+    if isinstance(create_body, dict):
+        file_id = create_body.get("Data") or create_body.get("data")
+        if isinstance(file_id, dict):
+            file_id = file_id.get("FileId") or file_id.get("file_id")
+
+    if not file_id:
+        errors.fail(errors.DwCliError(
+            "create-file 成功但未拿到 FileId，响应结构非预期："
+            f" {create_body!r}。请用 list-files 兜底查找。",
+            code="MissingFileId",
+            category=errors.CATEGORY_BUSINESS,
+            recommend="用 dw-cli list-files --project-id <id> --file-name <name> 查 id",
+        ))
+        return
+
+    # 3. Step 2: update-file（条件触发）
+    update_body = None
+    if need_update:
+        update_step = "2/3"
+        submit_step = "3/3"
+        output.diag(f"[step {update_step}] 配置调度参数 file_id={file_id} ...")
+        update_request = dw_models.UpdateFileRequest(
+            file_id=file_id, project_id=project_id,
+            scheduler_type=scheduler_type or None,
+            cron_express=cron_express or None,
+            cycle_type=cycle_type or None,
+            para_value=para_value or None,
+            output_list=output_list or None,
+            input_parameters=ip or None,
+            output_parameters=op or None,
+            resource_group_identifier=resource_group_identifier or None,
+            connection_name=connection_name or None,
+            rerun_mode=rerun_mode or None,
+            auto_rerun_times=auto_rerun_times,
+        )
+        try:
+            update_resp = dw_client.update_file_with_options(update_request, runtime)
+        except Exception as error:
+            err_msg = f"{error}（file_id={file_id}，update 失败，可用 delete-file 清理已建文件）"
+            if isinstance(error, errors.DwCliError):
+                err_msg = f"{error.message}（file_id={file_id}，update 失败，可用 delete-file 清理）"
+                errors.fail(errors.DwCliError(
+                    err_msg, code=error.code, category=error.category,
+                    recommend=error.recommend,
+                ))
+            else:
+                errors.fail(Exception(err_msg))
+            return
+        update_body = output._to_jsonable(update_resp)
+    else:
+        submit_step = "2/2"
+
+    # 4. Step 3: submit-file
+    output.diag(f"[step {submit_step}] 提交文件 file_id={file_id} ...")
+    submit_request = dw_models.SubmitFileRequest(
+        file_id=file_id, project_id=project_id, comment=comment or None,
+    )
+    try:
+        submit_resp = dw_client.submit_file_with_options(submit_request, runtime)
+    except Exception as error:
+        err_msg = f"{error}（file_id={file_id}，可用 delete-file 清理已建文件）"
+        if isinstance(error, errors.DwCliError):
+            err_msg = f"{error.message}（file_id={file_id}，可用 delete-file 清理已建文件）"
+            errors.fail(errors.DwCliError(
+                err_msg, code=error.code, category=error.category,
+                recommend=error.recommend,
+            ))
+        else:
+            errors.fail(Exception(err_msg))
+        return
+
+    # 5. 输出合并结构
+    submit_body = output._to_jsonable(submit_resp)
+    combined = {
+        "step": "submit",
+        "file_id": file_id,
+        "updated": need_update,
+        "create_response": create_body,
+        "submit_response": submit_body,
+    }
+    if update_body is not None:
+        combined["update_response"] = update_body
+    output.emit(combined, query=query, output=output_fmt)
 
 
 # ── 共用小工具 ─────────────────────────────────────────────────────────────

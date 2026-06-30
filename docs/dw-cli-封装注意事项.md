@@ -354,6 +354,43 @@
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
 
+## 场景封装（组合命令，非单 API 封装）
+
+### create-and-submit-file：原子地创建 + 配置调度 + 提交文件（2026-06-30 落地）
+
+**为什么做**：agent 用 create-file + update-file + submit-file 分多步调，中间断了会留「建了没提交」的孤儿文件。本命令按需原子化。
+
+**核心逻辑（按需 3 步）**：
+- Step 1 create-file 失败 → 直接退出，无残留（create 失败不产生资源）。
+- Step 2 update-file（**条件触发**）：带了调度参数时自动插入，配置调度模式/周期/依赖等。
+- Step 3 submit-file 失败 → 退出码非 0，错误信息带 file_id 方便人工 delete-file 清理。
+- 低危（create_/submit_ 前缀），不加 --confirm，与单步命令一致。
+
+**update 步骤触发条件**：传了以下任意参数即触发，否则跳过（资源文件不需要 update）：
+- `--scheduler-type`（NORMAL/PAUSE/SKIP/MANUAL）
+- `--cron-express` / `--cycle-type`（调度周期）
+- `--para-value`（调度参数，如 `dt=$bizdate`）
+- `--output-list` / `--input-parameters` / `--output-parameters`（本节点输出/IO参数）
+- `--resource-group-identifier` / `--connection-name`（资源组/数据源）
+- `--rerun-mode` / `--auto-rerun-times`（重跑配置）
+
+**FileId 提取**：create-file 响应 `{Data: <file_id 数字>}`，Data 字段直接是 id（不是对象）。个别版本返回 `{Data: {FileId: ...}}`，代码兼容两种。
+
+**输出结构**：
+```json
+{
+  "step": "submit",
+  "file_id": 30705117,
+  "updated": true,
+  "create_response": {...},
+  "update_response": {...},
+  "submit_response": {...}
+}
+```
+`updated: false` 时不含 `update_response`。
+
+**代码位置**：[file.py](dw-cli/dw_cli/commands/file.py) 末尾 `create_and_submit_file` 函数。
+
 ## 待办：run-sql / run-pyodps 命令（用户构思使用方法中，2026-06-30）
 
 > 复用 `core/odps_client.py` 连接层（已就绪）。用户表示"使用方法考虑一下"，
