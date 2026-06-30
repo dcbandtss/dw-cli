@@ -354,6 +354,29 @@
 ## 待补充
 - 封装过程中遇到新的通用模式，追加到对应小节。
 
+## 待办：run-sql / run-pyodps 命令（用户构思使用方法中，2026-06-30）
+
+> 复用 `core/odps_client.py` 连接层（已就绪）。用户表示"使用方法考虑一下"，
+> 定稿后再实现。下面是已梳理的可复用接口 + 待决策点 + 明确延后项。
+
+### 已就绪可复用（实现时直接接）
+- 连接：`odps_client.build_odps(project, *, profile_name, profile_file)` → ODPS 对象（AK/SK 走凭据链，pyodps 缺失抛 MissingDependency/exit 2）。
+- 输出：`output.emit(resp, *, query, output, default_table_query)` 三层；`output.diag(msg)` 进度→stderr。
+- 大脚本传参：`load_arg(value)` 支持 `file://`（`--script file://run.py` 或内联）。
+- 错误：`errors.fail(error)` 启发式归类；`errors.usage_error(msg)` exit 2。
+
+### 待用户决策（定了我直接实现）
+1. **安全边界**：run-sql 默认放行还是写操作须 --confirm？run-pyodps 是任意代码执行，要不要强制 --confirm？
+   注：`confirm.py` 的前缀机制（delete_/deploy_/...）套不上 SQL/PyODPS 写操作（是 `o.execute_sql("DROP TABLE")`），需自定义判定。
+2. **结果集量控制**：SELECT 返回几万行时，默认截断(100行 + --limit/--offset/--all)还是全量？
+3. **脚本传参**：内联 + file:// 都支持，还是强制 file://？
+4. **输出形态**：SELECT 结果集返回 `{columns, rows, truncated}` 结构（json 机器可读）还是别的？
+5. **异步/超时**：SQL 执行可能慢，要不要 `--wait`（默认等）/超时参数？
+
+### 明确延后（用户：最后我再处理）
+- **⚠️ logview 地址转换**：`instance.get_logview_address()` 返回的调试地址需要做一个转换（具体转换规则待用户给出）。
+  实现时 run-sql/run-pyodps 输出 logview 处加转换逻辑。**这条单独拎出，用户最后统一处理，不卡在 run-sql/run-pyodps 实现里。**
+
 ## help 改造 + file:// 语法（2026-06-25 规划，2026-06-26 已全部落地）
 
 > 原为待办清单，4 步均已实现并真调验证（提交 3a14e73→70ee995）。保留要点供回溯。
