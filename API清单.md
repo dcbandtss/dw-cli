@@ -15,18 +15,120 @@
 | 剔除      | 按裁剪原则不纳入                          |
 | 待定      | 待用户拍板                             |
 
-## dw-cli 现有命令
+## dw-cli 现有命令（58 个，按模块分）
 
+> 截至 2026-06-30。命令名与 SDK 方法一一对应（kebab-case ↔ snake_case）。
+> 场景封装命令（create-and-submit-file）不直接对应单个 SDK 方法，单独标出。
+
+### meta（诊断，2 命令）
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |------|------|------|------|
 | `check-credentials` | 检测当前命中的凭据来源（脱敏前缀），给出配置指引 | — | 已建(自有) |
 | `doctor` | 自动排查：SDK版本/凭据/endpoint连通/端到端API调用 | （含 list_projects 探活） | 已建(自有) |
-| `list-folders` | 查询文件夹的列表 | `list_folders` | 已封装 |
-| `list-files` | 查询文件列表 | `list_files` | 已封装 |
-| `get-file` | 获取文件的详情 | `get_file` | 已封装 |
-| `create-file` | 在数据开发中创建一个文件 | `create_file` | 已封装 |
 
-> 这 6 条已落地。其余操作默认「待建(raw)」——清单建成即等于开发路线图。
+### folder（文件夹，4 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `list-folders` | 列出指定目录下的子目录 | `list_folders` | 已封装 |
+| `get-folder` | 获取文件夹的详情 | `get_folder` | 已封装 |
+| `create-folder` | 创建文件夹 | `create_folder` | 已封装 |
+| `delete-folder` | 删除文件夹 | `delete_folder` | 已封装 |
+
+### file（文件，7 命令，含 1 场景封装）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `list-files` | 查询文件列表 | `list_files` | 已封装 |
+| `get-file` | 获取文件详情（含 NodeConfiguration 调度/IO） | `get_file` | 已封装 |
+| `create-file` | 创建文件（也用于私有云建资源） | `create_file` | 已封装 |
+| `submit-file` | 提交文件至调度系统 | `submit_file` | 已封装 |
+| `delete-file` | 删除文件（已提交文件触发异步删除，--wait 轮询） | `delete_file` | 已封装 |
+| `update-file` | 更新文件（含调度配置/依赖/重跑等 31 参数） | `update_file` | 已封装 |
+| `create-and-submit-file` | **[场景封装]** 新建 + [按需 update] + 提交 | `create_file` + `update_file` + `submit_file` | 已封装(场景) |
+
+### business（业务流程，4 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `get-business` | 查询业务流程详情 | `get_business` | 已封装 |
+| `list-business` | 查询业务流程列表 | `list_business` | 已封装 |
+| `create-business` | 创建业务流程 | `create_business` | 已封装 |
+| `delete-business` | 删除业务流程 | `delete_business` | 已封装 |
+
+### data_source（数据源，5 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `list-data-sources` | 查询数据源列表 | `list_data_sources` | 已封装 |
+| `create-data-source` | 创建数据源 | `create_data_source` | 已封装 |
+| `delete-data-source` | 删除数据源 | `delete_data_source` | 已封装 |
+| `export-data-sources` | 导出数据源列表 | `export_data_sources` | 已封装 |
+| `test-network-connection` | 测试数据源与资源组的网络连通性 | `test_network_connection` | 已封装 |
+
+### resource（资源，2 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `create-resource-file` | 创建资源文件（⚠️私有云不可用，改用 create-file --file-type） | `create_resource_file` | 已封装 |
+| `create-resource-file-upload` | 上传资源文件到 OSS（私有云优先用此方式） | `create_resource_file_advance` | 已封装 |
+
+### udf（UDF 函数，2 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `create-udf-file` | 创建函数类型文件 | `create_udf_file` | 已封装 |
+| `update-udf-file` | 更新函数文件信息 | `update_udf_file` | 已封装 |
+
+### node（节点调度，7 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `get-node` | 获取节点详情 | `get_node` | 已封装 |
+| `get-node-code` | 获取节点代码 | `get_node_code` | 已封装 |
+| `get-node-parents` | 获取节点上游列表 | `get_node_parents` | 已封装 |
+| `get-node-children` | 获取节点下游列表 | `get_node_children` | 已封装 |
+| `list-nodes` | 获取节点列表 | `list_nodes` | 已封装 |
+| `offline-node` | 下线节点 | `offline_node` | 已封装（⚠️私有云 404） |
+| `update-node-run-mode` | 冻结/解冻节点 | `update_node_run_mode` | 已封装 |
+
+### instance（实例运维，8 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `get-instance` | 获取实例详情 | `get_instance` | 已封装 |
+| `get-instance-log` | 获取实例日志 | `get_instance_log` | 已封装 |
+| `list-instances` | 获取实例列表 | `list_instances` | 已封装 |
+| `list-instance-history` | 获取实例历史记录 | `list_instance_history` | 已封装（⚠️私有云 404） |
+| `restart-instance` | 重启实例 | `restart_instance` | 已封装 |
+| `resume-instance` | 恢复暂停状态的实例 | `resume_instance` | 已封装 |
+| `stop-instance` | 终止实例（⚠️高危须 --confirm） | `stop_instance` | 已封装 |
+| `suspend-instance` | 暂停实例 | `suspend_instance` | 已封装 |
+
+### meta_table（表元数据，10 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `check-meta-table` | 检查表是否存在 | `check_meta_table` | 已封装 |
+| `check-meta-partition` | 检查分区是否存在 | `check_meta_partition` | 已封装 |
+| `get-meta-table-basic-info` | 获取表的基础信息 | `get_meta_table_basic_info` | 已封装 |
+| `get-meta-table-intro-wiki` | 获取表的使用说明 | `get_meta_table_intro_wiki` | 已封装 |
+| `get-meta-table-column` | 获取表的字段信息 | `get_meta_table_column` | 已封装 |
+| `get-meta-table-full-info` | 获取表的完整信息（含字段） | `get_meta_table_full_info` | 已封装 |
+| `get-meta-table-change-log` | 获取表的变更日志 | `get_meta_table_change_log` | 已封装 |
+| `get-meta-table-partition` | 获取表的分区列表 | `get_meta_table_partition` | 已封装 |
+| `get-meta-dbtable-list` | 获取引擎实例中的表 | `get_meta_dbtable_list` | 已封装（⚠️私有云 500） |
+| `search-meta-tables` | 根据条件搜索表 | `search_meta_tables` | 已封装 |
+
+### table（表管理，4 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `create-table` | 创建 MaxCompute 表（异步，--wait 轮询） | `create_table` | 已封装 |
+| `delete-table` | 删除 MaxCompute 表（异步，须 --confirm） | `delete_table` | 已封装 |
+| `get-ddl-job-status` | 获取表操作任务状态 | `get_ddljob_status` | 已封装 |
+| `list-tables` | 列出表（⚠️SDK 私有云 404，改走 PyODPS 直连） | `list_tables` | 已封装(PyODPS) |
+
+### project（工作空间，2 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `get-project` | 查询工作空间详情 | `get_project` | 已封装 |
+| `list-project-ids` | 查询工作空间 ID 列表 | `list_project_ids` | 已封装 |
+
+### deployment（发布包，1 命令）
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|------|------|------|------|
+| `get-deployment` | 获取发布包详情（用于轮询异步操作状态） | `get_deployment` | 已封装 |
 
 ## 保留（纳入清单，待建 raw / 待封装）
 
@@ -249,14 +351,15 @@
 | `update_meta_table_intro_wiki`    | 该接口用于更新表的说明信息，当数据不存在时增加信息。                                        | 待建(raw)       |                                                        |     |
 ## 待定（需你拍板）
 
-### 待定（用户拍板）（4）
+### 待定（用户拍板）（3）
 
 | 操作(SDK方法)                | 描述                                          | 状态  | 废弃  | 备注  |
 | ------------------------ | ------------------------------------------- | --- | --- | --- |
-| `get_deployment`         | 调用GetDeployment获取发布包的详情。                    | 已封装 |     |     |
-| `list_deployments`       | 查询发布包列表信息。该功能与DataWorks控制台任务发布页面的发布包列表功能对应。 | 剔除  |     |     |
+| `list_deployments`       | 查询发布包列表信息。该功能与DataWorks控制台任务发布页面的发布包列表功能对应。 | 待建(raw) |     |     |
 | `list_measure_data`      | 该接口用于查询用户所在租户下最近30天电话告警、短信告警计量数据。           | 剔除  |     |     |
 | `query_default_template` | 调用QueryDefaultTemplate接口查询数据保护伞定义的默认分类分级模板。 | 剔除  |     |     |
+
+> `get_deployment` 已封装为 `get-deployment` 命令，移至上方 deployment 模块。
 ## 剔除（按裁剪原则不纳入，仅留名备查）
 
 - **剔除·基线 baseline**（12）：`create_baseline`, `delete_baseline`, `get_baseline`, `get_baseline_config`, `get_baseline_key_path`, `get_baseline_status`, `get_node_on_baseline`, `list_baseline_configs`, `list_baseline_statuses`, `list_baselines`, `list_nodes_by_baseline`, `update_baseline`
@@ -272,9 +375,7 @@
 
 ## 下一步（开发路径）
 
-1. **建 1 个 raw 反射命令**（兜底）：`getattr(client, api_name_with_options)(request, runtime)`，
-   让所有「待建(raw)」项立即可用（透传命名，不重命名）。**RegionId 注入必须保留**（dw-cli 存在的根本）。
-   ⚠️ 待验证：2020 Tea SDK 要类型化 Request 对象，raw 可能需 `inspect.signature` 动态构造 Request 或退到 `client.do_rpcrequest`。
-2. **场景封装**（80/20）：高频组合（如 `diagnose --node-id N` 并发调 get_node+get_node_code+get_instance_log）提为语义命令。
-3. **每建一个回填本清单 status**：待建(raw)→已raw，待封装→已封装。
-4. **探活**：raw 建好后对「待定」逐个探活——清单 ≠ 私有服务器实有（官方全集，政务云可能只实现子集）。
+1. **场景封装**：高频组合（如 `diagnose --node-id N` 并发调 get_node+get_node_code+get_instance_log）提为语义命令。已完成 `create-and-submit-file`。
+2. **run-sql / run-pyodps**：复用 `core/odps_client.py` 连接层（已就绪），待用户决策使用方法。
+3. **私有云探活结论整理**：汇总 `list_file_type` / `offline_node` / `list_instance_history` 等 404 项。
+4. **每建一个新命令，回填本清单 status**：待建(raw)→已封装。
