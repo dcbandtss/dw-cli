@@ -444,3 +444,31 @@
 ### 6. 单命令 help 增强 ✅
 - 各命令 docstring 已加 🚀 Examples（真实真调值）+ 📦 Output Schema（PascalCase 真实字段路径）+ 去 `（spec §X）` 引用保留口语解释 + `[AI 推荐]`/`[高危]`/`[低危]` 标签。
 - 覆盖：3b meta_table（10）、3a node/instance、3c/3d 各批。
+
+
+## raw 探活发现（2026-07-06 起，批次1只读 44 项）
+
+> 探活脚本 scripts/probe_raw.py 真调私有云，五态判定：a可用/b接口通需调参/c未实现(404)/d需权限/e未定。
+> 真相源 docs/raw-probe-result.json，API清单.md 已同步探活列。
+
+### ❌ c 未实现（私有云 404，18 项）—— 服务端 InvalidAction.NotFound
+- **DI 数据集成全套 404**：list_dijobs / get_dijob / list_dialarm_rules / get_dialarm_rule / get_disync_task / get_disync_instance_info / list_ref_disync_tasks / generate_disync_task_config_for_creating / generate_disync_task_config_for_updating / query_disync_task_config_process_result（共 10 项 DI 相关全挂）。**结论：私有云 DI 新版实时同步整套未部署，DI 封装(待办F)大概率无意义，raw 透传也透不通。**
+- list_dags / list_deployments（DAG 部署相关 404）
+- list_file_type / list_inner_nodes / list_lineage / list_meta_db / list_migrations / get_migration_summary / get_alert_message（各模块零散 404）
+- list_meta_db 是 NoSuchMethod（SDK Client 无此方法，非 404；可能 SDK 版本差异）
+
+### ✅ a 可用（2 项）
+- list_file_versions（文件版本列表）
+- list_reminds（自定义监控规则列表）
+
+### ⚠️ b 接口通需调参（24 项）
+接口本身在私有云可用，只是探活参数不够精确导致业务报错（MissingXxx）。这些接口若给正确参数能返回数据，值得后续封装。典型：
+- get_dag（缺 DagId）、get_remind（参数格式）、get_topic（TopicId 不存在）
+- list_instance_amount（缺 BeginDate）、list_alert_messages（缺 BeginTime）
+- get_meta_table_output（缺 TableGuid）、get_meta_column_lineage（缺 Direction）
+- list_node_input_or_output（NodeId 无效）、list_nodes_by_output（缺 ProjectEnv）
+
+### 对封装决策的影响
+- DI 相关 10 项全 404 → 待办 F（DI 封装）探活后大概率放弃，标 raw 不可用即可。
+- b 类 24 项接口通，是未来语义封装的候选（给精确参数后可用）。
+- a 类 2 项可直接考虑封装。
