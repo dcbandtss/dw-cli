@@ -385,63 +385,68 @@ def run_batch(category, resume, regenerate):
 # 同步探活状态回 API清单.md
 # ---------------------------------------------------------------------------
 def sync_to_api_list():
-    """把 raw-probe-result.json 里的状态图标写回 API清单.md 的待建(raw) 行。
+    """把 raw-probe-result.json 的探活状态同步到 API清单.md 的第二/三节。
 
-    原样保留非待建行（含其原始字节）；待建行只在第一个空 cell 填入状态图标，
-    其余内容不变。换行符按原始文件风格（CRLF / LF）原样回写。
+    新清单结构（重构后 2026-07-07）：
+    - 第二节"raw 透传可用接口"和第三节"raw 透传不可用接口"的表格为
+      | SDK 方法 | 描述 | 私有云探活 | 备注 |
+    - 探活列固定在第 3 列（index 2），备注列第 4 列（index 3）。
+    - 按 api 名（第一列反引号内）查 JSON，更新探活图标 + 备注。
+    - 非raw节（已封装/剔除）行原样保留。
     """
     data = load_result()
     apis = data.get("apis", {})
 
-    # 用 newline="" 读，保留原始换行符（不做 \r\n -> \n 翻译）
     with open(API_LIST_FILE, "r", encoding="utf-8", newline="") as f:
         text = f.read()
 
-    # 统一按 \n 切分但保留每行原始行尾（splitlines 会丢行尾，故手动处理）
     has_crlf = "\r\n" in text
     newline = "\r\n" if has_crlf else "\n"
-    # split 保留行尾
     raw_lines = text.split(newline)
-    # split 后末尾会多一个空串（若文件以换行结尾），写回时再 join 即可复原
 
+    # 定位第二节/第三节的范围（只在这两节同步）
+    in_raw_section = False
     synced = 0
     out_lines = []
     for raw_line in raw_lines:
         line = raw_line.rstrip("\r\n")
-        if not line.startswith("|"):
+        # 节边界
+        if line.startswith("## 二、raw") or line.startswith("## 三、raw"):
+            in_raw_section = True
             out_lines.append(raw_line)
             continue
-        cells = _split_row(line)
-        stripped = [c.strip() for c in cells]
-        if "待建(raw)" not in stripped:
+        if line.startswith("## ") and not line.startswith("## 二、") and not line.startswith("## 三、"):
+            in_raw_section = False
             out_lines.append(raw_line)
             continue
-        # 待建(raw) 行：找被反引号包裹的 api 名
-        api_name = _api_name_from_cells(cells)
+        if not in_raw_section or not line.startswith("|"):
+            out_lines.append(raw_line)
+            continue
+        # 表格行：解析 cells
+        cells = line.split("|")
+        # cells[0] 空, cells[1]=api, cells[2]=desc, cells[3]=探活, cells[4]=备注, cells[5] 空
+        if len(cells) < 5:
+            out_lines.append(raw_line)
+            continue
+        # 提取 api 名
+        api_cell = cells[1].strip()
+        api_name = api_cell.strip("`").strip() if api_cell.startswith("`") else ""
         if not api_name or api_name not in apis:
             out_lines.append(raw_line)
             continue
+        # 跳过分隔行
+        if set(api_name) <= set("-: "):
+            out_lines.append(raw_line)
+            continue
 
-        status = apis[api_name].get("status")
+        result = apis[api_name]
+        status = result.get("status")
         icon = STATUS_ICONS.get(status, "—")
-        cell_text = " {0} ".format(icon)
-
-        # 在状态列之后找第一个空 cell 填图标；没有则追加
-        try:
-            status_idx = stripped.index("待建(raw)")
-        except ValueError:
-            status_idx = 2
-        filled = False
-        for idx in range(status_idx + 1, len(cells)):
-            if stripped[idx] == "":
-                cells[idx] = cell_text
-                filled = True
-                break
-        if not filled:
-            cells.append(cell_text)
-
-        new_line = "| " + " | ".join(c.strip() for c in cells) + " |"
-        out_lines.append(new_line)
+        note = result.get("note", "")
+        # 更新探活列（cells[3]）和备注列（cells[4]）
+        cells[3] = " {0} ".format(icon)
+        cells[4] = " {0} ".format(note) if note else " "
+        out_lines.append("|".join(cells) + (newline if raw_line.endswith(newline) else ""))
         synced += 1
 
     with open(API_LIST_FILE, "w", encoding="utf-8", newline="") as f:
@@ -449,9 +454,6 @@ def sync_to_api_list():
     print("已同步 {0} 行探活状态到 API清单.md".format(synced))
 
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
         description="raw API 探活脚本：反射 83 个待建(raw) API → 真调 → 五态判定 → JSON 真相源",

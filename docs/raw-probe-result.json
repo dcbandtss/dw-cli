@@ -10,7 +10,7 @@
       "error_code": "MissingCheckerInstanceId",
       "error_message": "Error: MissingCheckerInstanceId code: 400, CheckerInstanceId is mandatory for this action. request id: 954DBDB6-0050-4552-AF85-55266DEE12A4 Response: {'RequestId': '954DBDB6-0050-4552-AF85-55266DEE12A",
       "evidence": "",
-      "note": "接口通，需调参: MissingCheckerInstanceId Error: MissingCheckerInstanceId code: 400, CheckerInstanceId is mandatory for this action. request i",
+      "note": "接口通，需调参(MissingCheckerInstanceId)",
       "probed_at": "2026-07-06T10:08:17+00:00"
     },
     "get_data_source_meta": {
@@ -21,7 +21,7 @@
       "error_code": "MissingDatasourceName",
       "error_message": "Error: MissingDatasourceName code: 400, DatasourceName is mandatory for this action. request id: 106CB3A9-3EA6-4DA5-BC27-B02BD3295CE3 Response: {'RequestId': '106CB3A9-3EA6-4DA5-BC27-B02BD3295CE3', 'M",
       "evidence": "",
-      "note": "接口通，需调参: MissingDatasourceName Error: MissingDatasourceName code: 400, DatasourceName is mandatory for this action. request id: 106",
+      "note": "接口通，需调参(MissingDatasourceName)",
       "probed_at": "2026-07-06T10:08:17+00:00"
     },
     "get_file_type_statistic": {
@@ -32,7 +32,7 @@
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 2731702D-ECF0-437B-B0B1-482D60664F16 Response: {'RequestId': '2731702D-ECF0-437B-B0B1-482D60664F16', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectEnv Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 2731702D-EC",
+      "note": "接口通，需调参(MissingProjectEnv)",
       "probed_at": "2026-07-06T10:08:17+00:00"
     },
     "get_file_version": {
@@ -43,7 +43,7 @@
       "error_code": "MissingFileVersion",
       "error_message": "Error: MissingFileVersion code: 400, FileVersion is mandatory for this action. request id: 33A52DA9-4AD4-45AE-B817-A84630CA9C0B Response: {'RequestId': '33A52DA9-4AD4-45AE-B817-A84630CA9C0B', 'Message",
       "evidence": "",
-      "note": "接口通，需调参: MissingFileVersion Error: MissingFileVersion code: 400, FileVersion is mandatory for this action. request id: 33A52DA9-",
+      "note": "接口通，需调参(MissingFileVersion)",
       "probed_at": "2026-07-06T10:08:17+00:00"
     },
     "list_file_type": {
@@ -164,7 +164,7 @@
       "error_code": "MissingDestinationType",
       "error_message": "Error: MissingDestinationType code: 400, DestinationType is mandatory for this action. request id: A976C2E0-10AC-4369-8BE5-0DBD31E363D6 Response: {'RequestId': 'A976C2E0-10AC-4369-8BE5-0DBD31E363D6', ",
       "evidence": "",
-      "note": "接口通，需调参: MissingDestinationType Error: MissingDestinationType code: 400, DestinationType is mandatory for this action. request id: A",
+      "note": "接口通，需调参(MissingDestinationType)",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "list_ref_disync_tasks": {
@@ -175,7 +175,7 @@
       "error_code": "MissingDatasourceName",
       "error_message": "Error: MissingDatasourceName code: 400, DatasourceName is mandatory for this action. request id: 1ADBA831-55B5-43AC-A899-17CC1131F378 Response: {'RequestId': '1ADBA831-55B5-43AC-A899-17CC1131F378', 'M",
       "evidence": "",
-      "note": "接口通，需调参: MissingDatasourceName Error: MissingDatasourceName code: 400, DatasourceName is mandatory for this action. request id: 1AD",
+      "note": "接口通，需调参(MissingDatasourceName)",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "query_disync_task_config_process_result": {
@@ -197,7 +197,7 @@
       "error_code": "MissingDagId",
       "error_message": "Error: MissingDagId code: 400, DagId is mandatory for this action. request id: 296D01CC-E08A-4B03-9563-EEF244507D34 Response: {'RequestId': '296D01CC-E08A-4B03-9563-EEF244507D34', 'Message': 'DagId is",
       "evidence": "",
-      "note": "接口通，需调参: MissingDagId Error: MissingDagId code: 400, DagId is mandatory for this action. request id: 296D01CC-E08A-4B03-95",
+      "note": "接口通，需调参(MissingDagId)",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "get_instance_status_statistic": {
@@ -208,7 +208,7 @@
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: BB32B2B0-2C8A-466D-AF65-F30295987D25 Response: {'RequestId': 'BB32B2B0-2C8A-466D-AF65-F30295987D25', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectEnv Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: BB32B2B0-2C",
+      "note": "接口通，需调参(MissingProjectEnv)",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "list_dags": {
@@ -230,7 +230,7 @@
       "error_code": "MissingBeginDate",
       "error_message": "Error: MissingBeginDate code: 400, BeginDate is mandatory for this action. request id: 2610BC2C-AE85-4AB9-ABEC-1C5B4A9D4E6F Response: {'RequestId': '2610BC2C-AE85-4AB9-ABEC-1C5B4A9D4E6F', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingBeginDate Error: MissingBeginDate code: 400, BeginDate is mandatory for this action. request id: 2610BC2C-AE85",
+      "note": "接口通，需调参(MissingBeginDate)",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "list_manual_dag_instances": {
@@ -241,7 +241,7 @@
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 8E411C41-759F-4AC5-B4C9-A24A818A7360 Response: {'RequestId': '8E411C41-759F-4AC5-B4C9-A24A818A7360', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectEnv Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 8E411C41-75",
+      "note": "接口通，需调参(MissingProjectEnv)",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "list_success_instance_amount": {
@@ -252,7 +252,7 @@
       "error_code": "",
       "error_message": "",
       "evidence": "{\"InstanceStatusTrend\": {\"AvgTrend\": [{\"Count\": 44, \"TimePoint\": \"00:00\"}, {\"Count\": 65, \"TimePoint\": \"01:00\"}, {\"Count\": 85, \"TimePoint\": \"02:00\"}, {\"Count\": 105, \"TimePoint\": \"03:00\"}, {\"Count\": 125, \"TimePoint\": \"04:00\"}, {\"Count\": 145, \"TimePoint\": \"05:00\"}, {\"Count\": 167, \"TimePoint\": \"06:00\"}, {\"Count\": 187, \"TimePoint\": \"07:00\"}, {\"Count\": 207, \"TimePoint\": \"08:00\"}, {\"Count\": 227, \"TimePoint\": \"09:00\"}, {\"Count\": 248, \"TimePoint\": \"10:00\"}, {\"Count\": 268, \"TimePoint\": \"11:00\"}, {\"Count\":",
-      "note": "接口通，需调参:  ",
+      "note": "接口通，需调参",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "top_ten_elapsed_time_instance": {
@@ -263,7 +263,7 @@
       "error_code": "",
       "error_message": "",
       "evidence": "{\"InstanceConsumeTimeRank\": {\"ConsumeTimeRank\": [{\"BusinessDate\": 1783180800000, \"Consumed\": 3792, \"InstanceId\": 15216666442, \"NodeId\": 2585212, \"NodeName\": \"ods_kaifang_snyt_hj_biz_034_sshgg_znm_code_record_valid_old_output_open_data_set\", \"Owner\": \"5282286069837289385\", \"ProgramType\": 23}, {\"BusinessDate\": 1783180800000, \"Consumed\": 929, \"InstanceId\": 15216666445, \"NodeId\": 2585229, \"NodeName\": \"ods_kaifang_smzw_hj_biz_023_PlaceInspectionItem_valid_old_output_open_data_set\", \"Owner\": \"52822860",
-      "note": "接口通，需调参:  ",
+      "note": "接口通，需调参",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "top_ten_error_times_instance": {
@@ -274,7 +274,7 @@
       "error_code": "",
       "error_message": "",
       "evidence": "{\"InstanceErrorRank\": {\"ErrorRank\": []}, \"RequestId\": \"17F53130-8186-47C2-B76E-B6E7EF4906BD\"}",
-      "note": "接口通，需调参:  ",
+      "note": "接口通，需调参",
       "probed_at": "2026-07-06T10:08:18+00:00"
     },
     "list_inner_nodes": {
@@ -296,7 +296,7 @@
       "error_code": "InvalidNodeId",
       "error_message": "Error: InvalidNodeId code: 400, Specified parameter NodeId is not valid. request id: 8243EFAF-CD6F-4806-96FE-904627D021FE Response: {'RequestId': '8243EFAF-CD6F-4806-96FE-904627D021FE', 'Message': 'Sp",
       "evidence": "",
-      "note": "接口通，需调参: InvalidNodeId Error: InvalidNodeId code: 400, Specified parameter NodeId is not valid. request id: 8243EFAF-CD6F-4",
+      "note": "接口通，需调参(InvalidNodeId)",
       "probed_at": "2026-07-06T10:08:19+00:00"
     },
     "list_nodes_by_output": {
@@ -307,7 +307,7 @@
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: E0148245-F8FF-464F-866E-464314E6A89F Response: {'RequestId': 'E0148245-F8FF-464F-866E-464314E6A89F', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectEnv Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: E0148245-F8",
+      "note": "接口通，需调参(MissingProjectEnv)",
       "probed_at": "2026-07-06T10:08:19+00:00"
     },
     "get_alert_message": {
@@ -329,7 +329,7 @@
       "error_code": "Invalid.Wkbench.Parameter",
       "error_message": "Error: Invalid.Wkbench.Parameter code: 500, The specified parameters are invalid. request id: 217360BE-5FC8-4F88-8073-2E54E3A86CCB Response: {'RequestId': '217360BE-5FC8-4F88-8073-2E54E3A86CCB', 'Host",
       "evidence": "",
-      "note": "接口通，需调参: Invalid.Wkbench.Parameter Error: Invalid.Wkbench.Parameter code: 500, The specified parameters are invalid. request id: 217360",
+      "note": "接口通，需调参(Invalid.Wkbench.Parameter)",
       "probed_at": "2026-07-06T10:08:19+00:00"
     },
     "get_topic": {
@@ -340,7 +340,7 @@
       "error_code": "Invalid.Wkbench.TopicNotExist",
       "error_message": "Error: Invalid.Wkbench.TopicNotExist code: 500, The topic does not exist. request id: DB91B79A-1A22-494D-8B9A-C7077A0218DA Response: {'RequestId': 'DB91B79A-1A22-494D-8B9A-C7077A0218DA', 'HostId': 'da",
       "evidence": "",
-      "note": "接口通，需调参: Invalid.Wkbench.TopicNotExist Error: Invalid.Wkbench.TopicNotExist code: 500, The topic does not exist. request id: DB91B79A-1A22-",
+      "note": "接口通，需调参(Invalid.Wkbench.TopicNotExist)",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "get_topic_influence": {
@@ -351,7 +351,7 @@
       "error_code": "Invalid.Wkbench.TopicNotExist",
       "error_message": "Error: Invalid.Wkbench.TopicNotExist code: 500, The topic does not exist. request id: BF4FD1EC-3724-460F-80C6-B68AE28FF196 Response: {'RequestId': 'BF4FD1EC-3724-460F-80C6-B68AE28FF196', 'HostId': 'da",
       "evidence": "",
-      "note": "接口通，需调参: Invalid.Wkbench.TopicNotExist Error: Invalid.Wkbench.TopicNotExist code: 500, The topic does not exist. request id: BF4FD1EC-3724-",
+      "note": "接口通，需调参(Invalid.Wkbench.TopicNotExist)",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "list_alert_messages": {
@@ -362,7 +362,7 @@
       "error_code": "MissingBeginTime",
       "error_message": "Error: MissingBeginTime code: 400, BeginTime is mandatory for this action. request id: F43C8BAB-6736-4E57-A590-2ADBF3B463DF Response: {'RequestId': 'F43C8BAB-6736-4E57-A590-2ADBF3B463DF', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingBeginTime Error: MissingBeginTime code: 400, BeginTime is mandatory for this action. request id: F43C8BAB-6736",
+      "note": "接口通，需调参(MissingBeginTime)",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "list_reminds": {
@@ -384,7 +384,7 @@
       "error_code": "MissingBeginTime",
       "error_message": "Error: MissingBeginTime code: 400, BeginTime is mandatory for this action. request id: EBA51B70-FD05-4FB4-AB3A-0E350DC7B7E8 Response: {'RequestId': 'EBA51B70-FD05-4FB4-AB3A-0E350DC7B7E8', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingBeginTime Error: MissingBeginTime code: 400, BeginTime is mandatory for this action. request id: EBA51B70-FD05",
+      "note": "接口通，需调参(MissingBeginTime)",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "get_meta_column_lineage": {
@@ -395,7 +395,7 @@
       "error_code": "MissingDirection",
       "error_message": "Error: MissingDirection code: 400, Direction is mandatory for this action. request id: AE354F56-0642-4A90-9DFB-30A2D46583C8 Response: {'RequestId': 'AE354F56-0642-4A90-9DFB-30A2D46583C8', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingDirection Error: MissingDirection code: 400, Direction is mandatory for this action. request id: AE354F56-0642",
+      "note": "接口通，需调参(MissingDirection)",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "get_meta_table_lineage": {
@@ -406,7 +406,7 @@
       "error_code": "MissingDirection",
       "error_message": "Error: MissingDirection code: 400, Direction is mandatory for this action. request id: D6295F12-8617-49D7-893D-9CAE98A6E06D Response: {'RequestId': 'D6295F12-8617-49D7-893D-9CAE98A6E06D', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingDirection Error: MissingDirection code: 400, Direction is mandatory for this action. request id: D6295F12-8617",
+      "note": "接口通，需调参(MissingDirection)",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "list_lineage": {
@@ -428,7 +428,7 @@
       "error_code": "MissingCategoryId",
       "error_message": "Error: MissingCategoryId code: 400, CategoryId is mandatory for this action. request id: 601A659D-9D3E-46AA-BF74-4A23C1F42E17 Response: {'RequestId': '601A659D-9D3E-46AA-BF74-4A23C1F42E17', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingCategoryId Error: MissingCategoryId code: 400, CategoryId is mandatory for this action. request id: 601A659D-9D",
+      "note": "接口通，需调参(MissingCategoryId)",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "get_meta_table_output": {
@@ -439,7 +439,7 @@
       "error_code": "MissingTableGuid",
       "error_message": "Error: MissingTableGuid code: 400, TableGuid is mandatory for this action. request id: FDEA0540-4DBF-4BE5-A8E0-E879571D2EDF Response: {'RequestId': 'FDEA0540-4DBF-4BE5-A8E0-E879571D2EDF', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingTableGuid Error: MissingTableGuid code: 400, TableGuid is mandatory for this action. request id: FDEA0540-4DBF",
+      "note": "接口通，需调参(MissingTableGuid)",
       "probed_at": "2026-07-06T10:08:21+00:00"
     },
     "get_migration_summary": {
@@ -461,7 +461,7 @@
       "error_code": "NoSuchMethod",
       "error_message": "",
       "evidence": "",
-      "note": "Client 上无 list_meta_db_with_options 方法",
+      "note": "私有云未实现(404)",
       "probed_at": "2026-07-06T10:08:21+00:00"
     },
     "list_migrations": {
@@ -494,7 +494,7 @@
       "error_code": "InvalidRemindUnit",
       "error_message": "Error: InvalidRemindUnit code: 400, Specified parameter RemindUnit is not valid. request id: 4D0DC53F-6094-4849-9BFA-2C482C022270 Response: {'RequestId': '4D0DC53F-6094-4849-9BFA-2C482C022270', 'Messa",
       "evidence": "",
-      "note": "接口通，需调参: InvalidRemindUnit Error: InvalidRemindUnit code: 400, Specified parameter RemindUnit is not valid. request id: 4D0DC53",
+      "note": "接口通，需调参(InvalidRemindUnit)",
       "probed_at": "2026-07-07T01:34:26+00:00"
     },
     "run_smoke_test": {
@@ -516,7 +516,7 @@
       "error_code": "1201111279",
       "error_message": "Error: 1201111279 code: 400, 下列参数必须指定其中一个：projectId或者projectIdentifier request id: C223A9E7-9522-49BD-AB1A-5C02DA799A61 Response: {'RequestId': 'C223A9E7-9522-49BD-AB1A-5C02DA799A61', 'HostId': 'dataw",
       "evidence": "",
-      "note": "接口通，需调参: 1201111279 Error: 1201111279 code: 400, 下列参数必须指定其中一个：projectId或者projectIdentifier request id: C223A9E7-9522-49B",
+      "note": "接口通，需调参(1201111279)",
       "probed_at": "2026-07-07T01:45:34+00:00"
     },
     "establish_relation_table_to_business": {
@@ -527,7 +527,7 @@
       "error_code": "MissingBusinessId",
       "error_message": "Error: MissingBusinessId code: 400, BusinessId is mandatory for this action. request id: 56E790EB-DB74-4B9F-8BBE-877B04F49609 Response: {'RequestId': '56E790EB-DB74-4B9F-8BBE-877B04F49609', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingBusinessId Error: MissingBusinessId code: 400, BusinessId is mandatory for this action. request id: 56E790EB-DB",
+      "note": "接口通，需调参(MissingBusinessId)",
       "probed_at": "2026-07-07T01:45:34+00:00"
     },
     "import_data_sources": {
@@ -538,7 +538,7 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 6392C652-F944-4553-8C9D-C05AA7859F42 Response: {'RequestId': '6392C652-F944-4553-8C9D-C05AA7859F42', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectId Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 6392C652-F944",
+      "note": "接口通，需调参(MissingProjectId)",
       "probed_at": "2026-07-07T01:45:34+00:00"
     },
     "update_business": {
@@ -549,7 +549,7 @@
       "error_code": "MissingBusinessId",
       "error_message": "Error: MissingBusinessId code: 400, BusinessId is mandatory for this action. request id: 6568D486-4C66-461B-9669-25E3D819D93C Response: {'RequestId': '6568D486-4C66-461B-9669-25E3D819D93C', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingBusinessId Error: MissingBusinessId code: 400, BusinessId is mandatory for this action. request id: 6568D486-4C",
+      "note": "接口通，需调参(MissingBusinessId)",
       "probed_at": "2026-07-07T01:45:34+00:00"
     },
     "update_data_source": {
@@ -560,7 +560,7 @@
       "error_code": "MissingDataSourceId",
       "error_message": "Error: MissingDataSourceId code: 400, DataSourceId is mandatory for this action. request id: 280934D5-2DE4-49B2-B464-008A88DB844C Response: {'RequestId': '280934D5-2DE4-49B2-B464-008A88DB844C', 'Messa",
       "evidence": "",
-      "note": "接口通，需调参: MissingDataSourceId Error: MissingDataSourceId code: 400, DataSourceId is mandatory for this action. request id: 280934D",
+      "note": "接口通，需调参(MissingDataSourceId)",
       "probed_at": "2026-07-07T01:45:34+00:00"
     },
     "update_folder": {
@@ -571,7 +571,7 @@
       "error_code": "MissingFolderId",
       "error_message": "Error: MissingFolderId code: 400, FolderId is mandatory for this action. request id: 769146B4-E198-46CC-B6A0-EFFC900DC917 Response: {'RequestId': '769146B4-E198-46CC-B6A0-EFFC900DC917', 'Message': 'Fo",
       "evidence": "",
-      "note": "接口通，需调参: MissingFolderId Error: MissingFolderId code: 400, FolderId is mandatory for this action. request id: 769146B4-E198-4",
+      "note": "接口通，需调参(MissingFolderId)",
       "probed_at": "2026-07-07T01:45:34+00:00"
     },
     "create_dialarm_rule": {
@@ -604,7 +604,7 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: A00DD89D-4A24-4B71-BD2E-25371215EB9C Response: {'RequestId': 'A00DD89D-4A24-4B71-BD2E-25371215EB9C', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectId Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: A00DD89D-4A24",
+      "note": "接口通，需调参(MissingProjectId)",
       "probed_at": "2026-07-07T01:45:34+00:00"
     },
     "delete_dialarm_rule": {
@@ -736,7 +736,7 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 7FF2775C-3DD1-49B4-999E-8E7C257B1CFD Response: {'RequestId': '7FF2775C-3DD1-49B4-999E-8E7C257B1CFD', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectId Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 7FF2775C-3DD1",
+      "note": "接口通，需调参(MissingProjectId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "update_disync_task": {
@@ -747,7 +747,7 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 648AF439-6738-451E-950C-513BD06BDA8E Response: {'RequestId': '648AF439-6738-451E-950C-513BD06BDA8E', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectId Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 648AF439-6738",
+      "note": "接口通，需调参(MissingProjectId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "run_cycle_dag_nodes": {
@@ -758,7 +758,7 @@
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: D3B567FC-A559-4DC2-BA68-8E317A98E6C8 Response: {'RequestId': 'D3B567FC-A559-4DC2-BA68-8E317A98E6C8', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectEnv Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: D3B567FC-A5",
+      "note": "接口通，需调参(MissingProjectEnv)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "run_manual_dag_nodes": {
@@ -769,7 +769,7 @@
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 42C9FC99-36B6-42C1-9B42-FB91813FD7BE Response: {'RequestId': '42C9FC99-36B6-42C1-9B42-FB91813FD7BE', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectEnv Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 42C9FC99-36",
+      "note": "接口通，需调参(MissingProjectEnv)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "set_success_instance": {
@@ -780,7 +780,7 @@
       "error_code": "MissingInstanceId",
       "error_message": "Error: MissingInstanceId code: 400, InstanceId is mandatory for this action. request id: 275FABCB-24FB-4112-9875-0424AE8303BE Response: {'RequestId': '275FABCB-24FB-4112-9875-0424AE8303BE', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingInstanceId Error: MissingInstanceId code: 400, InstanceId is mandatory for this action. request id: 275FABCB-24",
+      "note": "接口通，需调参(MissingInstanceId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "run_trigger_node": {
@@ -791,7 +791,7 @@
       "error_code": "MissingNodeId",
       "error_message": "Error: MissingNodeId code: 400, NodeId is mandatory for this action. request id: 266C6E63-52B6-4806-B76D-58DD6A028421 Response: {'RequestId': '266C6E63-52B6-4806-B76D-58DD6A028421', 'Message': 'NodeId",
       "evidence": "",
-      "note": "接口通，需调参: MissingNodeId Error: MissingNodeId code: 400, NodeId is mandatory for this action. request id: 266C6E63-52B6-4806-",
+      "note": "接口通，需调参(MissingNodeId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "update_node_owner": {
@@ -802,7 +802,7 @@
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 63BB29BA-79EA-49FB-BB97-757268C9C0AD Response: {'RequestId': '63BB29BA-79EA-49FB-BB97-757268C9C0AD', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectEnv Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 63BB29BA-79",
+      "note": "接口通，需调参(MissingProjectEnv)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "delete_remind": {
@@ -813,7 +813,7 @@
       "error_code": "MissingRemindId",
       "error_message": "Error: MissingRemindId code: 400, RemindId is mandatory for this action. request id: F9E6690D-E662-4B08-B7F5-2E548D5518D6 Response: {'RequestId': 'F9E6690D-E662-4B08-B7F5-2E548D5518D6', 'Message': 'Re",
       "evidence": "",
-      "note": "接口通，需调参: MissingRemindId Error: MissingRemindId code: 400, RemindId is mandatory for this action. request id: F9E6690D-E662-4",
+      "note": "接口通，需调参(MissingRemindId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "update_remind": {
@@ -824,7 +824,7 @@
       "error_code": "MissingRemindId",
       "error_message": "Error: MissingRemindId code: 400, RemindId is mandatory for this action. request id: 5C6DB7F2-7090-4614-90C9-9B3E272703B6 Response: {'RequestId': '5C6DB7F2-7090-4614-90C9-9B3E272703B6', 'Message': 'Re",
       "evidence": "",
-      "note": "接口通，需调参: MissingRemindId Error: MissingRemindId code: 400, RemindId is mandatory for this action. request id: 5C6DB7F2-7090-4",
+      "note": "接口通，需调参(MissingRemindId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "delete_lineage_relation": {
@@ -879,7 +879,7 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: DBB63333-28CC-4A41-9BBA-E0C7EC437C61 Response: {'RequestId': 'DBB63333-28CC-4A41-9BBA-E0C7EC437C61', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectId Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: DBB63333-28CC",
+      "note": "接口通，需调参(MissingProjectId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "start_migration": {
@@ -890,7 +890,7 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 0A805068-8EEE-45BF-9867-9828174B1F35 Response: {'RequestId': '0A805068-8EEE-45BF-9867-9828174B1F35', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingProjectId Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 0A805068-8EEE",
+      "note": "接口通，需调参(MissingProjectId)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "update_meta_table": {
@@ -901,7 +901,7 @@
       "error_code": "1010019999",
       "error_message": "Error: 1010019999 code: 400, 9901110307 : Param tableGuid is null request id: AE676D7D-46D4-416C-856C-1117E69B45B3 Response: {'RequestId': 'AE676D7D-46D4-416C-856C-1117E69B45B3', 'HostId': 'dataworks-",
       "evidence": "",
-      "note": "接口通，需调参: 1010019999 Error: 1010019999 code: 400, 9901110307 : Param tableGuid is null request id: AE676D7D-46D4-416C-856",
+      "note": "接口通，需调参(1010019999)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     },
     "update_meta_table_intro_wiki": {
@@ -912,7 +912,7 @@
       "error_code": "MissingTableGuid",
       "error_message": "Error: MissingTableGuid code: 400, TableGuid is mandatory for this action. request id: A3DC183A-AC8F-4D99-8C66-960CEADBA080 Response: {'RequestId': 'A3DC183A-AC8F-4D99-8C66-960CEADBA080', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参: MissingTableGuid Error: MissingTableGuid code: 400, TableGuid is mandatory for this action. request id: A3DC183A-AC8F",
+      "note": "接口通，需调参(MissingTableGuid)",
       "probed_at": "2026-07-07T01:45:35+00:00"
     }
   }
