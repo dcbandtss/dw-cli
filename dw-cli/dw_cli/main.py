@@ -38,6 +38,11 @@ from dw_cli.commands import raw as raw_cmds
 from dw_cli.commands import resource as resource_cmds
 from dw_cli.commands import table as table_cmds
 from dw_cli.commands import udf as udf_cmds
+from dw_cli.commands import instance_stat as instance_stat_cmds
+from dw_cli.commands import dag as dag_cmds
+from dw_cli.commands import node_io as node_io_cmds
+from dw_cli.commands import file_version as file_version_cmds
+from dw_cli.commands import alert as alert_cmds
 
 
 # ── 命令分组映射（顶层 help 按 rich Panel 展示，命令名仍平铺不加前缀，spec §9） ─────
@@ -49,6 +54,8 @@ _PANEL_NODE = "🧩 Node 节点调度"
 _PANEL_INST = "⚙️ Instance 实例运维"
 _PANEL_TABLE = "📊 Table 表管理"
 _PANEL_PROJ = "🏢 Project 工作空间"
+_PANEL_DAG = "🔄 DAG 运行控制"
+_PANEL_ALERT = "🔔 Alert 告警与主题"
 _PANEL_RAW = "🚀 Escape Hatch 逃生舱"
 
 _CMD_PANELS = {
@@ -81,6 +88,28 @@ _CMD_PANELS = {
     "get-instance": _PANEL_INST, "get-instance-log": _PANEL_INST, "list-instances": _PANEL_INST,
     "list-instance-history": _PANEL_INST, "restart-instance": _PANEL_INST, "resume-instance": _PANEL_INST,
     "stop-instance": _PANEL_INST, "suspend-instance": _PANEL_INST,
+    # instance_stat 实例统计
+    "list-success-instance-amount": _PANEL_INST,
+    "top-ten-elapsed-time-instance": _PANEL_INST,
+    "top-ten-error-times-instance": _PANEL_INST,
+    "list-instance-amount": _PANEL_INST,
+    # DAG 运行控制
+    "run-cycle-dag-nodes": _PANEL_DAG,
+    "run-manual-dag-nodes": _PANEL_DAG,
+    "get-dag": _PANEL_DAG,
+    "list-manual-dag-instances": _PANEL_DAG,
+    "set-success-instance": _PANEL_DAG,
+    # node_io 节点IO
+    "list-nodes-by-output": _PANEL_NODE,
+    "list-node-input-or-output": _PANEL_NODE,
+    # file_version 文件版本
+    "get-file-version": _PANEL_FILE,
+    "list-file-versions": _PANEL_FILE,
+    "get-file-type-statistic": _PANEL_FILE,
+    # alert 告警主题
+    "list-alert-messages": _PANEL_ALERT,
+    "list-reminds": _PANEL_ALERT,
+    "list-topics": _PANEL_ALERT,
     "raw": _PANEL_RAW,
 }
 
@@ -156,6 +185,11 @@ app.add_typer(raw_cmds.app, name="")
 app.add_typer(resource_cmds.app, name="")
 app.add_typer(table_cmds.app, name="")
 app.add_typer(udf_cmds.app, name="")
+app.add_typer(instance_stat_cmds.app, name="")
+app.add_typer(dag_cmds.app, name="")
+app.add_typer(node_io_cmds.app, name="")
+app.add_typer(file_version_cmds.app, name="")
+app.add_typer(alert_cmds.app, name="")
 
 
 def _apply_command_panels() -> None:

@@ -16,7 +16,7 @@
 
 **私有云探活图例**：✅可用　⚠️接口通需调参　❌未实现(404)　🔒需权限　❓未定　—不适用/未探
 
-## 一、已封装 CLI 命令（58 个，按模块分）
+## 一、已封装 CLI 命令（75 个，按模块分）
 
 > 命令名与 SDK 方法一一对应（kebab-case ↔ snake_case）。场景封装命令单独标出。
 
@@ -143,7 +143,50 @@
 |---|---|---|---|
 | `get-deployment` | 获取发布包详情（用于轮询异步操作状态） | `get_deployment` | 已封装 |
 
-## 二、raw 透传可用接口（47 个）
+
+### 运维统计 instance_stat（4 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `list-success-instance-amount` | 查询成功实例状态分布趋势 | `list_success_instance_amount` | 已封装 |
+| `top-ten-elapsed-time-instance` | 查询耗时最长的 Top 10 实例 | `top_ten_elapsed_time_instance` | 已封装 |
+| `top-ten-error-times-instance` | 查询报错次数最多的 Top 10 实例 | `top_ten_error_times_instance` | 已封装 |
+| `list-instance-amount` | 查询指定时间段的实例数量统计 | `list_instance_amount` | 已封装 |
+
+### DAG 运行控制 dag（5 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `run-cycle-dag-nodes` | 补数据运行（周期节点数据回补） | `run_cycle_dag_nodes` | 已封装 |
+| `run-manual-dag-nodes` | 运行手动业务流程节点 | `run_manual_dag_nodes` | 已封装 |
+| `get-dag` | 查询 DAG 详情 | `get_dag` | 已封装 |
+| `list-manual-dag-instances` | 查询手动 DAG 的实例列表 | `list_manual_dag_instances` | 已封装 |
+| `set-success-instance` | 将实例标记为成功（须 FAILURE/CHECKING） | `set_success_instance` | 已封装 |
+
+### 节点 IO node_io（2 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `list-nodes-by-output` | 根据输出名查下游节点 | `list_nodes_by_output` | 已封装 |
+| `list-node-input-or-output` | 查节点上游依赖或下游输出 | `list_node_input_or_output` | 已封装 |
+
+### 文件版本 file_version（3 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `get-file-version` | 获取文件指定版本详情 | `get_file_version` | 已封装 |
+| `list-file-versions` | 查询文件版本列表 | `list_file_versions` | 已封装 |
+| `get-file-type-statistic` | 获取节点任务类型分布统计 | `get_file_type_statistic` | 已封装 |
+
+### 告警主题 alert（3 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `list-alert-messages` | 查询告警消息列表 | `list_alert_messages` | 已封装 |
+| `list-reminds` | 查询自定义监控规则列表 | `list_reminds` | 已封装 |
+| `list-topics` | 查询运行异常主题列表 | `list_topics` | 已封装 |
+
+## 二、raw 透传可用接口（30 个）
 
 > 私有云探活 ✅ 或 ⚠️（接口在，给正确参数可用）。后续逐个真实测试后封装。
 
@@ -156,10 +199,7 @@
 | `delete_remind` | 调用DeleteRemind删除自定义监控报警规则。 | ⚠️ | 接口通，需调参(MissingRemindId) |
 | `deploy_file` | 发布文件至生产环境。 | ⚠️ | 接口通，需调参(1201111279) |
 | `establish_relation_table_to_business` | 相当于在数据开发页面右键单击业务流程，选择导入表的操作。 | ⚠️ | 接口通，需调参(MissingBusinessId) |
-| `get_dag` | 支持查询手动业务流程、手动任务、补数据的Dag详情信息，不支持查询日常调度Dag详情。 | ⚠️ | 接口通，需调参(MissingDagId) |
 | `get_data_source_meta` | 调用GetDataSourceMeta获取目标数据源的Meta信息。 | ⚠️ | 接口通，需调参(MissingDatasourceName) |
-| `get_file_type_statistic` | 获取节点任务类型的分布情况。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
-| `get_file_version` | 调用GetFileVersion获取文件的版本详情。 | ⚠️ | 接口通，需调参(MissingFileVersion) |
 | `get_instance_status_statistic` | 调用GetInstanceStatusCount获取实例不同状态的数量统计。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
 | `get_meta_column_lineage` | 调用GetMetaColumnLineage获取字段的血缘关系。 | ⚠️ | 接口通，需调参(MissingDirection) |
 | `get_meta_table_lineage` | 调用GetMetaTableLineage获取表的血缘关系。 | ⚠️ | 接口通，需调参(MissingDirection) |
@@ -169,24 +209,10 @@
 | `get_topic` | 调用GetTopic获取事件的详情。 | ⚠️ | 接口通，需调参(Invalid.Wkbench.TopicNotExist) |
 | `get_topic_influence` | 调用GetTopicInfluence获取事件影响的基线实例列表。 | ⚠️ | 接口通，需调参(Invalid.Wkbench.TopicNotExist) |
 | `import_data_sources` | 批量导入本地数据源至目标DataWorks工作空间。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `list_alert_messages` | 调用ListAlertMessages获取报警信息的列表。 | ⚠️ | 接口通，需调参(MissingBeginTime) |
 | `list_diproject_config` | 查看当前工作空间中数据集成同步解决方案任务默认的全局配置。 | ⚠️ | 接口通，需调参(MissingDestinationType) |
-| `list_file_versions` | 调用ListFileVersions查询文件的版本列表。 | ✅ | 私有云可用 |
-| `list_instance_amount` | 获取指定时间段周期实例数量的趋势。 | ⚠️ | 接口通，需调参(MissingBeginDate) |
-| `list_manual_dag_instances` | 获取手动执行的业务流程实例的信息。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
-| `list_node_input_or_output` | 查询当前节点的输入输出信息。 | ⚠️ | 接口通，需调参(InvalidNodeId) |
-| `list_nodes_by_output` | 根据节点的输出结果精确查询目标节点。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
 | `list_ref_disync_tasks` | 查看目标数据源所关联的数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingDatasourceName) |
-| `list_reminds` | 获取或搜索自定义监控规则列表。 | ✅ | 私有云可用 |
-| `list_success_instance_amount` | 获取业务日期当天生成的周期实例任务，在业务日期的不同整点时刻，运行成功的实例数量统计趋势。 | ⚠️ | 接口通，需调参 |
-| `list_topics` | 调用ListTopics获取或搜索事件列表。 | ⚠️ | 接口通，需调参(MissingBeginTime) |
-| `run_cycle_dag_nodes` | 调用RunCycleDagNodes创建补数据工作流。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
-| `run_manual_dag_nodes` | 手动业务流程必须已在环境界面提交发布，之后运维中心才会显示对应手动业务流程，您才可以使用该接口，触发手动业务流程运行。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
 | `run_trigger_node` | 调用RunTriggerNode运行一个触发式节点。 | ⚠️ | 接口通，需调参(MissingNodeId) |
-| `set_success_instance` | 调用SetSuccessInstance，重置失败状态的实例为成功。 | ⚠️ | 接口通，需调参(MissingInstanceId) |
 | `start_migration` | 调用StartMigration启动执行导入导出任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `top_ten_elapsed_time_instance` | 获取实例运行时长排行。 | ⚠️ | 接口通，需调参 |
-| `top_ten_error_times_instance` | 获取近一个月节点的出错排行。 | ⚠️ | 接口通，需调参 |
 | `update_business` | 调用UpdateBusiness更新业务流程。 | ⚠️ | 接口通，需调参(MissingBusinessId) |
 | `update_data_source` | 该接口用于更新数据源。 | ⚠️ | 接口通，需调参(MissingDataSourceId) |
 | `update_diproject_config` | 修改当前工作空间中数据集成同步解决方案任务默认的全局配置。 | ⚠️ | 接口通，需调参(MissingProjectId) |
