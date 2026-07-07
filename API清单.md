@@ -147,7 +147,7 @@
 
 | 操作(SDK方法)                              | 状态                                                                                                                                     | 废弃      | 备注                       |     |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------ | --- |
-| `check_file_deployment` | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。 | 待建(raw) | ⚠️ |  |
+| `check_file_deployment` | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。 | 待建(raw) | ⚠️ | ⚠️ |
 | `create_business`                      | 调用CreateBusiness，创建数据开发（DataStudio）的业务流程。                                                                                              | 已封装     |                          |     |
 | `create_connection`                    | 调用CreateConnection创建一个数据源。                                                                                                             | 废弃·不建议  | ⚠️                       |     |
 | `create_data_source`                   | 该接口用于创建DataWorks数据源。                                                                                                                   | 已封装     |                          |     |
@@ -165,17 +165,17 @@
 | `establish_relation_table_to_business` | 相当于在数据开发页面右键单击业务流程，选择导入表的操作。                                                                                                           | 待建(raw) |                          |     |
 | `export_data_sources`                  | 导出数据源列表。                                                                                                                               | 已封装     |                          |     |
 | `get_business`                         | 调用GetBusiness查询业务流程的详情。                                                                                                                | 已封装     |                          |     |
-| `get_data_source_meta` | 调用GetDataSourceMeta获取目标数据源的Meta信息。 | 待建(raw) | ⚠️ |  |
+| `get_data_source_meta` | 调用GetDataSourceMeta获取目标数据源的Meta信息。 | 待建(raw) | ⚠️ | ⚠️ |
 | `get_file`                             | 该接口用于获取文件的详情。                                                                                                                          | 已封装     |                          |     |
-| `get_file_type_statistic` | 获取节点任务类型的分布情况。 | 待建(raw) | ⚠️ |  |
-| `get_file_version` | 调用GetFileVersion获取文件的版本详情。 | 待建(raw) | ⚠️ |  |
+| `get_file_type_statistic` | 获取节点任务类型的分布情况。 | 待建(raw) | ⚠️ | ⚠️ |
+| `get_file_version` | 调用GetFileVersion获取文件的版本详情。 | 待建(raw) | ⚠️ | ⚠️ |
 | `get_folder`                           | 调用GetFolder获取文件夹的详情。                                                                                                                   | 已封装     |                          |     |
 | `import_data_sources`                  | 批量导入本地数据源至目标DataWorks工作空间。                                                                                                             | 待建(raw) |                          |     |
 | `list_business`                        | 调用ListBusiness查询业务流程的列表。                                                                                                               | 已封装     |                          |     |
 | `list_connections`                     | 调用ListConnections查询数据源列表。                                                                                                              | 废弃·不建议  | ⚠️                       |     |
 | `list_data_sources`                    | 该接口用于查询DataWorks的数据源列表。                                                                                                                | 已封装     |                          |     |
-| `list_file_type` | 查询任务节点的类型信息，包括类型Code和类型名称。 | 待建(raw) | 私有云探活404 NotFound,服务器未实现 | ❌ |
-| `list_file_versions` | 调用ListFileVersions查询文件的版本列表。 | 待建(raw) | ✅ |  |
+| `list_file_type` | 查询任务节点的类型信息，包括类型Code和类型名称。 | 待建(raw) | 私有云探活404 NotFound,服务器未实现 | ❌ | ❌ |
+| `list_file_versions` | 调用ListFileVersions查询文件的版本列表。 | 待建(raw) | ✅ | ✅ |
 | `list_files`                           | 调用ListFiles查询文件列表。                                                                                                                     | 已封装     |                          |     |
 | `list_folders`                         | 调用ListFolders查询文件夹的列表。                                                                                                                 | 已封装     |                          |     |
 | `set_data_source_share`                | 分享目标数据源至指定DataWorks工作空间或指定用户。                                                                                                          | 废弃·不建议  | ⚠️                       |     |
@@ -198,17 +198,17 @@
 | `delete_dijob`                             | 删除数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。        | 待建(raw) |     |     |
 | `delete_disync_task`                       | 调用DeleteDISyncTask接口，删除数据集成同步任务。当前仅支持使用该接口删除实时数据同步任务。 | 待建(raw) |     |     |
 | `deploy_disync_task`                       | 该接口用于发布实时同步任务。                                        | 待建(raw) |     |     |
-| `generate_disync_task_config_for_creating` | 异步生成同时任务的JSON。 | 待建(raw) | ❌ |  |
-| `generate_disync_task_config_for_updating` | 异步生成更新同步任务的JSON。 | 待建(raw) | ❌ |  |
-| `get_dialarm_rule` | 查询数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ |  |
-| `get_dijob` | 查看数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ |  |
-| `get_disync_instance_info` | 获取实时同步任务和同步解决方案任务的运行状态。 | 待建(raw) | ❌ |  |
-| `get_disync_task` | 获取数据集成实时同步任务和同步解决方案的详情。 | 待建(raw) | ❌ |  |
-| `list_dialarm_rules` | 查询数据集成新版任务告警规则列表，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ |  |
-| `list_dijobs` | 查询数据集成新版任务列表，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ |  |
-| `list_diproject_config` | 查看当前工作空间中数据集成同步解决方案任务默认的全局配置。 | 待建(raw) | ⚠️ |  |
-| `list_ref_disync_tasks` | 查看目标数据源所关联的数据集成同步任务。 | 待建(raw) | ⚠️ |  |
-| `query_disync_task_config_process_result` | 查询异步任务结果。 | 待建(raw) | ❌ |  |
+| `generate_disync_task_config_for_creating` | 异步生成同时任务的JSON。 | 待建(raw) | ❌ | ❌ |
+| `generate_disync_task_config_for_updating` | 异步生成更新同步任务的JSON。 | 待建(raw) | ❌ | ❌ |
+| `get_dialarm_rule` | 查询数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ | ❌ |
+| `get_dijob` | 查看数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ | ❌ |
+| `get_disync_instance_info` | 获取实时同步任务和同步解决方案任务的运行状态。 | 待建(raw) | ❌ | ❌ |
+| `get_disync_task` | 获取数据集成实时同步任务和同步解决方案的详情。 | 待建(raw) | ❌ | ❌ |
+| `list_dialarm_rules` | 查询数据集成新版任务告警规则列表，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ | ❌ |
+| `list_dijobs` | 查询数据集成新版任务列表，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | 待建(raw) | ❌ | ❌ |
+| `list_diproject_config` | 查看当前工作空间中数据集成同步解决方案任务默认的全局配置。 | 待建(raw) | ⚠️ | ⚠️ |
+| `list_ref_disync_tasks` | 查看目标数据源所关联的数据集成同步任务。 | 待建(raw) | ⚠️ | ⚠️ |
+| `query_disync_task_config_process_result` | 查询异步任务结果。 | 待建(raw) | ❌ | ❌ |
 | `start_dijob`                              | 启动数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。        | 待建(raw) |     |     |
 | `start_disync_instance`                    | 调用StartDISyncInstance接口，启动实时同步任务和解决方案同步任务。            | 待建(raw) |     |     |
 | `stop_dijob`                               | 停止数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。        | 待建(raw) |     |     |
@@ -225,22 +225,22 @@
 | `create_dag_complement`          | 调用CreateDagComplement创建补数据工作流。                              | 废弃·不建议  | ⚠️  |     |
 | `create_dag_test`                | 调用CreateDagTest创建冒烟测试工作流。                                   | 废弃·不建议  | ⚠️  |     |
 | `create_manual_dag`              | 手动业务流程必须已经在界面提交发布，运维中心能够找到对应的手动业务流程，才能使用该接口。                | 废弃·不建议  | ⚠️  |     |
-| `get_dag` | 支持查询手动业务流程、手动任务、补数据的Dag详情信息，不支持查询日常调度Dag详情。 | 待建(raw) | ⚠️ |  |
+| `get_dag` | 支持查询手动业务流程、手动任务、补数据的Dag详情信息，不支持查询日常调度Dag详情。 | 待建(raw) | ⚠️ | ⚠️ |
 | `get_instance`                   | 调用GetInstance接口，获取实例的详细信息。                                  | 已封装     |     |     |
 | `get_instance_consume_time_rank` | 调用GetInstanceConsumeTimeRank获取实例运行时长排行。                     | 废弃·不建议  | ⚠️  |     |
 | `get_instance_count_trend`       | 调用GetInstanceCountTrend获取周期实例数量的趋势。                         | 废弃·不建议  | ⚠️  |     |
 | `get_instance_error_rank`        | 调用GetInstanceErrorRank获取近一个月节点的出错排行。                        | 废弃·不建议  | ⚠️  |     |
 | `get_instance_log`               | 调用GetInstanceLog获取实例的日志。                                    | 已封装     |     |     |
 | `get_instance_status_count`      | 调用GetInstanceStatusCount获取实例不同状态的数量统计。                      | 废弃·不建议  | ⚠️  |     |
-| `get_instance_status_statistic` | 调用GetInstanceStatusCount获取实例不同状态的数量统计。 | 待建(raw) | ⚠️ |  |
+| `get_instance_status_statistic` | 调用GetInstanceStatusCount获取实例不同状态的数量统计。 | 待建(raw) | ⚠️ | ⚠️ |
 | `get_manual_dag_instances`       | 调用GetManualDagInstances，获取手动执行的业务流程实例的信息。                   | 废弃·不建议  | ⚠️  |     |
 | `get_success_instance_trend`     | 调用GetSuccessInstanceTrend获取当天任务分时段的统计趋势。                    | 废弃·不建议  | ⚠️  |     |
-| `list_dags` | 根据OpSeq（补数据唯一标识）获取单次补数据的所有Dag详情。 | 待建(raw) | ❌ |  |
-| `list_instance_amount` | 获取指定时间段周期实例数量的趋势。 | 待建(raw) | ⚠️ |  |
+| `list_dags` | 根据OpSeq（补数据唯一标识）获取单次补数据的所有Dag详情。 | 待建(raw) | ❌ | ❌ |
+| `list_instance_amount` | 获取指定时间段周期实例数量的趋势。 | 待建(raw) | ⚠️ | ⚠️ |
 | `list_instance_history`          | 调用ListInstanceHistory，获取所有实例历史记录，任务重跑一次就会生成一条历史记录。          | 已封装     | 私有云探活404 NotFound,服务器未实现 |     |
 | `list_instances`                 | 调用ListInstances获取实例的列表。                                     | 已封装     |     |     |
-| `list_manual_dag_instances` | 获取手动执行的业务流程实例的信息。 | 待建(raw) | ⚠️ |  |
-| `list_success_instance_amount` | 获取业务日期当天生成的周期实例任务，在业务日期的不同整点时刻，运行成功的实例数量统计趋势。 | 待建(raw) | ⚠️ |  |
+| `list_manual_dag_instances` | 获取手动执行的业务流程实例的信息。 | 待建(raw) | ⚠️ | ⚠️ |
+| `list_success_instance_amount` | 获取业务日期当天生成的周期实例任务，在业务日期的不同整点时刻，运行成功的实例数量统计趋势。 | 待建(raw) | ⚠️ | ⚠️ |
 | `restart_instance`               | 调用RestartInstance重启实例。                                      | 已封装     |     |     |
 | `resume_instance`                | 调用ResumeInstance恢复暂停状态的实例。                                  | 已封装     |     |     |
 | `run_cycle_dag_nodes`            | 调用RunCycleDagNodes创建补数据工作流。                                 | 待建(raw) |     |     |
@@ -248,8 +248,8 @@
 | `set_success_instance`           | 调用SetSuccessInstance，重置失败状态的实例为成功。                          | 待建(raw) |     |     |
 | `stop_instance`                  | 调用StopInstance终止实例。                                         | 已封装     | 高危须--confirm；私有云只能停运行态(WAIT_RESOURCE/WAIT_TIME/RUNNING/CHECKING),对SUCCESS/FAILURE报400     |     |
 | `suspend_instance`               | 调用SuspendInstance暂停实例。                                      | 已封装     |     |     |
-| `top_ten_elapsed_time_instance` | 获取实例运行时长排行。 | 待建(raw) | ⚠️ |  |
-| `top_ten_error_times_instance` | 获取近一个月节点的出错排行。 | 待建(raw) | ⚠️ |  |
+| `top_ten_elapsed_time_instance` | 获取实例运行时长排行。 | 待建(raw) | ⚠️ | ⚠️ |
+| `top_ten_error_times_instance` | 获取近一个月节点的出错排行。 | 待建(raw) | ⚠️ | ⚠️ |
 ### 节点 node（16）
 
 | 操作(SDK方法)                   | 描述                                                                | 状态      | 废弃  | 备注  |
@@ -259,12 +259,12 @@
 | `get_node_code`             | 调用GetNodeCode获取节点的代码。                                             | 已封装     |     |     |
 | `get_node_parents`          | 调用GetNodeParents获取节点上游列表。                                         | 已封装     |     |     |
 | `get_node_type_list_info`   | 查询节点类型信息，包括类型Code和类型名称。                                           | 废弃·不建议  | ⚠️  |     |
-| `list_inner_nodes` | 调用ListInnerNodes获取内部节点详情，例如查询组合节点、循环节点等节点类型的内部节点，不支持PAI节点的内部节点查询。 | 待建(raw) | ❌ |  |
-| `list_node_input_or_output` | 查询当前节点的输入输出信息。 | 待建(raw) | ⚠️ |  |
+| `list_inner_nodes` | 调用ListInnerNodes获取内部节点详情，例如查询组合节点、循环节点等节点类型的内部节点，不支持PAI节点的内部节点查询。 | 待建(raw) | ❌ | ❌ |
+| `list_node_input_or_output` | 查询当前节点的输入输出信息。 | 待建(raw) | ⚠️ | ⚠️ |
 | `list_node_io`              | 查询上下游节点的信息，只能查询一层。                                                | 废弃·不建议  | ⚠️  |     |
 | `list_node_iowith_options`  | 查询上下游节点的信息，只能查询一层。                                                | 废弃·不建议  | ⚠️  |     |
 | `list_nodes`                | 调用ListNodes获取节点的列表。                                               | 已封装     |     |     |
-| `list_nodes_by_output` | 根据节点的输出结果精确查询目标节点。 | 待建(raw) | ⚠️ |  |
+| `list_nodes_by_output` | 根据节点的输出结果精确查询目标节点。 | 待建(raw) | ⚠️ | ⚠️ |
 | `offline_node`              | 调用OfflineNode下线节点。                                                | 已封装     | 高危须--confirm；私有云探活404 NotFound,服务器未实现     |     |
 | `run_trigger_node`          | 调用RunTriggerNode运行一个触发式节点。                                        | 待建(raw) |     |     |
 | `search_nodes_by_output`    | 调用SearchNodesByOutput，根据输出精确查询节点。                                 | 废弃·不建议  | ⚠️  |     |
@@ -274,26 +274,26 @@
 
 | 操作(SDK方法)               | 描述                                      | 状态      | 废弃  | 备注  |
 | ----------------------- | --------------------------------------- | ------- | --- | --- |
-| `create_remind`         | 调用CreateRemind创建自定义报警规则。                | 待建(raw) |     |     |
+| `create_remind` | 调用CreateRemind创建自定义报警规则。 | 待建(raw) | ⚠️ |  |
 | `delete_remind`         | 调用DeleteRemind删除自定义监控报警规则。              | 待建(raw) |     |     |
-| `get_alert_message` | 调用GetAlertMessage接口，通过获取的AlertId查询报警信息。 | 待建(raw) | ❌ |  |
-| `get_remind` | 调用GetRemind接口，获取自定义监控报警规则的详情。 | 待建(raw) | ⚠️ |  |
-| `get_topic` | 调用GetTopic获取事件的详情。 | 待建(raw) | ⚠️ |  |
-| `get_topic_influence` | 调用GetTopicInfluence获取事件影响的基线实例列表。 | 待建(raw) | ⚠️ |  |
-| `list_alert_messages` | 调用ListAlertMessages获取报警信息的列表。 | 待建(raw) | ⚠️ |  |
-| `list_reminds` | 获取或搜索自定义监控规则列表。 | 待建(raw) | ✅ |  |
+| `get_alert_message` | 调用GetAlertMessage接口，通过获取的AlertId查询报警信息。 | 待建(raw) | ❌ | ❌ |
+| `get_remind` | 调用GetRemind接口，获取自定义监控报警规则的详情。 | 待建(raw) | ⚠️ | ⚠️ |
+| `get_topic` | 调用GetTopic获取事件的详情。 | 待建(raw) | ⚠️ | ⚠️ |
+| `get_topic_influence` | 调用GetTopicInfluence获取事件影响的基线实例列表。 | 待建(raw) | ⚠️ | ⚠️ |
+| `list_alert_messages` | 调用ListAlertMessages获取报警信息的列表。 | 待建(raw) | ⚠️ | ⚠️ |
+| `list_reminds` | 获取或搜索自定义监控规则列表。 | 待建(raw) | ✅ | ✅ |
 | `list_shift_personnels` | 获取值班表的值班人员列表。                           | 剔除      |     |     |
 | `list_shift_schedules`  | 获取运维中心值班表列表。                            | 剔除      |     |     |
-| `list_topics` | 调用ListTopics获取或搜索事件列表。 | 待建(raw) | ⚠️ |  |
+| `list_topics` | 调用ListTopics获取或搜索事件列表。 | 待建(raw) | ⚠️ | ⚠️ |
 | `update_remind`         | 调用UpdateRemind更新自定义监控规则。                | 待建(raw) |     |     |
 ### 上下游血缘 lineage（5）
 
 | 操作(SDK方法) | 描述 | 状态 | 废弃 | 备注 |
 |------|------|------|------|------|
 | `delete_lineage_relation` | 删除实体间血缘关系。 仅限于删除用户注册的自定义血缘关系。 | 待建(raw) |  | |
-| `get_meta_column_lineage` | 调用GetMetaColumnLineage获取字段的血缘关系。 | 待建(raw) | ⚠️ |  |
-| `get_meta_table_lineage` | 调用GetMetaTableLineage获取表的血缘关系。 | 待建(raw) | ⚠️ |  |
-| `list_lineage` | 查询实体的上下游血缘关系。 | 待建(raw) | ❌ |  |
+| `get_meta_column_lineage` | 调用GetMetaColumnLineage获取字段的血缘关系。 | 待建(raw) | ⚠️ | ⚠️ |
+| `get_meta_table_lineage` | 调用GetMetaTableLineage获取表的血缘关系。 | 待建(raw) | ⚠️ | ⚠️ |
+| `list_lineage` | 查询实体的上下游血缘关系。 | 待建(raw) | ❌ | ❌ |
 | `register_lineage_relation` | 注册实体关系，支持用户注册自定义的实体关系。 | 待建(raw) |  | |
 ### 引擎资源 engines（calc/cluster/resource_group）（6）
 
@@ -327,19 +327,19 @@
 | `get_meta_table_column`           | 该接口用于获取表的字段信息。                                                    | 已封装           |                                                        | 私有云须用 table_guid；Data.ColumnList[*]（非 DataEntityList）     |
 | `get_meta_table_full_info`        | 获取表的完整信息（包括字段信息）。                                                 | 已封装           |                                                        | 私有云须用 table_guid；Data 单对象含 TotalColumnCount+ColumnList     |
 | `get_meta_table_intro_wiki`       | 该接口用于获取表的使用说明。                                                    | 已封装           |                                                        | 只要 table_guid；表无 wiki 时 Data 为 null     |
-| `get_meta_table_list_by_category` | 该接口用于查询指定类目下的表。 | 待建(raw) | ⚠️ |  |
-| `get_meta_table_output` | 该接口用于获取表的产出信息。 | 待建(raw) | ⚠️ |  |
+| `get_meta_table_list_by_category` | 该接口用于查询指定类目下的表。 | 待建(raw) | ⚠️ | ⚠️ |
+| `get_meta_table_output` | 该接口用于获取表的产出信息。 | 待建(raw) | ⚠️ | ⚠️ |
 | `get_meta_table_partition`        | 该接口用于获取表的分区列表。                                                    | 已封装           |                                                        | 私有云须用 table_guid；Data.DataEntityList[*]；含嵌套子对象 sort_criterion（拆 --sort-field/--sort-order）     |
 | `get_meta_table_producing_tasks`  | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
 | `get_migration_process`           | 调用GetMigrationProcess获取导入导出任务的进度状态。                               | 剔除            |                                                        |     |
-| `get_migration_summary` | 调用GetMigrationSummary，获取导入导出任务的信息。 | 待建(raw) | ❌ |  |
+| `get_migration_summary` | 调用GetMigrationSummary，获取导入导出任务的信息。 | 待建(raw) | ❌ | ❌ |
 | `get_project`                     | 该接口用于查询一个DataWorks工作空间的详细信息。                                      | 已封装           |                                                        | Data含ProjectId/ProjectMode(2=基础/3=标准)/EnvTypes/Status等 |
 | `get_project_detail`              | 查询一个DataWorks工作空间的信息。                                             | 废弃·不建议        | ⚠️                                                     |     |
 | `list_meta_collection_entities`   | 该接口用于查询集合中的实体。                                                    | 剔除            |                                                        |     |
 | `list_meta_collections`           | 查询集合信息。 集合的概念包括数据地图页面上的专辑、专辑中的子类目等。 通过本接口可以指定集合类型查询集合信息。          | 剔除            |                                                        |     |
-| `list_meta_db` | 该接口用于查询数据库列表。 | 待建(raw) | SDK无此方法名(有get_meta_dbtable_list/get_meta_dbinfo),疑清单笔误 | ❌ |
+| `list_meta_db` | 该接口用于查询数据库列表。 | 待建(raw) | SDK无此方法名(有get_meta_dbtable_list/get_meta_dbinfo),疑清单笔误 | ❌ | ❌ |
 | `list_meta_dbwith_options`        | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
-| `list_migrations` | 获取导入导出迁移任务列表。 | 待建(raw) | ❌ |  |
+| `list_migrations` | 获取导入导出迁移任务列表。 | 待建(raw) | ❌ | ❌ |
 | `list_project_ids`                | 该接口用于查询指定阿里云账号（包括阿里云主账号或RAM用户）在目标地域下拥有角色权限的DataWorks工作空间的ID列表。    | 已封装           |                                                        | ProjectIds在顶层(不在Data里)，整数数组 |
 | `list_projects`                   | 该接口用于查询用户所在租户下的DataWorks工作空间列表。                                   | 已封装(doctor探活) |                                                        |     |
 | `mount_directory`                 | _(官方网页未单独列出)_                                                     | 剔除            |                                                        |     |
@@ -355,7 +355,7 @@
 
 | 操作(SDK方法)                | 描述                                          | 状态  | 废弃  | 备注  |
 | ------------------------ | ------------------------------------------- | --- | --- | --- |
-| `list_deployments` | 查询发布包列表信息。该功能与DataWorks控制台任务发布页面的发布包列表功能对应。 | 待建(raw) | ❌ |  |
+| `list_deployments` | 查询发布包列表信息。该功能与DataWorks控制台任务发布页面的发布包列表功能对应。 | 待建(raw) | ❌ | ❌ |
 | `list_measure_data`      | 该接口用于查询用户所在租户下最近30天电话告警、短信告警计量数据。           | 剔除  |     |     |
 | `query_default_template` | 调用QueryDefaultTemplate接口查询数据保护伞定义的默认分类分级模板。 | 剔除  |     |     |
 

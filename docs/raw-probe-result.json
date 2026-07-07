@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "probed_at": "2026-07-06T10:08:21+00:00",
+  "probed_at": "2026-07-07T01:34:28+00:00",
   "apis": {
     "check_file_deployment": {
       "api": "check_file_deployment",
@@ -485,6 +485,17 @@
       "evidence": "",
       "note": "私有云未实现(404)",
       "probed_at": "2026-07-06T10:08:21+00:00"
+    },
+    "create_remind": {
+      "api": "create_remind",
+      "category": "low-write",
+      "status": "b",
+      "http_status": 400,
+      "error_code": "InvalidRemindUnit",
+      "error_message": "Error: InvalidRemindUnit code: 400, Specified parameter RemindUnit is not valid. request id: 4D0DC53F-6094-4849-9BFA-2C482C022270 Response: {'RequestId': '4D0DC53F-6094-4849-9BFA-2C482C022270', 'Messa",
+      "evidence": "",
+      "note": "接口通，需调参: InvalidRemindUnit Error: InvalidRemindUnit code: 400, Specified parameter RemindUnit is not valid. request id: 4D0DC53",
+      "probed_at": "2026-07-07T01:34:26+00:00"
     }
   }
 }

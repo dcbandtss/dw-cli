@@ -108,9 +108,10 @@ WRITE_PARAMS: dict[str, dict] = {
     "create_remind": {
         "project_id": _DEFAULT_PROJECT_ID,
         "remind_name": "probe_tmp_remind",
-        "remind_type": "FAILED",
-        "alert_target": "0",
-        "owner": os.environ.get("DW_CLI_PROBE_OWNER", "1024793249603053"),
+        "remind_type": "NODE",
+        "remind_unit": "OWNER",
+        "alert_methods": "MAIL",
+        "node_ids": "2583882",
     },
 }
 
