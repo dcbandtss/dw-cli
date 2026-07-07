@@ -446,13 +446,15 @@
 - 覆盖：3b meta_table（10）、3a node/instance、3c/3d 各批。
 
 
-## raw 探活发现（2026-07-06 起，批次1只读 44 项）
+## raw 探活发现（2026-07-06/07，全量 83 项探活完成）
 
 > 探活脚本 scripts/probe_raw.py 真调私有云，五态判定：a可用/b接口通需调参/c未实现(404)/d需权限/e未定。
 > 真相源 docs/raw-probe-result.json，API清单.md 已同步探活列。
 
 ### ❌ c 未实现（私有云 404，18 项）—— 服务端 InvalidAction.NotFound
 - **DI 数据集成全套 404**：list_dijobs / get_dijob / list_dialarm_rules / get_dialarm_rule / get_disync_task / get_disync_instance_info / list_ref_disync_tasks / generate_disync_task_config_for_creating / generate_disync_task_config_for_updating / query_disync_task_config_process_result（共 10 项 DI 相关全挂）。**结论：私有云 DI 新版实时同步整套未部署，DI 封装(待办F)大概率无意义，raw 透传也透不通。**
+
+> 批次3 补充：DI 写类（create/delete/start/stop/terminate/update/deploy_disync_task + create_dialarm_rule/delete_dialarm_rule/update_dialarm_rule）**22 项全 404**。DI 模块（含告警 dialarm）在私有云完全不可用。唯一例外：create_disync_task / update_disync_task / update_diproject_config 是 b 态（接口在，需调参）——这 3 个值得注意，可能 disync_task 部分功能可用。
 - list_dags / list_deployments（DAG 部署相关 404）
 - list_file_type / list_inner_nodes / list_lineage / list_meta_db / list_migrations / get_migration_summary / get_alert_message（各模块零散 404）
 - list_meta_db 是 NoSuchMethod（SDK Client 无此方法，非 404；可能 SDK 版本差异）
@@ -472,3 +474,31 @@
 - DI 相关 10 项全 404 → 待办 F（DI 封装）探活后大概率放弃，标 raw 不可用即可。
 - b 类 24 项接口通，是未来语义封装的候选（给精确参数后可用）。
 - a 类 2 项可直接考虑封装。
+
+
+### 全量 83 项探活汇总（2026-07-07 完成）
+
+| 状态 | 数量 | 含义 |
+|---|---|---|
+| ✅ a 可用 | 2 | list_file_versions, list_reminds |
+| ⚠️ b 接口通需调参 | 45 | 接口在私有云可用，给正确参数能返回数据 |
+| ❌ c 未实现(404) | 36 | 私有云服务端 InvalidAction.NotFound |
+| 🔒 d 需权限 | 0 | — |
+| ❓ e 未定 | 0 | — |
+
+#### ❌ c 未实现 36 项（私有云缺口）
+- **DI 全系 22 项**（含 dialarm 告警 + dijob + disync_task 的 create/delete/start/stop/terminate/update/deploy/get/list/generate/query）——DI 新版实时同步整套未部署
+- **其他 14 项**：add_meta_collection_entity, create_export_migration, delete_lineage_relation, get_alert_message, get_migration_summary, list_dags, list_deployments, list_file_type, list_inner_nodes, list_lineage, list_meta_db(NoSuchMethod), list_migrations, register_lineage_relation, run_smoke_test
+
+#### ⚠️ b 接口通 45 项（未来封装候选）
+这些接口在私有云可用，只是探活参数不够精确。给正确参数后能返回数据，是语义封装的候选。典型：
+- 运维类：run_cycle_dag_nodes / run_manual_dag_nodes / run_trigger_node / set_success_instance（运行控制）
+- 监控类：get_remind / update_remind / delete_remind / create_remind / list_alert_messages / get_topic / list_topics
+- 元数据类：get_meta_column_lineage / get_meta_table_lineage / get_meta_table_output / get_meta_table_list_by_category / update_meta_table
+- 迁移类：create_import_migration / start_migration
+- 节点/文件类：deploy_file / update_node_owner / check_file_deployment / get_file_version
+- DI 部分：create_disync_task / update_disync_task / update_diproject_config（disync_task 部分可用）
+
+#### 对后续计划的影响
+- **待办 F（DI 封装）**：DI 全系 22 项 404，封装无意义。仅 create/update_disync_task + update_diproject_config 3 项 b 态，如需 DI 同步任务可考虑封装这 3 个。
+- **待办 E（raw help）**：45 项 b 态 + 2 项 a 态 = 47 项接口可用，raw help 里应标"私有云可用"；36 项 c 态标"私有云未实现"。
