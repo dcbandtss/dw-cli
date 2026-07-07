@@ -67,9 +67,11 @@ skill开发/
 阿里云*/
 .claude/
 .obsidian/
+aliyun dataworks skills/
 
 # 数据文件(CSV / 日志 / 大文本,非 CLI 开发产物)
 *.csv
+*.xlsx
 dataworks_export.log
 t99.txt
 20200518网页清单.txt
