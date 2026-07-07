@@ -94,12 +94,17 @@ def get_file(
 
     \b
     🚀 Examples:
-      # 取文件代码正文
-      dw-cli get-file --project-id 32890 --file-id 30704854 \\
+      # 取文件代码正文（默认 JSON 输出，Content 里换行是 \n 转义字面量）
+      dw-cli get-file --project-id <PID> --file-id <FID> \\
         --query "Data.File.Content"
 
+      # 下载文件内容到本地（换行符完整保留，必须 -o text + Out-File utf8）
+      dw-cli get-file --project-id <PID> --file-id <FID> \\
+        --query "Data.File.Content" -o text 2>$null \\
+        | Out-File -FilePath "path/to/file.sql" -Encoding utf8
+
       # 取节点的输入输出依赖（在 NodeConfiguration 下，不在 File 下）
-      dw-cli get-file --project-id 32890 --file-id 30704854 \\
+      dw-cli get-file --project-id <PID> --file-id <FID> \\
         --query "Data.NodeConfiguration.{In:InputList, Out:OutputList}"
 
     \b
@@ -108,6 +113,14 @@ def get_file(
       - 调度依赖: Data.NodeConfiguration.InputList  (数组，每项 {Input, ParseType})
       - 输出依赖: Data.NodeConfiguration.OutputList (数组，每项 {Output})
       - 调度配置: Data.NodeConfiguration.{CronExpress, CycleType, RerunMode, ResourceGroupId, SchedulerType, ParaValue}
+
+    \b
+    ⚠️ 下载文件内容注意：
+      - 默认 JSON 输出里 Content 的换行是 \n 转义字面量（两个字符），不是真换行；
+        直接重定向 `> file.sql` 写出来是一整行，且 PowerShell `>` 默认 UTF-16 会加 BOM。
+      - 下载文件正文必须用 `-q "Data.File.Content" -o text` 输出纯文本，
+        再用 `| Out-File -Encoding utf8` 写文件，换行符（0x0A）才完整保留。
+      - `2>$null` 屏蔽 stderr 的进度/诊断信息，避免混入文件。
     """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
