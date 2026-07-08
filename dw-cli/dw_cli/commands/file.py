@@ -46,18 +46,14 @@ def list_files(
                 page_size=page_size,
             )
             resp = dw_client.list_files_with_options(req, runtime)
-            data = output._to_jsonable(resp)  # 解包到 body
-            if isinstance(data, dict):
-                inner = data.get("Data") or {}
-                if isinstance(inner, dict) and "Files" in inner:
-                    data = {"data": inner.get("Files") or [], **{k: v for k, v in data.items() if k != "Data"}}
-            return data
+            return output._to_jsonable(resp)  # 解包到 body，保持 Data.Files 结构
 
         merged = paging.fetch_all(
             fetch_page=fetch_page,
             page_size=page_size,
             limit=limit,
-            items_path="data",
+            items_path="Data.Files",
+            envelope_path="Data",
         )
         paging.emit_paginated(
             merged, query=query, output=output_fmt,
@@ -247,26 +243,29 @@ def submit_file(
 ):
     """[低危] 提交文件至调度系统（submit_ 前缀，默认执行，无需 --confirm）。
 
-    SQL/SHELL/PYODPS 等节点在提交前**必须先用 update-file 配好输入输出依赖**：
-      - input_list：上游节点的输出名（必须是已提交的真实节点输出名）
-      - output_list：本节点的输出名（如 项目标识.节点名）
-      未配置会报「输入输出不能为空」；上游输出名不存在会报「父节点输出名:X不存在」。
-
-    提交后该文件会生成对应的调度节点（节点 ID 可用 list-nodes 查），
+    将文件提交至调度系统，生成对应的调度节点（节点 ID 可用 list-nodes 查），
     同时生成一个发布包（DeploymentId），可用 get-deployment 轮询状态。
+
+    文件的输入输出依赖、调度配置等通常在创建/编辑时已配好，可直接提交。
+    若提交失败，常见原因及对应修复：
+      - 「输入输出不能为空」→ SQL/SHELL/PYODPS 等节点需配 input/output，
+        用 update-file 补 --input-list（上游已提交节点输出名）和 --output-list
+      - 「父节点输出名:X不存在」→ input_list 填的不是已提交的真实节点输出名，
+        用 list-node-input-or-output --io-type output 查上游节点实际输出名
+      - 其他调度配置缺失 → 用 update-file 补齐后再提交
 
     \b
     🚀 Examples:
-      # 提交前：先用 update-file 配 input/output（SQL 节点必填）
-      dw-cli update-file --file-id 30704830 --project-id 32890 \\
-        --input-list "dqsc_prod_root" \\
-        --output-list "dqsc_prod.my_node_output"
+      # 直接提交（文件已配好依赖时）
+      dw-cli submit-file --file-id <FID> --project-id <PID> --comment "提交测试"
 
-      # 提交文件
-      dw-cli submit-file --file-id 30704830 --project-id 32890 --comment "提交测试"
+      # 提交失败：补 input/output 后重新提交
+      dw-cli update-file --file-id <FID> --project-id <PID> \\
+        --input-list "dqsc_prod_root" --output-list "dqsc_prod.my_node_output"
+      dw-cli submit-file --file-id <FID> --project-id <PID> --comment "补依赖后提交"
 
       # 查发布包状态
-      dw-cli get-deployment --deployment-id <DeploymentId> --project-id 32890 \\
+      dw-cli get-deployment --deployment-id <DeploymentId> --project-id <PID> \\
         --query "Data.Deployment.Status"
 
     \b
