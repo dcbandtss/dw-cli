@@ -492,7 +492,7 @@
 
 #### ⚠️ b 接口通 45 项（未来封装候选）
 这些接口在私有云可用，只是探活参数不够精确。给正确参数后能返回数据，是语义封装的候选。典型：
-- 运维类：run_cycle_dag_nodes / run_manual_dag_nodes / run_trigger_node / set_success_instance（运行控制）
+- 运维类：run_cycle_dag_nodes / run_manual_dag_nodes / set_success_instance（运行控制）；run_trigger_node 真调503见下
 - 监控类：get_remind / update_remind / delete_remind / create_remind / list_alert_messages / get_topic / list_topics
 - 元数据类：get_meta_column_lineage / get_meta_table_lineage / get_meta_table_output / get_meta_table_list_by_category / update_meta_table
 - 迁移类：create_import_migration / start_migration
@@ -502,3 +502,17 @@
 #### 对后续计划的影响
 - **待办 F（DI 封装）**：DI 全系 22 项 404，封装无意义。仅 create/update_disync_task + update_diproject_config 3 项 b 态，如需 DI 同步任务可考虑封装这 3 个。
 - **待办 E（raw help）**：45 项 b 态 + 2 项 a 态 = 47 项接口可用，raw help 里应标"私有云可用"；36 项 c 态标"私有云未实现"。
+
+## run_trigger_node 真调结论（2026-07-08）
+
+探活为 b 态（参数缺失返回 400 MissingNodeId，接口存在）。真调带正确参数后稳定返回 **503 ServiceUnavailable**（3 次复现），私有云触发器调度链路疑似未就绪。
+
+**真调参数**（取自实例本身字段，确保语义正确）：
+- node_id=2589112（http_test 触发器节点，SCHEDULER_TRIGGER 类型）
+- app_id=32890（工作空间）
+- biz_date=1783353600000（实例 Bizdate 字段，2026-07-07 00:00:00 毫秒时间戳）
+- cycle_time=1783440000000（实例 CycTime 字段，调度时间毫秒时间戳）
+
+参数获取方法：先 \list-instances --node-id <id> --bizdate\ 查到 WAIT_TRIGGER 状态实例，取其 Bizdate/CycTime 字段填入。
+
+**结论**：不封装为 CLI（私有云 503，触发链路不可用）。raw 仍可透传，但会 503。

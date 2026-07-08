@@ -791,8 +791,17 @@
       "error_code": "MissingNodeId",
       "error_message": "Error: MissingNodeId code: 400, NodeId is mandatory for this action. request id: 266C6E63-52B6-4806-B76D-58DD6A028421 Response: {'RequestId': '266C6E63-52B6-4806-B76D-58DD6A028421', 'Message': 'NodeId",
       "evidence": "",
-      "note": "接口通，需调参(MissingNodeId)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "探活 b(参数缺失400); 真调带正确参数(node_id/app_id/biz_date/cycle_time取实例CycTime/Bizdate)返回503 ServiceUnavailable, 私有云触发器调度链路疑似未就绪",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": {
+        "tested_at": "2026-07-08",
+        "node_id": 2589112,
+        "app_id": 32890,
+        "biz_date": 1783353600000,
+        "cycle_time": 1783440000000,
+        "result": "503 ServiceUnavailable (稳定复现3次)",
+        "conclusion": "私有云 run_trigger_node 后端服务不可用, 不封装为CLI"
+      }
     },
     "update_node_owner": {
       "api": "update_node_owner",
