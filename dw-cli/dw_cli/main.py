@@ -43,6 +43,7 @@ from dw_cli.commands import dag as dag_cmds
 from dw_cli.commands import node_io as node_io_cmds
 from dw_cli.commands import file_version as file_version_cmds
 from dw_cli.commands import alert as alert_cmds
+from dw_cli.commands import remind as remind_cmds
 
 
 # ── 命令分组映射（顶层 help 按 rich Panel 展示，命令名仍平铺不加前缀，spec §9） ─────
@@ -64,22 +65,22 @@ _CMD_PANELS = {
     "get-meta-table-basic-info": _PANEL_META, "get-meta-table-column": _PANEL_META,
     "get-meta-table-full-info": _PANEL_META, "get-meta-table-intro-wiki": _PANEL_META,
     "get-meta-table-change-log": _PANEL_META, "get-meta-table-partition": _PANEL_META,
-    "get-meta-dbtable-list": _PANEL_META, "search-meta-tables": _PANEL_META,
+    "get-meta-dbtable-list": _PANEL_META, "search-meta-tables": _PANEL_META, "get-meta-table-lineage": _PANEL_META, "get-meta-column-lineage": _PANEL_META, "get-meta-table-output": _PANEL_META, "update-meta-table": _PANEL_META,
     "list-files": _PANEL_FILE, "get-file": _PANEL_FILE, "create-file": _PANEL_FILE, "list-folders": _PANEL_FILE,
-    "get-folder": _PANEL_FILE, "create-folder": _PANEL_FILE, "delete-folder": _PANEL_FILE,
+    "get-folder": _PANEL_FILE, "create-folder": _PANEL_FILE, "delete-folder": _PANEL_FILE, "update-folder": _PANEL_FILE,
     "submit-file": _PANEL_FILE, "delete-file": _PANEL_FILE,
     "update-file": _PANEL_FILE, "create-and-submit-file": _PANEL_FILE,
     "create-udf-file": _PANEL_FILE, "update-udf-file": _PANEL_FILE,
     "create-resource-file": _PANEL_FILE, "create-resource-file-upload": _PANEL_FILE,
     "get-deployment": _PANEL_FILE,
     "get-business": _PANEL_NODE, "list-business": _PANEL_NODE,
-    "create-business": _PANEL_NODE, "delete-business": _PANEL_NODE,
+    "create-business": _PANEL_NODE, "delete-business": _PANEL_NODE, "update-business": _PANEL_NODE, "establish-relation-table-to-business": _PANEL_NODE,
     "create-table": _PANEL_TABLE, "delete-table": _PANEL_TABLE,
     "get-ddl-job-status": _PANEL_TABLE, "list-tables": _PANEL_TABLE,
     "get-project": _PANEL_PROJ, "list-project-ids": _PANEL_PROJ,
     "list-data-sources": _PANEL_META, "export-data-sources": _PANEL_META,
     "test-network-connection": _PANEL_META, "delete-data-source": _PANEL_META,
-    "create-data-source": _PANEL_META,
+    "create-data-source": _PANEL_META, "update-data-source": _PANEL_META,
     "get-node": _PANEL_NODE, "get-node-code": _PANEL_NODE, "get-node-parents": _PANEL_NODE,
     "get-node-children": _PANEL_NODE, "list-nodes": _PANEL_NODE, "offline-node": _PANEL_NODE,
     "update-node-run-mode": _PANEL_NODE,
@@ -109,7 +110,7 @@ _CMD_PANELS = {
     # alert 告警主题
     "list-alert-messages": _PANEL_ALERT,
     "list-reminds": _PANEL_ALERT,
-    "list-topics": _PANEL_ALERT,
+    "list-topics": _PANEL_ALERT, "get-topic": _PANEL_ALERT, "get-topic-influence": _PANEL_ALERT, "get-remind": _PANEL_ALERT, "create-remind": _PANEL_ALERT, "update-remind": _PANEL_ALERT, "delete-remind": _PANEL_ALERT,
     "raw": _PANEL_RAW,
 }
 
@@ -190,6 +191,7 @@ app.add_typer(dag_cmds.app, name="")
 app.add_typer(node_io_cmds.app, name="")
 app.add_typer(file_version_cmds.app, name="")
 app.add_typer(alert_cmds.app, name="")
+app.add_typer(remind_cmds.app, name="")
 
 
 def _apply_command_panels() -> None:

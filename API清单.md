@@ -16,7 +16,7 @@
 
 **私有云探活图例**：✅可用　⚠️接口通需调参　❌未实现(404)　🔒需权限　❓未定　—不适用/未探
 
-## 一、已封装 CLI 命令（75 个，按模块分）
+## 一、已封装 CLI 命令（91 个，按模块分）
 
 > 命令名与 SDK 方法一一对应（kebab-case ↔ snake_case）。场景封装命令单独标出。
 
@@ -27,7 +27,7 @@
 | `check-credentials` | 检测当前命中的凭据来源（脱敏前缀），给出配置指引 | `—` | 已建(自有) |
 | `doctor` | 自动排查：SDK版本/凭据/endpoint连通/端到端API调用 | `list_projects（探活）` | 已建(自有) |
 
-### folder 文件夹（4）
+### folder 文件夹（5）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -35,6 +35,7 @@
 | `get-folder` | 获取文件夹的详情 | `get_folder` | 已封装 |
 | `create-folder` | 创建文件夹（路径须带引擎子目录层） | `create_folder` | 已封装 |
 | `delete-folder` | 删除文件夹 | `delete_folder` | 已封装 |
+| `update-folder` | 更新文件夹名称 | `update_folder` | 已封装 |
 
 ### file 文件（7，含 1 场景封装）
 
@@ -48,7 +49,7 @@
 | `update-file` | 更新文件（含调度配置/依赖/重跑等 31 参数） | `update_file` | 已封装 |
 | `create-and-submit-file` | [场景封装] 新建+按需update+提交 | `create_file+update_file+submit_file` | 已封装(场景) |
 
-### business 业务流程（4）
+### business 业务流程（6）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -56,8 +57,10 @@
 | `list-business` | 查询业务流程列表 | `list_business` | 已封装 |
 | `create-business` | 创建业务流程 | `create_business` | 已封装 |
 | `delete-business` | 删除业务流程 | `delete_business` | 已封装 |
+| `update-business` | 更新业务流程 | `update_business` | 已封装 |
+| `establish-relation-table-to-business` | 关联表到业务流程 | `establish_relation_table_to_business` | 已封装 |
 
-### data_source 数据源（5）
+### data_source 数据源（6）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -66,6 +69,7 @@
 | `delete-data-source` | 删除数据源 | `delete_data_source` | 已封装 |
 | `export-data-sources` | 导出数据源列表 | `export_data_sources` | 已封装 |
 | `test-network-connection` | 测试数据源与资源组的网络连通性 | `test_network_connection` | 已封装 |
+| `update-data-source` | 更新数据源配置 | `update_data_source` | 已封装 |
 
 ### resource 资源（2）
 
@@ -106,7 +110,7 @@
 | `stop-instance` | 终止实例（⚠️高危须 --confirm） | `stop_instance` | 已封装 |
 | `suspend-instance` | 暂停实例 | `suspend_instance` | 已封装 |
 
-### meta_table 表元数据（10）
+### meta_table 表元数据（14）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -120,6 +124,10 @@
 | `get-meta-table-partition` | 获取表的分区列表 | `get_meta_table_partition` | 已封装 |
 | `get-meta-dbtable-list` | 获取引擎实例中的表（⚠️私有云 500） | `get_meta_dbtable_list` | 已封装 |
 | `search-meta-tables` | 根据条件搜索表 | `search_meta_tables` | 已封装 |
+| `get-meta-table-lineage` | 查询表血缘（上游/下游） | `get_meta_table_lineage` | 已封装 |
+| `get-meta-column-lineage` | 查询列级血缘 | `get_meta_column_lineage` | 已封装 |
+| `get-meta-table-output` | 查询表的产出任务 | `get_meta_table_output` | 已封装 |
+| `update-meta-table` | 更新表元数据 | `update_meta_table` | 已封装 |
 
 ### table 表管理（4）
 
@@ -178,15 +186,26 @@
 | `list-file-versions` | 查询文件版本列表 | `list_file_versions` | 已封装 |
 | `get-file-type-statistic` | 获取节点任务类型分布统计 | `get_file_type_statistic` | 已封装 |
 
-### 告警主题 alert（3 命令）
+### 告警主题 alert（1 命令）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
 | `list-alert-messages` | 查询告警消息列表 | `list_alert_messages` | 已封装 |
-| `list-reminds` | 查询自定义监控规则列表 | `list_reminds` | 已封装 |
+
+### 告警规则 remind（8 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `get-remind` | 查询告警规则详情 | `get_remind` | 已封装 |
+| `create-remind` | 创建告警规则 | `create_remind` | 已封装 |
+| `update-remind` | 更新告警规则 | `update_remind` | 已封装 |
+| `delete-remind` | 删除告警规则 | `delete_remind` | 已封装 |
+| `list-reminds` | 查询告警规则列表 | `list_reminds` | 已封装 |
+| `get-topic` | 查询运行异常主题详情 | `get_topic` | 已封装 |
+| `get-topic-influence` | 查询主题影响的下游基线 | `get_topic_influence` | 已封装 |
 | `list-topics` | 查询运行异常主题列表 | `list_topics` | 已封装 |
 
-## 二、raw 透传可用接口（30 个）
+## 二、raw 透传可用接口（15 个）
 
 > 私有云探活 ✅ 或 ⚠️（接口在，给正确参数可用）。后续逐个真实测试后封装。
 
@@ -195,33 +214,19 @@
 | `check_file_deployment` | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。 | ⚠️ | 接口通，需调参(MissingCheckerInstanceId) |
 | `create_disync_task` | 调用CreateDISyncTask创建数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 | `create_import_migration` | 调用CreateImportMigration创建导入任务，导入任务包含数据源信息、任务、表等对象的DataWorks导入导出包。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `create_remind` | 调用CreateRemind创建自定义报警规则。 | ⚠️ | 接口通，需调参(InvalidRemindUnit) |
-| `delete_remind` | 调用DeleteRemind删除自定义监控报警规则。 | ⚠️ | 接口通，需调参(MissingRemindId) |
 | `deploy_file` | 发布文件至生产环境。 | ⚠️ | 接口通，需调参(1201111279) |
-| `establish_relation_table_to_business` | 相当于在数据开发页面右键单击业务流程，选择导入表的操作。 | ⚠️ | 接口通，需调参(MissingBusinessId) |
 | `get_data_source_meta` | 调用GetDataSourceMeta获取目标数据源的Meta信息。 | ⚠️ | 接口通，需调参(MissingDatasourceName) |
 | `get_instance_status_statistic` | 调用GetInstanceStatusCount获取实例不同状态的数量统计。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
-| `get_meta_column_lineage` | 调用GetMetaColumnLineage获取字段的血缘关系。 | ⚠️ | 接口通，需调参(MissingDirection) |
-| `get_meta_table_lineage` | 调用GetMetaTableLineage获取表的血缘关系。 | ⚠️ | 接口通，需调参(MissingDirection) |
 | `get_meta_table_list_by_category` | 该接口用于查询指定类目下的表。 | ⚠️ | 接口通，需调参(MissingCategoryId) |
-| `get_meta_table_output` | 该接口用于获取表的产出信息。 | ⚠️ | 接口通，需调参(MissingTableGuid) |
-| `get_remind` | 调用GetRemind接口，获取自定义监控报警规则的详情。 | ⚠️ | 接口通，需调参(Invalid.Wkbench.Parameter) |
-| `get_topic` | 调用GetTopic获取事件的详情。 | ⚠️ | 接口通，需调参(Invalid.Wkbench.TopicNotExist) |
-| `get_topic_influence` | 调用GetTopicInfluence获取事件影响的基线实例列表。 | ⚠️ | 接口通，需调参(Invalid.Wkbench.TopicNotExist) |
 | `import_data_sources` | 批量导入本地数据源至目标DataWorks工作空间。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 | `list_diproject_config` | 查看当前工作空间中数据集成同步解决方案任务默认的全局配置。 | ⚠️ | 接口通，需调参(MissingDestinationType) |
 | `list_ref_disync_tasks` | 查看目标数据源所关联的数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingDatasourceName) |
 | `run_trigger_node` | 调用RunTriggerNode运行一个触发式节点。 | ⚠️ | 接口通，需调参(MissingNodeId) |
 | `start_migration` | 调用StartMigration启动执行导入导出任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `update_business` | 调用UpdateBusiness更新业务流程。 | ⚠️ | 接口通，需调参(MissingBusinessId) |
-| `update_data_source` | 该接口用于更新数据源。 | ⚠️ | 接口通，需调参(MissingDataSourceId) |
 | `update_diproject_config` | 修改当前工作空间中数据集成同步解决方案任务默认的全局配置。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 | `update_disync_task` | 更新数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `update_folder` | 调用UpdateFolder更新文件夹的信息。 | ⚠️ | 接口通，需调参(MissingFolderId) |
-| `update_meta_table` | 该接口用于更新表的Meta信息。 | ⚠️ | 接口通，需调参(1010019999) |
 | `update_meta_table_intro_wiki` | 该接口用于更新表的说明信息，当数据不存在时增加信息。 | ⚠️ | 接口通，需调参(MissingTableGuid) |
 | `update_node_owner` | 修改目标节点的负责人。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
-| `update_remind` | 调用UpdateRemind更新自定义监控规则。 | ⚠️ | 接口通，需调参(MissingRemindId) |
 
 ## 三、raw 透传不可用接口（39 个）
 

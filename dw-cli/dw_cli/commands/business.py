@@ -192,3 +192,61 @@ def _call_business(ctx: typer.Context, api_name: str, request, *, query, output_
         output.emit(resp, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
+
+@app.command("update-business")
+def update_business(
+    ctx: typer.Context,
+    business_id: int = typer.Option(..., "--business-id", help="???? ID"),
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    business_name: str = typer.Option(None, "--business-name", help="??????"),
+    description: str = typer.Option(None, "--description", help="??????"),
+    owner: str = typer.Option(None, "--owner", help="??? ID"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="???????"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """????????????????
+
+    
+    ?? Examples:
+      dw-cli update-business --business-id 34364 --project-id 32890 \
+        --description "new description"
+
+    
+    ?? Output JSON Structure:
+      - Success: true / HttpStatusCode: 200
+    """
+    _call_business(ctx, "update_business", dw_models.UpdateBusinessRequest(
+        business_id=business_id, project_id=project_id, business_name=business_name,
+        description=description, owner=owner, project_identifier=project_identifier,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("establish-relation-table-to-business")
+def establish_relation_table_to_business(
+    ctx: typer.Context,
+    business_id: str = typer.Option(..., "--business-id", help="???? ID"),
+    folder_id: str = typer.Option(..., "--folder-id", help="??? ID"),
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    table_guid: str = typer.Option(..., "--table-guid", help="????? odps.project.table"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="???????"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """????????????????????????
+
+    
+    ?? Examples:
+      dw-cli establish-relation-table-to-business --business-id 34364 \
+        --folder-id k0uxr6h53rte6puale3ncxsi --project-id 32890 \
+        --table-guid odps.dqsc_prod.my_table
+
+    
+    ?? Output JSON Structure:
+      - Success: true / HttpStatusCode: 200
+    """
+    _call_business(ctx, "establish_relation_table_to_business",
+                   dw_models.EstablishRelationTableToBusinessRequest(
+                       business_id=business_id, folder_id=folder_id, project_id=project_id,
+                       table_guid=table_guid, project_identifier=project_identifier,
+                   ), query=query, output_fmt=output_fmt)

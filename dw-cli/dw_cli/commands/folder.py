@@ -217,3 +217,28 @@ def _call_folder(ctx: typer.Context, api_name: str, request, *, query, output_fm
     except Exception as error:
         errors.fail(error)
 
+@app.command("update-folder")
+def update_folder(
+    ctx: typer.Context,
+    folder_id: str = typer.Option(..., "--folder-id", help="??? ID?????"),
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    folder_name: str = typer.Option(None, "--folder-name", help="??????"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="???????"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """????????
+
+    
+    ?? Examples:
+      dw-cli update-folder --folder-id k0uxr6h53rte6puale3ncxsi \
+        --project-id 32890 --folder-name new_name
+
+    
+    ?? Output JSON Structure:
+      - Success: true / HttpStatusCode: 200
+    """
+    _call_folder(ctx, "update_folder", dw_models.UpdateFolderRequest(
+        folder_id=folder_id, project_id=project_id, folder_name=folder_name,
+        project_identifier=project_identifier,
+    ), query=query, output_fmt=output_fmt)

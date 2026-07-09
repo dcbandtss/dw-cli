@@ -566,3 +566,137 @@ def _call_meta(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
         output.emit(resp, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
+
+# ---------------------------------------------------------------------------
+# ??? / ??? / ??? / ???????2026-07-09 ??????????
+# ---------------------------------------------------------------------------
+
+@app.command("get-meta-table-lineage")
+def get_meta_table_lineage(
+    ctx: typer.Context,
+    table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
+    database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
+    direction: str = typer.Option(..., "--direction", help="?????UP(??) / DOWN(??)"),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
+    page_size: int = typer.Option(100, "--page-size", help="????"),
+    next_primary_key: str = typer.Option(None, "--next-primary-key", help="?????HasNext=true ?? NextPrimaryKey?"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """???????????/?????
+
+    
+    ?? Examples:
+      dw-cli get-meta-table-lineage --table-guid odps.dqsc_prod.my_table \
+        --database-name dqsc_prod --direction UP
+
+    
+    ?? Output JSON Structure:
+      - Data.DataEntityList[*].{TableName, TableGuid, ...}
+      - Data.HasNext: ??????
+    """
+    _call_meta(ctx, "get_meta_table_lineage", dw_models.GetMetaTableLineageRequest(
+        table_guid=table_guid, database_name=database_name, direction=direction,
+        data_source_type=data_source_type, page_size=page_size,
+        next_primary_key=next_primary_key,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("get-meta-column-lineage")
+def get_meta_column_lineage(
+    ctx: typer.Context,
+    column_guid: str = typer.Option(..., "--column-guid",
+                                    help="???????? odps.project.table.column?????? odps. ??????500?"),
+    direction: str = typer.Option(..., "--direction", help="?????UP(??) / DOWN(??)"),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
+    database_name: str = typer.Option(None, "--database-name", help=_DB_HELP),
+    page_size: int = typer.Option(100, "--page-size", help="????"),
+    page_num: int = typer.Option(1, "--page-num", help="?????? page_num ?? page_number?"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?????????
+
+    
+    ?? Examples:
+      dw-cli get-meta-column-lineage --column-guid odps.dqsc_prod.my_table.my_col \
+        --direction UP
+
+    
+    ?? Output JSON Structure:
+      - Data.DataEntityList[*].{ColumnName, ColumnGuid, ...}
+      - Data.TotalCount
+
+    
+    ?? ???column_guid ??? odps. ??????? dqsc_prod.table.col?? 500 InternalError.Meta.Unknown?
+    """
+    _call_meta(ctx, "get_meta_column_lineage", dw_models.GetMetaColumnLineageRequest(
+        column_guid=column_guid, direction=direction,
+        data_source_type=data_source_type, database_name=database_name,
+        page_size=page_size, page_num=page_num,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("get-meta-table-output")
+def get_meta_table_output(
+    ctx: typer.Context,
+    table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
+    start_date: str = typer.Option(..., "--start-date", help="???? yyyy-MM-dd"),
+    end_date: str = typer.Option(..., "--end-date", help="???? yyyy-MM-dd"),
+    page_size: int = typer.Option(100, "--page-size", help="????"),
+    page_number: int = typer.Option(1, "--page-number", help="??"),
+    task_id: str = typer.Option(None, "--task-id", help="?? ID ??"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """???????????????????
+
+    
+    ?? Examples:
+      dw-cli get-meta-table-output --table-guid odps.dqsc_prod.my_table \
+        --start-date 2026-07-01 --end-date 2026-07-09
+
+    
+    ?? Output JSON Structure:
+      - Data.DataEntityList[*].{...}
+      - Data.TotalCount
+    """
+    _call_meta(ctx, "get_meta_table_output", dw_models.GetMetaTableOutputRequest(
+        table_guid=table_guid, start_date=start_date, end_date=end_date,
+        page_size=page_size, page_number=page_number, task_id=task_id,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("update-meta-table")
+def update_meta_table(
+    ctx: typer.Context,
+    table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
+    caption: str = typer.Option(None, "--caption", help="????/??"),
+    env_type: int = typer.Option(None, "--env-type", help="????"),
+    visibility: int = typer.Option(None, "--visibility", help="???"),
+    new_owner_id: str = typer.Option(None, "--new-owner-id", help="???? ID"),
+    category_id: int = typer.Option(None, "--category-id", help="?? ID"),
+    schema: str = typer.Option(None, "--schema", help="schema"),
+    added_labels: str = typer.Option(None, "--added-labels", help="?????????"),
+    removed_labels: str = typer.Option(None, "--removed-labels", help="?????????"),
+    project_id: int = typer.Option(None, "--project-id", help="???? ID"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """??????????/???/?????
+
+    
+    ?? Examples:
+      dw-cli update-meta-table --table-guid odps.dqsc_prod.my_table \
+        --caption "???" --env-type 1 --visibility 1
+
+    
+    ?? Output JSON Structure:
+      - UpdateResult: true??????????
+    """
+    _call_meta(ctx, "update_meta_table", dw_models.UpdateMetaTableRequest(
+        table_guid=table_guid, caption=caption, env_type=env_type,
+        visibility=visibility, new_owner_id=new_owner_id, category_id=category_id,
+        schema=schema, added_labels=added_labels, removed_labels=removed_labels,
+        project_id=project_id,
+    ), query=query, output_fmt=output_fmt)

@@ -310,3 +310,35 @@ def _call_data_source(ctx: typer.Context, api_name: str, request, *, query, outp
         output.emit(resp, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
+
+@app.command("update-data-source")
+def update_data_source(
+    ctx: typer.Context,
+    data_source_id: int = typer.Option(..., "--data-source-id", help="??? ID"),
+    description: str = typer.Option(None, "--description", help="?????"),
+    content: str = typer.Option(None, "--content", help="??????? JSON ?????? file://????????? content ??????????"),
+    env_type: int = typer.Option(None, "--env-type", help="???0=?? / 1=??"),
+    status: str = typer.Option(None, "--status", help="??"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?????????????????
+
+    
+    ?? Examples:
+      # ????????
+      dw-cli update-data-source --data-source-id 15603 --description "new desc"
+
+    
+    ?? Output JSON Structure:
+      - Data: true??????
+
+    
+    ?? ???content ??????accessKey/password????? content ????????
+    ?????????????? list-data-sources ?? content ???
+    """
+    content = load_arg(content)
+    _call_data_source(ctx, "update_data_source", dw_models.UpdateDataSourceRequest(
+        data_source_id=data_source_id, description=description, content=content,
+        env_type=env_type, status=status,
+    ), query=query, output_fmt=output_fmt)
