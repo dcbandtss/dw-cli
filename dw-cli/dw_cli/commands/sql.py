@@ -279,3 +279,81 @@ def run_sql(
         return
 
     _finish_and_emit(instance, limit, query, output_fmt, logview)
+
+
+
+@app.command("get-sql-instance")
+def get_sql_instance(
+    ctx: typer.Context,
+    instance_id: str = typer.Option(..., "--instance-id",
+        help="MaxCompute instance ID（run-sql 超时降级返回的 instance_id）"),
+    project: str = typer.Option(..., "--project",
+        help="MaxCompute 项目名（与 run-sql --project 一致）"),
+    limit: int = typer.Option(100, "--limit",
+        help="结果行上限（仅 instance 完成且有结果集时生效）"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """跟进 MaxCompute instance 状态 + 取结果（run-sql 超时降级闭环）。
+
+    \b
+    🚀 Examples:
+      # run-sql 超时降级后跟进
+      dw-cli get-sql-instance --instance-id 20260709092621464gt655m43 \\
+        --project dqsc_prod
+
+    \b
+    📦 Output JSON Structure:
+      - 运行中:    {status:"running", instance_id, logview, raw_status}
+      - 完成+结果: {columns, rows, truncated, total, instance_id, logview}
+      - 完成+无结果: {success, status, instance_id, logview}
+
+    \b
+    ⚠️ 复用 run-sql 的结果读取逻辑（_read_results）与 logview 替换（fix_logview）。
+    """
+    auth = auth_params(ctx)
+    try:
+        o = odps_client.build_odps(project, **auth)
+        instance = o.get_instance(instance_id)
+    except Exception as error:
+        errors.fail(error)
+        return
+
+    logview = fix_logview(_safe_logview(instance))
+    status_str = str(instance.status)
+    status_upper = status_str.upper()
+
+    is_done = "TERMINATED" in status_upper or status_upper.startswith("FAIL")
+    if not is_done:
+        result = {
+            "status": "running",
+            "instance_id": instance_id,
+            "logview": logview,
+            "raw_status": status_str,
+        }
+        output.emit(result, query=query, output=output_fmt)
+        return
+
+    results = _read_results(instance, limit)
+    if results is None:
+        success = False
+        try:
+            success = bool(instance.is_successful())
+        except Exception:
+            success = not status_upper.startswith("FAIL")
+        result = {
+            "success": success,
+            "status": status_str,
+            "instance_id": instance_id,
+            "logview": logview,
+        }
+    else:
+        result = {
+            "columns": results["columns"],
+            "rows": results["rows"],
+            "truncated": results["truncated"],
+            "total": results["total"],
+            "instance_id": instance_id,
+            "logview": logview,
+        }
+    output.emit(result, query=query, output=output_fmt)
