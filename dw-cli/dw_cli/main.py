@@ -45,6 +45,7 @@ from dw_cli.commands import file_version as file_version_cmds
 from dw_cli.commands import alert as alert_cmds
 from dw_cli.commands import remind as remind_cmds
 from dw_cli.commands import di as di_cmds
+from dw_cli.commands import sql as sql_cmds
 
 
 # ── 命令分组映射（顶层 help 按 rich Panel 展示，命令名仍平铺不加前缀，spec §9） ─────
@@ -59,6 +60,7 @@ _PANEL_PROJ = "🏢 Project 工作空间"
 _PANEL_DAG = "🔄 DAG 运行控制"
 _PANEL_ALERT = "🔔 Alert 告警与主题"
 _PANEL_RAW = "🚀 Escape Hatch 逃生舱"
+_PANEL_SQL = "🔧 SQL 直连执行"
 
 _CMD_PANELS = {
     "doctor": _PANEL_DIAG, "check-credentials": _PANEL_DIAG,
@@ -113,6 +115,8 @@ _CMD_PANELS = {
     "list-reminds": _PANEL_ALERT,
     "list-topics": _PANEL_ALERT, "get-topic": _PANEL_ALERT, "get-topic-influence": _PANEL_ALERT, "get-remind": _PANEL_ALERT, "create-remind": _PANEL_ALERT, "update-remind": _PANEL_ALERT, "delete-remind": _PANEL_ALERT,
     "raw": _PANEL_RAW,
+    "run-sql": _PANEL_SQL,
+    "get-sql-instance": _PANEL_SQL,
 }
 
 # AI AGENT 强制守则（末尾面板，rich 会按段渲染）
@@ -184,6 +188,7 @@ app.add_typer(node_cmds.app, name="")
 app.add_typer(instance_cmds.app, name="")
 app.add_typer(project_cmds.app, name="")
 app.add_typer(raw_cmds.app, name="")
+app.add_typer(sql_cmds.app, name="")
 app.add_typer(resource_cmds.app, name="")
 app.add_typer(table_cmds.app, name="")
 app.add_typer(udf_cmds.app, name="")
