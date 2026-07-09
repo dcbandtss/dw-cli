@@ -22,6 +22,7 @@ import typer
 from alibabacloud_dataworks_public20200518 import models as dw_models
 
 from dw_cli.core import client, errors, output, paging
+from dw_cli.core.load_arg import load_arg
 from dw_cli.commands import auth_params, output_option, query_option
 from dw_cli.commands.node import _list_common  # 复用列表统一逻辑
 
@@ -699,4 +700,30 @@ def update_meta_table(
         visibility=visibility, new_owner_id=new_owner_id, category_id=category_id,
         schema=schema, added_labels=added_labels, removed_labels=removed_labels,
         project_id=project_id,
+    ), query=query, output_fmt=output_fmt)
+
+@app.command("update-meta-table-intro-wiki")
+def update_meta_table_intro_wiki(
+    ctx: typer.Context,
+    table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
+    content: str = typer.Option(..., "--content", help="??????? file:// ?????"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?????????wiki?????????
+
+    \b
+    ?? Examples:
+      dw-cli update-meta-table-intro-wiki --table-guid odps.dqsc_prod.my_table \
+        --content "?????"
+      dw-cli update-meta-table-intro-wiki --table-guid odps.dqsc_prod.my_table \
+        --content file://wiki.md
+
+    \b
+    ?? Output JSON Structure:
+      - UpdateResult: true?????
+    """
+    content = load_arg(content)
+    _call_meta(ctx, "update_meta_table_intro_wiki", dw_models.UpdateMetaTableIntroWikiRequest(
+        table_guid=table_guid, content=content,
     ), query=query, output_fmt=output_fmt)

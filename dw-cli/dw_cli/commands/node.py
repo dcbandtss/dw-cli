@@ -324,3 +324,26 @@ def _list_common(*, dw_client, runtime, method, build_req, items_key,
         output.emit(resp, query=query, output=output_fmt, default_table_query=table_query)
     except Exception as error:
         errors.fail(error)
+
+@app.command("update-node-owner")
+def update_node_owner(
+    ctx: typer.Context,
+    node_id: int = typer.Option(..., "--node-id", help="?? ID"),
+    user_id: str = typer.Option(..., "--user-id", help="???? ID?????? ID?"),
+    project_env: str = typer.Option("PROD", "--project-env", help="???PROD/DEV"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?????????
+
+    \b
+    ?? Examples:
+      dw-cli update-node-owner --node-id 2587817 --user-id 5243610875270216803
+
+    \b
+    ?? Output JSON Structure:
+      - Success: true / RequestId
+    """
+    _call_node(ctx, "update_node_owner", dw_models.UpdateNodeOwnerRequest(
+        node_id=node_id, user_id=user_id, project_env=project_env,
+    ), query=query, output_fmt=output_fmt)

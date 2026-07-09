@@ -851,3 +851,40 @@ def _call_file(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
         output.emit(resp, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
+
+@app.command("deploy-file")
+def deploy_file(
+    ctx: typer.Context,
+    file_id: int = typer.Option(..., "--file-id", help="?? ID"),
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    node_id: int = typer.Option(None, "--node-id", help="?? ID??????????????"),
+    comment: str = typer.Option("", "--comment", help="????"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="???????"),
+    confirm_flag: bool = typer.Option(False, "--confirm", help="?????deploy_ ????????????"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?????????????? --confirm??
+
+    deploy_file ????????????????????????????????
+
+    \b
+    ?? Examples:
+      # ???????
+      dw-cli deploy-file --file-id 30704483 --project-id 32890 --comment "??"
+      # ????
+      dw-cli deploy-file --file-id 30704483 --project-id 32890 --comment "??" --confirm
+
+    \b
+    ?? Output JSON Structure:
+      - Data: ???? ID ? true
+    """
+    from dw_cli.core import confirm
+    decision = confirm.check_write("deploy_file", confirm=confirm_flag, dry_run=False,
+                                   dry_run_summary=f"????? {file_id} ?????")
+    if not decision.will_execute:
+        return
+    _call_file(ctx, "deploy_file", dw_models.DeployFileRequest(
+        file_id=file_id, project_id=project_id, node_id=node_id,
+        comment=comment, project_identifier=project_identifier,
+    ), query=query, output_fmt=output_fmt)

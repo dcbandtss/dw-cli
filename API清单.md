@@ -16,7 +16,7 @@
 
 **私有云探活图例**：✅可用　⚠️接口通需调参　❌未实现(404)　🔒需权限　❓未定　—不适用/未探
 
-## 一、已封装 CLI 命令（91 个，按模块分）
+## 一、已封装 CLI 命令（98 个，按模块分）
 
 > 命令名与 SDK 方法一一对应（kebab-case ↔ snake_case）。场景封装命令单独标出。
 
@@ -37,7 +37,7 @@
 | `delete-folder` | 删除文件夹 | `delete_folder` | 已封装 |
 | `update-folder` | 更新文件夹名称 | `update_folder` | 已封装 |
 
-### file 文件（7，含 1 场景封装）
+### file 文件（8，含 1 场景封装）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -46,6 +46,7 @@
 | `create-file` | 创建文件（也用于私有云建资源） | `create_file` | 已封装 |
 | `submit-file` | 提交文件至调度系统 | `submit_file` | 已封装 |
 | `delete-file` | 删除文件（已提交文件触发异步删除，--wait 轮询） | `delete_file` | 已封装 |
+| `deploy-file` | 发布文件至生产（高危须--confirm） | `deploy_file` | 已封装 |
 | `update-file` | 更新文件（含调度配置/依赖/重跑等 31 参数） | `update_file` | 已封装 |
 | `create-and-submit-file` | [场景封装] 新建+按需update+提交 | `create_file+update_file+submit_file` | 已封装(场景) |
 
@@ -60,7 +61,7 @@
 | `update-business` | 更新业务流程 | `update_business` | 已封装 |
 | `establish-relation-table-to-business` | 关联表到业务流程 | `establish_relation_table_to_business` | 已封装 |
 
-### data_source 数据源（6）
+### data_source 数据源（7）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -70,6 +71,7 @@
 | `export-data-sources` | 导出数据源列表 | `export_data_sources` | 已封装 |
 | `test-network-connection` | 测试数据源与资源组的网络连通性 | `test_network_connection` | 已封装 |
 | `update-data-source` | 更新数据源配置 | `update_data_source` | 已封装 |
+| `get-data-source-meta` | 获取数据源元信息 | `get_data_source_meta` | 已封装 |
 
 ### resource 资源（2）
 
@@ -85,7 +87,7 @@
 | `create-udf-file` | 创建函数类型文件 | `create_udf_file` | 已封装 |
 | `update-udf-file` | 更新函数文件信息 | `update_udf_file` | 已封装 |
 
-### node 节点调度（7）
+### node 节点调度（8）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -96,6 +98,7 @@
 | `list-nodes` | 获取节点列表 | `list_nodes` | 已封装 |
 | `offline-node` | 下线节点（⚠️私有云 404） | `offline_node` | 已封装 |
 | `update-node-run-mode` | 冻结/解冻节点 | `update_node_run_mode` | 已封装 |
+| `update-node-owner` | 修改节点责任人 | `update_node_owner` | 已封装 |
 
 ### instance 实例运维（8）
 
@@ -110,7 +113,7 @@
 | `stop-instance` | 终止实例（⚠️高危须 --confirm） | `stop_instance` | 已封装 |
 | `suspend-instance` | 暂停实例 | `suspend_instance` | 已封装 |
 
-### meta_table 表元数据（14）
+### meta_table 表元数据（15）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -128,6 +131,7 @@
 | `get-meta-column-lineage` | 查询列级血缘 | `get_meta_column_lineage` | 已封装 |
 | `get-meta-table-output` | 查询表的产出任务 | `get_meta_table_output` | 已封装 |
 | `update-meta-table` | 更新表元数据 | `update_meta_table` | 已封装 |
+| `update-meta-table-intro-wiki` | 更新表说明wiki | `update_meta_table_intro_wiki` | 已封装 |
 
 ### table 表管理（4）
 
@@ -152,13 +156,14 @@
 | `get-deployment` | 获取发布包详情（用于轮询异步操作状态） | `get_deployment` | 已封装 |
 
 
-### 运维统计 instance_stat（4 命令）
+### 运维统计 instance_stat（5 命令）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
 | `list-success-instance-amount` | 查询成功实例状态分布趋势 | `list_success_instance_amount` | 已封装 |
 | `top-ten-elapsed-time-instance` | 查询耗时最长的 Top 10 实例 | `top_ten_elapsed_time_instance` | 已封装 |
 | `top-ten-error-times-instance` | 查询报错次数最多的 Top 10 实例 | `top_ten_error_times_instance` | 已封装 |
+| `get-instance-status-statistic` | 查询实例状态数量统计 | `get_instance_status_statistic` | 已封装 |
 | `list-instance-amount` | 查询指定时间段的实例数量统计 | `list_instance_amount` | 已封装 |
 
 ### DAG 运行控制 dag（5 命令）
@@ -205,7 +210,14 @@
 | `get-topic-influence` | 查询主题影响的下游基线 | `get_topic_influence` | 已封装 |
 | `list-topics` | 查询运行异常主题列表 | `list_topics` | 已封装 |
 
-## 二、raw 透传可用接口（15 个）
+### di 数据集成全局配置（2 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `list-diproject-config` | 查询DI全局配置 | `list_diproject_config` | 已封装 |
+| `update-diproject-config` | 更新DI全局配置 | `update_diproject_config` | 已封装 |
+
+## 二、raw 透传可用接口（7 个）
 
 > 私有云探活 ✅ 或 ⚠️（接口在，给正确参数可用）。后续逐个真实测试后封装。
 
@@ -214,26 +226,19 @@
 | `check_file_deployment` | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。 | ⚠️ | 接口通，需调参(MissingCheckerInstanceId) |
 | `create_disync_task` | 调用CreateDISyncTask创建数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 | `create_import_migration` | 调用CreateImportMigration创建导入任务，导入任务包含数据源信息、任务、表等对象的DataWorks导入导出包。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `deploy_file` | 发布文件至生产环境。 | ⚠️ | 接口通，需调参(1201111279) |
-| `get_data_source_meta` | 调用GetDataSourceMeta获取目标数据源的Meta信息。 | ⚠️ | 接口通，需调参(MissingDatasourceName) |
-| `get_instance_status_statistic` | 调用GetInstanceStatusCount获取实例不同状态的数量统计。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
 | `get_meta_table_list_by_category` | 该接口用于查询指定类目下的表。 | ⚠️ | 接口通，需调参(MissingCategoryId) |
 | `import_data_sources` | 批量导入本地数据源至目标DataWorks工作空间。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `list_diproject_config` | 查看当前工作空间中数据集成同步解决方案任务默认的全局配置。 | ⚠️ | 接口通，需调参(MissingDestinationType) |
 | `list_ref_disync_tasks` | 查看目标数据源所关联的数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingDatasourceName) |
-| `run_trigger_node` | 调用RunTriggerNode运行一个触发式节点。 | ⚠️ | 接口通，需调参(MissingNodeId) |
 | `start_migration` | 调用StartMigration启动执行导入导出任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `update_diproject_config` | 修改当前工作空间中数据集成同步解决方案任务默认的全局配置。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 | `update_disync_task` | 更新数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `update_meta_table_intro_wiki` | 该接口用于更新表的说明信息，当数据不存在时增加信息。 | ⚠️ | 接口通，需调参(MissingTableGuid) |
-| `update_node_owner` | 修改目标节点的负责人。 | ⚠️ | 接口通，需调参(MissingProjectEnv) |
 
-## 三、raw 透传不可用接口（39 个）
+## 三、raw 透传不可用接口（40 个）
 
 > 私有云探活 ❌（服务端 InvalidAction.NotFound，未部署）或未探。raw 透传也透不通。
 
 | SDK 方法 | 描述 | 私有云探活 | 备注 |
 |---|---|---|---|
+| `run_trigger_node` | 调用RunTriggerNode运行一个触发式节点。 | ⚠️ | 接口通，需调参(MissingNodeId) |
 | `add_meta_collection_entity` | 该接口用于添加实体到集合中。 | ❌ | 私有云未实现(404) |
 | `callback_extension` |  | — |  |
 | `create_dialarm_rule` | 创建数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |

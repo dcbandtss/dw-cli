@@ -125,3 +125,32 @@ def list_instance_amount(
     _call(ctx, "list_instance_amount", dw_models.ListInstanceAmountRequest(
         project_id=project_id, begin_date=begin_date, end_date=end_date,
     ), query=query, output_fmt=output_fmt)
+
+@app.command("get-instance-status-statistic")
+def get_instance_status_statistic(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    biz_date: str = typer.Option(..., "--biz-date", help="???? yyyy-MM-dd"),
+    project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
+    dag_type: str = typer.Option("DAILY", "--dag-type", help="DAG ???DAILY(??)/MANUAL(??)/SMOKE_TEST(??)/SUPPLY_DATA(???)/BUSINESS_PROCESS_DAG(???)"),
+    scheduler_period: str = typer.Option(None, "--scheduler-period", help="?????DAY/?"),
+    scheduler_type: str = typer.Option(None, "--scheduler-type", help="?????NORMAL/MANUAL/PAUSE/SKIP"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?????????????????????
+
+    \b
+    ?? Examples:
+      dw-cli get-instance-status-statistic --project-id 32890 --biz-date 2026-07-09
+      dw-cli get-instance-status-statistic --project-id 32890 --biz-date 2026-07-09 \
+        --dag-type MANUAL
+
+    \b
+    ?? Output JSON Structure:
+      - StatusCount.{TotalCount, StatusCount: [...]}
+    """
+    _call(ctx, "get_instance_status_statistic", dw_models.GetInstanceStatusStatisticRequest(
+        project_id=project_id, biz_date=biz_date, project_env=project_env,
+        dag_type=dag_type, scheduler_period=scheduler_period, scheduler_type=scheduler_type,
+    ), query=query, output_fmt=output_fmt)

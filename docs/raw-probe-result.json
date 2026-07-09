@@ -5,24 +5,26 @@
     "check_file_deployment": {
       "api": "check_file_deployment",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingCheckerInstanceId",
       "error_message": "Error: MissingCheckerInstanceId code: 400, CheckerInstanceId is mandatory for this action. request id: 954DBDB6-0050-4552-AF85-55266DEE12A4 Response: {'RequestId': '954DBDB6-0050-4552-AF85-55266DEE12A",
       "evidence": "",
-      "note": "接口通，需调参(MissingCheckerInstanceId)",
-      "probed_at": "2026-07-06T10:08:17+00:00"
+      "note": "?????(??????), ???CLI??",
+      "probed_at": "2026-07-06T10:08:17+00:00",
+      "real_test": "2026-07-09"
     },
     "get_data_source_meta": {
       "api": "get_data_source_meta",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingDatasourceName",
       "error_message": "Error: MissingDatasourceName code: 400, DatasourceName is mandatory for this action. request id: 106CB3A9-3EA6-4DA5-BC27-B02BD3295CE3 Response: {'RequestId': '106CB3A9-3EA6-4DA5-BC27-B02BD3295CE3', 'M",
       "evidence": "",
-      "note": "接口通，需调参(MissingDatasourceName)",
-      "probed_at": "2026-07-06T10:08:17+00:00"
+      "note": "??OK(datasource_name+env_type+project_id), ??Data.Meta(JSON???????), ???",
+      "probed_at": "2026-07-06T10:08:17+00:00",
+      "real_test": "2026-07-09"
     },
     "get_file_type_statistic": {
       "api": "get_file_type_statistic",
@@ -159,24 +161,26 @@
     "list_diproject_config": {
       "api": "list_diproject_config",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingDestinationType",
       "error_message": "Error: MissingDestinationType code: 400, DestinationType is mandatory for this action. request id: A976C2E0-10AC-4369-8BE5-0DBD31E363D6 Response: {'RequestId': 'A976C2E0-10AC-4369-8BE5-0DBD31E363D6', ",
       "evidence": "",
-      "note": "接口通，需调参(MissingDestinationType)",
-      "probed_at": "2026-07-06T10:08:18+00:00"
+      "note": "??OK(project_id+destination_type=odps), ??Data.Config(JSON), ???",
+      "probed_at": "2026-07-06T10:08:18+00:00",
+      "real_test": "2026-07-09"
     },
     "list_ref_disync_tasks": {
       "api": "list_ref_disync_tasks",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingDatasourceName",
       "error_message": "Error: MissingDatasourceName code: 400, DatasourceName is mandatory for this action. request id: 1ADBA831-55B5-43AC-A899-17CC1131F378 Response: {'RequestId': '1ADBA831-55B5-43AC-A899-17CC1131F378', 'M",
       "evidence": "",
-      "note": "接口通，需调参(MissingDatasourceName)",
-      "probed_at": "2026-07-06T10:08:18+00:00"
+      "note": "??????(400 Invalid.DI.Parameter), task_type+ref_type?????, ??",
+      "probed_at": "2026-07-06T10:08:18+00:00",
+      "real_test": "2026-07-09"
     },
     "query_disync_task_config_process_result": {
       "api": "query_disync_task_config_process_result",
@@ -203,13 +207,14 @@
     "get_instance_status_statistic": {
       "api": "get_instance_status_statistic",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: BB32B2B0-2C8A-466D-AF65-F30295987D25 Response: {'RequestId': 'BB32B2B0-2C8A-466D-AF65-F30295987D25', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参(MissingProjectEnv)",
-      "probed_at": "2026-07-06T10:08:18+00:00"
+      "note": "??OK(dag_type=DAILY??, biz_date=yyyy-MM-dd), ??StatusCount, ???",
+      "probed_at": "2026-07-06T10:08:18+00:00",
+      "real_test": "2026-07-09"
     },
     "list_dags": {
       "api": "list_dags",
@@ -520,13 +525,14 @@
     "deploy_file": {
       "api": "deploy_file",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "1201111279",
       "error_message": "Error: 1201111279 code: 400, 下列参数必须指定其中一个：projectId或者projectIdentifier request id: C223A9E7-9522-49BD-AB1A-5C02DA799A61 Response: {'RequestId': 'C223A9E7-9522-49BD-AB1A-5C02DA799A61', 'HostId': 'dataw",
       "evidence": "",
-      "note": "接口通，需调参(1201111279)",
-      "probed_at": "2026-07-07T01:45:34+00:00"
+      "note": "??dry-run????, ???????(deploy_???--confirm), ???",
+      "probed_at": "2026-07-07T01:45:34+00:00",
+      "real_test": "2026-07-09"
     },
     "establish_relation_table_to_business": {
       "api": "establish_relation_table_to_business",
@@ -543,13 +549,14 @@
     "import_data_sources": {
       "api": "import_data_sources",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 6392C652-F944-4553-8C9D-C05AA7859F42 Response: {'RequestId': '6392C652-F944-4553-8C9D-C05AA7859F42', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingProjectId)",
-      "probed_at": "2026-07-07T01:45:34+00:00"
+      "note": "??b?, ????(?data_sources JSON), ??",
+      "probed_at": "2026-07-07T01:45:34+00:00",
+      "real_test": "2026-07-09"
     },
     "update_business": {
       "api": "update_business",
@@ -745,13 +752,14 @@
     "update_diproject_config": {
       "api": "update_diproject_config",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 7FF2775C-3DD1-49B4-999E-8E7C257B1CFD Response: {'RequestId': '7FF2775C-3DD1-49B4-999E-8E7C257B1CFD', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingProjectId)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "??OK(project_id+destination_type+project_config JSON, file://?), ???",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": "2026-07-09"
     },
     "update_disync_task": {
       "api": "update_disync_task",
@@ -801,33 +809,26 @@
     "run_trigger_node": {
       "api": "run_trigger_node",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingNodeId",
       "error_message": "Error: MissingNodeId code: 400, NodeId is mandatory for this action. request id: 266C6E63-52B6-4806-B76D-58DD6A028421 Response: {'RequestId': '266C6E63-52B6-4806-B76D-58DD6A028421', 'Message': 'NodeId",
       "evidence": "",
-      "note": "探活 b(参数缺失400); 真调带正确参数(node_id/app_id/biz_date/cycle_time取实例CycTime/Bizdate)返回503 ServiceUnavailable, 私有云触发器调度链路疑似未就绪",
+      "note": "??503(???), ??????",
       "probed_at": "2026-07-07T01:45:35+00:00",
-      "real_test": {
-        "tested_at": "2026-07-08",
-        "node_id": 2589112,
-        "app_id": 32890,
-        "biz_date": 1783353600000,
-        "cycle_time": 1783440000000,
-        "result": "503 ServiceUnavailable (稳定复现3次)",
-        "conclusion": "私有云 run_trigger_node 后端服务不可用, 不封装为CLI"
-      }
+      "real_test": "2026-07-09"
     },
     "update_node_owner": {
       "api": "update_node_owner",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingProjectEnv",
       "error_message": "Error: MissingProjectEnv code: 400, ProjectEnv is mandatory for this action. request id: 63BB29BA-79EA-49FB-BB97-757268C9C0AD Response: {'RequestId': '63BB29BA-79EA-49FB-BB97-757268C9C0AD', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参(MissingProjectEnv)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "??OK(node_id+project_env+user_id), ????, ???",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": "2026-07-09"
     },
     "delete_remind": {
       "api": "delete_remind",
@@ -934,13 +935,14 @@
     "update_meta_table_intro_wiki": {
       "api": "update_meta_table_intro_wiki",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingTableGuid",
       "error_message": "Error: MissingTableGuid code: 400, TableGuid is mandatory for this action. request id: A3DC183A-AC8F-4D99-8C66-960CEADBA080 Response: {'RequestId': 'A3DC183A-AC8F-4D99-8C66-960CEADBA080', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingTableGuid)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "??OK(table_guid+content), UpdateResult=true, ???",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": "2026-07-09"
     }
   }
 }

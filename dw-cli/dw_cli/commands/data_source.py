@@ -342,3 +342,30 @@ def update_data_source(
         data_source_id=data_source_id, description=description, content=content,
         env_type=env_type, status=status,
     ), query=query, output_fmt=output_fmt)
+
+@app.command("get-data-source-meta")
+def get_data_source_meta(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    datasource_name: str = typer.Option(..., "--datasource-name", help="?????"),
+    env_type: str = typer.Option("1", "--env-type", help="???0=?? / 1=???????"),
+    page_size: int = typer.Option(100, "--page-size", help="????"),
+    page_number: int = typer.Option(1, "--page-number", help="??"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """????????????????
+
+    \b
+    ?? Examples:
+      dw-cli get-data-source-meta --project-id 32890 --datasource-name dcb_test_mysql_vpc
+
+    \b
+    ?? Output JSON Structure:
+      - Data.Meta: JSON ????? dbTables[].tableInfos[] ?????
+      - Data.Status: success
+    """
+    _call_data_source(ctx, "get_data_source_meta", dw_models.GetDataSourceMetaRequest(
+        project_id=project_id, datasource_name=datasource_name, env_type=env_type,
+        page_size=page_size, page_number=page_number,
+    ), query=query, output_fmt=output_fmt)
