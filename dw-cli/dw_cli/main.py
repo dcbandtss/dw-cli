@@ -81,7 +81,7 @@ _CMD_PANELS = {
     "get-project": _PANEL_PROJ, "list-project-ids": _PANEL_PROJ,
     "list-data-sources": _PANEL_META, "export-data-sources": _PANEL_META,
     "test-network-connection": _PANEL_META, "delete-data-source": _PANEL_META,
-    "create-data-source": _PANEL_META, "update-data-source": _PANEL_META, "get-data-source-meta": _PANEL_META, "list-diproject-config": _PANEL_META, "update-diproject-config": _PANEL_META,
+    "create-data-source": _PANEL_META, "update-data-source": _PANEL_META, "get-data-source-meta": _PANEL_META, "list-diproject-config": _PANEL_META, "update-diproject-config": _PANEL_META, "list-ref-disync-tasks": _PANEL_META, "create-disync-task": _PANEL_META, "update-disync-task": _PANEL_META,
     "get-node": _PANEL_NODE, "get-node-code": _PANEL_NODE, "get-node-parents": _PANEL_NODE,
     "get-node-children": _PANEL_NODE, "list-nodes": _PANEL_NODE, "offline-node": _PANEL_NODE,
     "update-node-run-mode": _PANEL_NODE, "update-node-owner": _PANEL_NODE,

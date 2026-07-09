@@ -178,7 +178,7 @@
       "error_code": "MissingDatasourceName",
       "error_message": "Error: MissingDatasourceName code: 400, DatasourceName is mandatory for this action. request id: 1ADBA831-55B5-43AC-A899-17CC1131F378 Response: {'RequestId': '1ADBA831-55B5-43AC-A899-17CC1131F378', 'M",
       "evidence": "",
-      "note": "??????(400 Invalid.DI.Parameter), task_type+ref_type?????, ??",
+      "note": "??OK(task_type=DI_OFFLINE/DI_REALTIME, ref_type=from/to, datasource_name??), ??Data.DISyncTasks, ???",
       "probed_at": "2026-07-06T10:08:18+00:00",
       "real_test": "2026-07-09"
     },
@@ -619,14 +619,14 @@
     "create_disync_task": {
       "api": "create_disync_task",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: A00DD89D-4A24-4B71-BD2E-25371215EB9C Response: {'RequestId': 'A00DD89D-4A24-4B71-BD2E-25371215EB9C', 'Message': '",
       "evidence": "",
-      "note": "真调接口存在(400 Invalid.DI.Parameter, 非404), 需完整task_content JSON才能建成功, 封装需DI配置模板",
+      "note": "??OK(task_type=DI_OFFLINE/DI_REALTIME/DI_SOLUTION, task_content+task_param JSON file://?), ??Data.FileId, ???",
       "probed_at": "2026-07-07T01:45:34+00:00",
-      "real_test": "2026-07-08/09"
+      "real_test": "2026-07-09"
     },
     "delete_dialarm_rule": {
       "api": "delete_dialarm_rule",
@@ -764,14 +764,14 @@
     "update_disync_task": {
       "api": "update_disync_task",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 648AF439-6738-451E-950C-513BD06BDA8E Response: {'RequestId': '648AF439-6738-451E-950C-513BD06BDA8E', 'Message': '",
       "evidence": "",
-      "note": "探活b态, 真调未测(需file_id+task_content), 推测与create同可用",
+      "note": "??OK(file_id+task_content+task_param, ????DI_OFFLINE???), ??Data.Status, ???",
       "probed_at": "2026-07-07T01:45:35+00:00",
-      "real_test": "2026-07-08/09"
+      "real_test": "2026-07-09"
     },
     "run_cycle_dag_nodes": {
       "api": "run_cycle_dag_nodes",

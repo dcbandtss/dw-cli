@@ -89,3 +89,100 @@ def update_diproject_config(
         project_id=project_id, destination_type=destination_type,
         project_config=project_config, source_type=source_type,
     ), query=query, output_fmt=output_fmt)
+
+@app.command("list-ref-disync-tasks")
+def list_ref_disync_tasks(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    datasource_name: str = typer.Option(..., "--datasource-name", help="?????"),
+    task_type: str = typer.Option(..., "--task-type", help="???????DI_OFFLINE(???)/DI_REALTIME(????)"),
+    ref_type: str = typer.Option(..., "--ref-type", help="?????from(???)/to(????)"),
+    page_size: int = typer.Option(100, "--page-size", help="????"),
+    page_number: int = typer.Option(1, "--page-number", help="??"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """???????????????????????????
+
+    \b
+    ?? Examples:
+      dw-cli list-ref-disync-tasks --project-id 32890 --datasource-name dcb_test_mysql_vpc \
+        --task-type DI_OFFLINE --ref-type to
+
+    \b
+    ?? Output JSON Structure:
+      - Data.DISyncTasks[*].{FileId, ...}
+    """
+    _call(ctx, "list_ref_disync_tasks", dw_models.ListRefDISyncTasksRequest(
+        project_id=project_id, datasource_name=datasource_name,
+        task_type=task_type, ref_type=ref_type,
+        page_size=page_size, page_number=page_number,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("create-disync-task")
+def create_disync_task(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    task_name: str = typer.Option(..., "--task-name", help="??????"),
+    task_type: str = typer.Option(..., "--task-type", help="?????DI_OFFLINE(???)/DI_REALTIME(??)/DI_SOLUTION(????)"),
+    task_content: str = typer.Option(..., "--task-content", help="?????? JSON??? file://?? steps reader/writer + setting + order?"),
+    task_param: str = typer.Option(None, "--task-param", help="???? JSON??? file://??FileFolderPath/ResourceGroup/Cu"),
+    client_token: str = typer.Option(None, "--client-token", help="?? token????"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """???????????
+
+    \b
+    ?? Examples:
+      dw-cli create-disync-task --project-id 32890 --task-name my_di \
+        --task-type DI_OFFLINE \
+        --task-content file://di_task.json \
+        --task-param file://di_param.json
+
+    \b
+    ?? Output JSON Structure:
+      - Data.FileId: ?????? ID
+      - Data.Status: success
+
+    \b
+    ?? ???task_content ? DataWorks ?????? JSON?type=job, version=2.0, steps[reader/writer]??
+    ??? file:// ????????task_param ? ResourceGroup ? list-resource-groups ??type=4 ???????
+    """
+    task_content = load_arg(task_content)
+    task_param = load_arg(task_param)
+    _call(ctx, "create_disync_task", dw_models.CreateDISyncTaskRequest(
+        project_id=project_id, task_name=task_name, task_type=task_type,
+        task_content=task_content, task_param=task_param, client_token=client_token,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("update-disync-task")
+def update_disync_task(
+    ctx: typer.Context,
+    file_id: int = typer.Option(..., "--file-id", help="?????? ID??? create-disync-task ? list-files?"),
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    task_type: str = typer.Option(..., "--task-type", help="?????DI_OFFLINE/DI_REALTIME/DI_SOLUTION"),
+    task_content: str = typer.Option(None, "--task-content", help="?????? JSON??? file://??????"),
+    task_param: str = typer.Option(None, "--task-param", help="?????? JSON??? file://?"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """??????????????? DI_OFFLINE ???????
+
+    \b
+    ?? Examples:
+      dw-cli update-disync-task --file-id 30706157 --project-id 32890 \
+        --task-type DI_OFFLINE --task-content file://di_task.json
+
+    \b
+    ?? Output JSON Structure:
+      - Data.Status: success
+    """
+    task_content = load_arg(task_content)
+    task_param = load_arg(task_param)
+    _call(ctx, "update_disync_task", dw_models.UpdateDISyncTaskRequest(
+        file_id=file_id, project_id=project_id, task_type=task_type,
+        task_content=task_content, task_param=task_param,
+    ), query=query, output_fmt=output_fmt)

@@ -16,7 +16,7 @@
 
 **私有云探活图例**：✅可用　⚠️接口通需调参　❌未实现(404)　🔒需权限　❓未定　—不适用/未探
 
-## 一、已封装 CLI 命令（98 个，按模块分）
+## 一、已封装 CLI 命令（101 个，按模块分）
 
 > 命令名与 SDK 方法一一对应（kebab-case ↔ snake_case）。场景封装命令单独标出。
 
@@ -210,27 +210,27 @@
 | `get-topic-influence` | 查询主题影响的下游基线 | `get_topic_influence` | 已封装 |
 | `list-topics` | 查询运行异常主题列表 | `list_topics` | 已封装 |
 
-### di 数据集成全局配置（2 命令）
+### di 数据集成（5 命令）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
 | `list-diproject-config` | 查询DI全局配置 | `list_diproject_config` | 已封装 |
 | `update-diproject-config` | 更新DI全局配置 | `update_diproject_config` | 已封装 |
+| `list-ref-disync-tasks` | 查询数据源关联的DI同步任务 | `list_ref_disync_tasks` | 已封装 |
+| `create-disync-task` | 创建DI同步任务 | `create_disync_task` | 已封装 |
+| `update-disync-task` | 更新DI同步任务 | `update_disync_task` | 已封装 |
 
-## 二、raw 透传可用接口（7 个）
+## 二、raw 透传可用接口（4 个）
 
 > 私有云探活 ✅ 或 ⚠️（接口在，给正确参数可用）。后续逐个真实测试后封装。
 
 | SDK 方法 | 描述 | 私有云探活 | 备注 |
 |---|---|---|---|
 | `check_file_deployment` | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。 | ⚠️ | 接口通，需调参(MissingCheckerInstanceId) |
-| `create_disync_task` | 调用CreateDISyncTask创建数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 | `create_import_migration` | 调用CreateImportMigration创建导入任务，导入任务包含数据源信息、任务、表等对象的DataWorks导入导出包。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 | `get_meta_table_list_by_category` | 该接口用于查询指定类目下的表。 | ⚠️ | 接口通，需调参(MissingCategoryId) |
 | `import_data_sources` | 批量导入本地数据源至目标DataWorks工作空间。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `list_ref_disync_tasks` | 查看目标数据源所关联的数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingDatasourceName) |
 | `start_migration` | 调用StartMigration启动执行导入导出任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `update_disync_task` | 更新数据集成同步任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
 
 ## 三、raw 透传不可用接口（40 个）
 
