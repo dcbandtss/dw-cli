@@ -324,46 +324,50 @@
     "get_remind": {
       "api": "get_remind",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 500,
       "error_code": "Invalid.Wkbench.Parameter",
       "error_message": "Error: Invalid.Wkbench.Parameter code: 500, The specified parameters are invalid. request id: 217360BE-5FC8-4F88-8073-2E54E3A86CCB Response: {'RequestId': '217360BE-5FC8-4F88-8073-2E54E3A86CCB', 'Host",
       "evidence": "",
-      "note": "接口通，需调参(Invalid.Wkbench.Parameter)",
-      "probed_at": "2026-07-06T10:08:19+00:00"
+      "note": "真调OK(remind_id=6733), 私有云可用, 可封装",
+      "probed_at": "2026-07-06T10:08:19+00:00",
+      "real_test": "2026-07-08/09"
     },
     "get_topic": {
       "api": "get_topic",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 500,
       "error_code": "Invalid.Wkbench.TopicNotExist",
       "error_message": "Error: Invalid.Wkbench.TopicNotExist code: 500, The topic does not exist. request id: DB91B79A-1A22-494D-8B9A-C7077A0218DA Response: {'RequestId': 'DB91B79A-1A22-494D-8B9A-C7077A0218DA', 'HostId': 'da",
       "evidence": "",
-      "note": "接口通，需调参(Invalid.Wkbench.TopicNotExist)",
-      "probed_at": "2026-07-06T10:08:20+00:00"
+      "note": "真调OK(topic_id=1089851), 返回Topic详情(SLOW/RECOVER), 可封装",
+      "probed_at": "2026-07-06T10:08:20+00:00",
+      "real_test": "2026-07-08/09"
     },
     "get_topic_influence": {
       "api": "get_topic_influence",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 500,
       "error_code": "Invalid.Wkbench.TopicNotExist",
       "error_message": "Error: Invalid.Wkbench.TopicNotExist code: 500, The topic does not exist. request id: BF4FD1EC-3724-460F-80C6-B68AE28FF196 Response: {'RequestId': 'BF4FD1EC-3724-460F-80C6-B68AE28FF196', 'HostId': 'da",
       "evidence": "",
-      "note": "接口通，需调参(Invalid.Wkbench.TopicNotExist)",
-      "probed_at": "2026-07-06T10:08:20+00:00"
+      "note": "真调OK(topic_id=1089851), 返回受影响基线列表, 可封装",
+      "probed_at": "2026-07-06T10:08:20+00:00",
+      "real_test": "2026-07-08/09"
     },
     "list_alert_messages": {
       "api": "list_alert_messages",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingBeginTime",
       "error_message": "Error: MissingBeginTime code: 400, BeginTime is mandatory for this action. request id: F43C8BAB-6736-4E57-A590-2ADBF3B463DF Response: {'RequestId': 'F43C8BAB-6736-4E57-A590-2ADBF3B463DF', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingBeginTime)",
-      "probed_at": "2026-07-06T10:08:20+00:00"
+      "note": "真调OK(封装时已测), 可封装",
+      "probed_at": "2026-07-06T10:08:20+00:00",
+      "real_test": "2026-07-08/09"
     },
     "list_reminds": {
       "api": "list_reminds",
@@ -379,35 +383,38 @@
     "list_topics": {
       "api": "list_topics",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingBeginTime",
       "error_message": "Error: MissingBeginTime code: 400, BeginTime is mandatory for this action. request id: EBA51B70-FD05-4FB4-AB3A-0E350DC7B7E8 Response: {'RequestId': 'EBA51B70-FD05-4FB4-AB3A-0E350DC7B7E8', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingBeginTime)",
-      "probed_at": "2026-07-06T10:08:20+00:00"
+      "note": "真调OK(UTC时间范围), 返回异常主题(SLOW), 可封装",
+      "probed_at": "2026-07-06T10:08:20+00:00",
+      "real_test": "2026-07-08/09"
     },
     "get_meta_column_lineage": {
       "api": "get_meta_column_lineage",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingDirection",
       "error_message": "Error: MissingDirection code: 400, Direction is mandatory for this action. request id: AE354F56-0642-4A90-9DFB-30A2D46583C8 Response: {'RequestId': 'AE354F56-0642-4A90-9DFB-30A2D46583C8', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingDirection)",
-      "probed_at": "2026-07-06T10:08:20+00:00"
+      "note": "真调OK(column_guid带odps.前缀); 不带odps.前缀500, 可封装(help注明必须odps.前缀)",
+      "probed_at": "2026-07-06T10:08:20+00:00",
+      "real_test": "2026-07-08/09"
     },
     "get_meta_table_lineage": {
       "api": "get_meta_table_lineage",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingDirection",
       "error_message": "Error: MissingDirection code: 400, Direction is mandatory for this action. request id: D6295F12-8617-49D7-893D-9CAE98A6E06D Response: {'RequestId': 'D6295F12-8617-49D7-893D-9CAE98A6E06D', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingDirection)",
-      "probed_at": "2026-07-06T10:08:20+00:00"
+      "note": "真调OK(table_guid+direction+database_name), 返回空血缘, 可封装",
+      "probed_at": "2026-07-06T10:08:20+00:00",
+      "real_test": "2026-07-08/09"
     },
     "list_lineage": {
       "api": "list_lineage",
@@ -428,19 +435,20 @@
       "error_code": "MissingCategoryId",
       "error_message": "Error: MissingCategoryId code: 400, CategoryId is mandatory for this action. request id: 601A659D-9D3E-46AA-BF74-4A23C1F42E17 Response: {'RequestId': '601A659D-9D3E-46AA-BF74-4A23C1F42E17', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参(MissingCategoryId)",
+      "note": "探活b态, 真调未测(缺category_id), 待补",
       "probed_at": "2026-07-06T10:08:20+00:00"
     },
     "get_meta_table_output": {
       "api": "get_meta_table_output",
       "category": "read",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingTableGuid",
       "error_message": "Error: MissingTableGuid code: 400, TableGuid is mandatory for this action. request id: FDEA0540-4DBF-4BE5-A8E0-E879571D2EDF Response: {'RequestId': 'FDEA0540-4DBF-4BE5-A8E0-E879571D2EDF', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingTableGuid)",
-      "probed_at": "2026-07-06T10:08:21+00:00"
+      "note": "真调OK(table_guid+日期范围), 返回空, 可封装",
+      "probed_at": "2026-07-06T10:08:21+00:00",
+      "real_test": "2026-07-08/09"
     },
     "get_migration_summary": {
       "api": "get_migration_summary",
@@ -489,13 +497,14 @@
     "create_remind": {
       "api": "create_remind",
       "category": "low-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "InvalidRemindUnit",
       "error_message": "Error: InvalidRemindUnit code: 400, Specified parameter RemindUnit is not valid. request id: 4D0DC53F-6094-4849-9BFA-2C482C022270 Response: {'RequestId': '4D0DC53F-6094-4849-9BFA-2C482C022270', 'Messa",
       "evidence": "",
-      "note": "接口通，需调参(InvalidRemindUnit)",
-      "probed_at": "2026-07-07T01:34:26+00:00"
+      "note": "真调OK(MAIL+OWNER建id=6792); DINGROBOTS+robot_urls报500(页面能建API校验严), MAIL可用, 可封装(help注明DINGROBOTS限制)",
+      "probed_at": "2026-07-07T01:34:26+00:00",
+      "real_test": "2026-07-08/09"
     },
     "run_smoke_test": {
       "api": "run_smoke_test",
@@ -522,13 +531,14 @@
     "establish_relation_table_to_business": {
       "api": "establish_relation_table_to_business",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingBusinessId",
       "error_message": "Error: MissingBusinessId code: 400, BusinessId is mandatory for this action. request id: 56E790EB-DB74-4B9F-8BBE-877B04F49609 Response: {'RequestId': '56E790EB-DB74-4B9F-8BBE-877B04F49609', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参(MissingBusinessId)",
-      "probed_at": "2026-07-07T01:45:34+00:00"
+      "note": "真调OK(business_id+folder_id+table_guid), 可封装",
+      "probed_at": "2026-07-07T01:45:34+00:00",
+      "real_test": "2026-07-08/09"
     },
     "import_data_sources": {
       "api": "import_data_sources",
@@ -544,35 +554,38 @@
     "update_business": {
       "api": "update_business",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingBusinessId",
       "error_message": "Error: MissingBusinessId code: 400, BusinessId is mandatory for this action. request id: 6568D486-4C66-461B-9669-25E3D819D93C Response: {'RequestId': '6568D486-4C66-461B-9669-25E3D819D93C', 'Message':",
       "evidence": "",
-      "note": "接口通，需调参(MissingBusinessId)",
-      "probed_at": "2026-07-07T01:45:34+00:00"
+      "note": "真调OK(business_id=34364改description), 可封装",
+      "probed_at": "2026-07-07T01:45:34+00:00",
+      "real_test": "2026-07-08/09"
     },
     "update_data_source": {
       "api": "update_data_source",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingDataSourceId",
       "error_message": "Error: MissingDataSourceId code: 400, DataSourceId is mandatory for this action. request id: 280934D5-2DE4-49B2-B464-008A88DB844C Response: {'RequestId': '280934D5-2DE4-49B2-B464-008A88DB844C', 'Messa",
       "evidence": "",
-      "note": "接口通，需调参(MissingDataSourceId)",
-      "probed_at": "2026-07-07T01:45:34+00:00"
+      "note": "真调OK(data_source_id=15603改description), 可封装",
+      "probed_at": "2026-07-07T01:45:34+00:00",
+      "real_test": "2026-07-08/09"
     },
     "update_folder": {
       "api": "update_folder",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingFolderId",
       "error_message": "Error: MissingFolderId code: 400, FolderId is mandatory for this action. request id: 769146B4-E198-46CC-B6A0-EFFC900DC917 Response: {'RequestId': '769146B4-E198-46CC-B6A0-EFFC900DC917', 'Message': 'Fo",
       "evidence": "",
-      "note": "接口通，需调参(MissingFolderId)",
-      "probed_at": "2026-07-07T01:45:34+00:00"
+      "note": "真调OK(folder_id改folder_name设回原值), 可封装",
+      "probed_at": "2026-07-07T01:45:34+00:00",
+      "real_test": "2026-07-08/09"
     },
     "create_dialarm_rule": {
       "api": "create_dialarm_rule",
@@ -604,8 +617,9 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: A00DD89D-4A24-4B71-BD2E-25371215EB9C Response: {'RequestId': 'A00DD89D-4A24-4B71-BD2E-25371215EB9C', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingProjectId)",
-      "probed_at": "2026-07-07T01:45:34+00:00"
+      "note": "真调接口存在(400 Invalid.DI.Parameter, 非404), 需完整task_content JSON才能建成功, 封装需DI配置模板",
+      "probed_at": "2026-07-07T01:45:34+00:00",
+      "real_test": "2026-07-08/09"
     },
     "delete_dialarm_rule": {
       "api": "delete_dialarm_rule",
@@ -747,8 +761,9 @@
       "error_code": "MissingProjectId",
       "error_message": "Error: MissingProjectId code: 400, ProjectId is mandatory for this action. request id: 648AF439-6738-451E-950C-513BD06BDA8E Response: {'RequestId': '648AF439-6738-451E-950C-513BD06BDA8E', 'Message': '",
       "evidence": "",
-      "note": "接口通，需调参(MissingProjectId)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "探活b态, 真调未测(需file_id+task_content), 推测与create同可用",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": "2026-07-08/09"
     },
     "run_cycle_dag_nodes": {
       "api": "run_cycle_dag_nodes",
@@ -817,24 +832,26 @@
     "delete_remind": {
       "api": "delete_remind",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingRemindId",
       "error_message": "Error: MissingRemindId code: 400, RemindId is mandatory for this action. request id: F9E6690D-E662-4B08-B7F5-2E548D5518D6 Response: {'RequestId': 'F9E6690D-E662-4B08-B7F5-2E548D5518D6', 'Message': 'Re",
       "evidence": "",
-      "note": "接口通，需调参(MissingRemindId)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "真调OK(删6792), 可封装",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": "2026-07-08/09"
     },
     "update_remind": {
       "api": "update_remind",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "MissingRemindId",
       "error_message": "Error: MissingRemindId code: 400, RemindId is mandatory for this action. request id: 5C6DB7F2-7090-4614-90C9-9B3E272703B6 Response: {'RequestId': '5C6DB7F2-7090-4614-90C9-9B3E272703B6', 'Message': 'Re",
       "evidence": "",
-      "note": "接口通，需调参(MissingRemindId)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "真调OK(改6792 name/max_alert_times/use_flag), 可封装",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": "2026-07-08/09"
     },
     "delete_lineage_relation": {
       "api": "delete_lineage_relation",
@@ -905,13 +922,14 @@
     "update_meta_table": {
       "api": "update_meta_table",
       "category": "high-write",
-      "status": "b",
+      "status": "a",
       "http_status": 400,
       "error_code": "1010019999",
       "error_message": "Error: 1010019999 code: 400, 9901110307 : Param tableGuid is null request id: AE676D7D-46D4-416C-856C-1117E69B45B3 Response: {'RequestId': 'AE676D7D-46D4-416C-856C-1117E69B45B3', 'HostId': 'dataworks-",
       "evidence": "",
-      "note": "接口通，需调参(1010019999)",
-      "probed_at": "2026-07-07T01:45:35+00:00"
+      "note": "真调OK(改caption设回原值), 可封装",
+      "probed_at": "2026-07-07T01:45:35+00:00",
+      "real_test": "2026-07-08/09"
     },
     "update_meta_table_intro_wiki": {
       "api": "update_meta_table_intro_wiki",

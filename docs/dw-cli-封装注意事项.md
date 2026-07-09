@@ -516,3 +516,45 @@
 参数获取方法：先 \list-instances --node-id <id> --bizdate\ 查到 WAIT_TRIGGER 状态实例，取其 Bizdate/CycTime 字段填入。
 
 **结论**：不封装为 CLI（私有云 503，触发链路不可用）。raw 仍可透传，但会 503。
+
+## 第4-8类 raw 真调结论（2026-07-09）
+
+### 第4类 监控告警 remind/topic（8项，全部可封装）
+- **get_remind** ✅ remind_id=6733 正常返回完整规则（AlertMethods/Targets/Nodes/Robots）
+- **create_remind** ✅ MAIL+OWNER 建 id=6792 成功；**DINGROBOTS+robot_urls 报 500 Invalid.Wkbench.Parameter**（页面能建但 API 创建校验更严，robot_urls 裸URL和JSON数组都500）。封装时 help 注明：私有云 create_remind 的 DINGROBOTS 通知方式 API 不可用，建议 MAIL
+- **update_remind** ✅ 改 name/max_alert_times/use_flag 生效（get_remind 验证）
+- **delete_remind** ✅ 删 6792 成功
+- **list_reminds** ✅ search-text 过滤生效
+- **get_topic** ✅ topic_id=1089851 返回 Topic 详情（TopicType=SLOW, TopicStatus=RECOVER, NodeId, BaselineId）。topic = 节点运行异常事件主题（慢/出错/基线破窗）
+- **get_topic_influence** ✅ 返回该 topic 影响的下游基线列表（Influences[].{BaselineName, Buffer, Status}）
+- **list_topics** ✅ UTC 时间范围（yyyy-MM-dd'T'HH:mm:ssZ，如 2026-07-08T00:00:00+0800）返回 SLOW 类型主题
+- **list_alert_messages** ✅ 封装时已测
+
+### 第5类 元数据 lineage/meta（6项，5项可封装）
+- **get_meta_table_basic_info** ✅ 须传 data-source-type=odps + database-name=dqsc_prod + table-guid=odps.proj.table（三者缺一报 MissingXxx）。返回 ColumnCount/Comment/DataSize/IsPartitionTable 等
+- **get_meta_table_lineage** ✅ table_guid+direction(UP/DOWN)+database_name，返回 DataEntityList 血缘
+- **get_meta_column_lineage** ✅ column_guid=odps.proj.table.column + direction。**必须带 odps. 前缀**，不带（如 dqsc_prod.table.col）报 500 InternalError.Meta.Unknown
+- **get_meta_table_output** ✅ table_guid+start_date/end_date(yyyy-MM-dd)，返回表产出任务
+- **update_meta_table** ✅ table_guid+caption/env_type/visibility，UpdateResult=true（改 caption 设回原值无副作用）
+- **get_meta_table_list_by_category** ⏳ 缺 category_id 未真调，待补
+
+### 第6类 数据源/业务/文件夹更新（4项，全部可封装）
+- **update_data_source** ✅ data_source_id=15603(dcb_test_mysql_vpc) 改 description 成功。注意 content 含凭据，改时需带原 content 否则可能清空
+- **update_business** ✅ business_id=34364(dcb_test) 改 description 成功
+- **update_folder** ✅ folder_id=k0uxr6h53... 改 folder_name 成功（设回原名无副作用）
+- **establish_relation_table_to_business** ✅ business_id+folder_id+table_guid 关联表到业务流程
+
+### 第7类 迁移 migration（不测试，高危延后）
+- **create_import_migration** ❌ 高危：导入包内容替换生产环境，用户明确不测试
+- **start_migration** ❌ 同延后
+
+### 第8类 DI同步任务（2项接口存在，2项404）
+- **create_disync_task** ⚠️ 接口存在（400 Invalid.DI.Parameter，非404），需完整 task_content JSON（DI 同步配置）才能建成功。封装需提供 DI 配置模板
+- **update_disync_task** ⚠️ 探活 b 态，真调未测（需 file_id+task_content），推测与 create 同可用
+- **get_disync_task** ❌ 404（私有云未实现，di_solution/realtime_solution 都404）
+- **list_dijobs** ❌ 404（DI 全系未部署）
+
+### 私有云特性补充
+1. **create_remind DINGROBOTS 限制**：API 创建不支持 DINGROBOTS+robot_urls（500），仅 MAIL/SMS 可用。页面建的 DINGROBOTS 规则 API 能 get/update/delete 但不能 create
+2. **meta guid 前缀铁律**：table_guid/column_guid 必须带 odps. 前缀，不带报 500（非 404）
+3. **DI 接口分裂**：create/update_disync_task 接口存在（400），但 get_disync_task/list_dijobs 404 —— 私有云只部署了写接口未部署读接口
