@@ -391,28 +391,33 @@
 
 **代码位置**：[file.py](dw-cli/dw_cli/commands/file.py) 末尾 `create_and_submit_file` 函数。
 
-## 待办：run-sql / run-pyodps 命令（用户构思使用方法中，2026-06-30）
+## run-sql / get-sql-instance（2026-07-09 已实现）
 
-> 复用 `core/odps_client.py` 连接层（已就绪）。用户表示"使用方法考虑一下"，
-> 定稿后再实现。下面是已梳理的可复用接口 + 待决策点 + 明确延后项。
+### logview 地址替换（私有云特性，已真调验证）
+PyODPS 生成的 logview，h= 参数带 ODPS_ENDPOINT 的 `odps.cloud.zj.gov.cn:80/api`，
+但 token 用 `cloud-inner` host 签发，直接打开报 `authentication failed: the bearer-token is malformed`。
+需替换 h= 为 `odps.cloud-inner.zj.gov.cn/api`（其余参数原样）。
+替换规则固化在 `commands/sql.py` 的 `fix_logview()`，run-sql / get-sql-instance 输出 logview 时统一调用。
+原始地址 vs DataWorks 页面手动执行地址的区别就是这一个词（cloud → cloud-inner）。2026-07-09 真调验证：原始报 token malformed，替换后正常打开。
 
-### 已就绪可复用（实现时直接接）
-- 连接：`odps_client.build_odps(project, *, profile_name, profile_file)` → ODPS 对象（AK/SK 走凭据链，pyodps 缺失抛 MissingDependency/exit 2）。
-- 输出：`output.emit(resp, *, query, output, default_table_query)` 三层；`output.diag(msg)` 进度→stderr。
-- 大脚本传参：`load_arg(value)` 支持 `file://`（`--script file://run.py` 或内联）。
-- 错误：`errors.fail(error)` 启发式归类；`errors.usage_error(msg)` exit 2。
+### run-sql 安全边界（B2）
+按 SQL 前缀关键字判写操作（DROP/TRUNCATE/DELETE/INSERT/UPDATE/CREATE/ALTER/MERGE/RENAME），
+写需 --confirm（exit 2 + NeedsConfirm 结构化 JSON）。不共用 confirm.py 的 delete_ 前缀机制（那是 SDK 方法名，套不上 SQL）。
 
-### 待用户决策（定了我直接实现）
-1. **安全边界**：run-sql 默认放行还是写操作须 --confirm？run-pyodps 是任意代码执行，要不要强制 --confirm？
-   注：`confirm.py` 的前缀机制（delete_/deploy_/...）套不上 SQL/PyODPS 写操作（是 `o.execute_sql("DROP TABLE")`），需自定义判定。
-2. **结果集量控制**：SELECT 返回几万行时，默认截断(100行 + --limit/--offset/--all)还是全量？
-3. **脚本传参**：内联 + file:// 都支持，还是强制 file://？
-4. **输出形态**：SELECT 结果集返回 `{columns, rows, truncated}` 结构（json 机器可读）还是别的？
-5. **异步/超时**：SQL 执行可能慢，要不要 `--wait`（默认等）/超时参数？
+### run-sql 结果输出
+按 reader 实际结构输出：SELECT → {columns,rows,truncated,total,instance_id,logview}；
+DESC/SHOW 等元信息 → reader 原样按行（不强装 columns）；无结果集 → 只报 {success,status,instance_id,logview}。
+默认 100 行 + --limit（建议≤1000），无翻页。
 
-### 明确延后（用户：最后我再处理）
-- **⚠️ logview 地址转换**：`instance.get_logview_address()` 返回的调试地址需要做一个转换（具体转换规则待用户给出）。
-  实现时 run-sql/run-pyodps 输出 logview 处加转换逻辑。**这条单独拎出，用户最后统一处理，不卡在 run-sql/run-pyodps 实现里。**
+### run-sql 执行模式
+同步 + 15s 心跳（stderr，不污染 stdout）+ 软超时 180s 降级（输出 instance_id+logview，exit 0）。
+--timeout 0 不限；--no-wait 强制异步。超时降级后用 get-sql-instance --instance-id 跟进。
+
+### run-pyodps 已砍掉
+改用 DataWorks pyodps 节点 + run-manual-dag-nodes + get-dag 工作流替代。
+理由：代码作节点文件不进 CLI（安全），复用已封装 dag 命令，agent 可稳定编排。
+run-manual-dag-nodes + get-dag 已真调验证通（2026-07-09，DagId 375078646 SUCCESS）。
+
 
 ## help 改造 + file:// 语法（2026-06-25 规划，2026-06-26 已全部落地）
 
