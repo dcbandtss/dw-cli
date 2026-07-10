@@ -563,3 +563,18 @@ run-manual-dag-nodes + get-dag 已真调验证通（2026-07-09，DagId 375078646
 1. **create_remind DINGROBOTS 限制**：API 创建不支持 DINGROBOTS+robot_urls（500），仅 MAIL/SMS 可用。页面建的 DINGROBOTS 规则 API 能 get/update/delete 但不能 create
 2. **meta guid 前缀铁律**：table_guid/column_guid 必须带 odps. 前缀，不带报 500（非 404）
 3. **DI 接口分裂**：create/update_disync_task 接口存在（400），但 get_disync_task/list_dijobs 404 —— 私有云只部署了写接口未部署读接口
+
+## migration 导入导出（2026-07-10 真调结论：私有云不可用）
+
+封装了 create-import-migration + start-migration 两个命令（代码保留，逻辑正确，供公网环境使用），
+但私有云真调验证整套不可用：
+
+- **普通版 create_import_migration**：返回 200 无错误，但返回体只有 RequestId，**无 MigrationId**。
+  原因：导入包必须先上传到 OSS，普通版没有上传环节，仅校验参数。
+- **advance 版 create_import_migration_advance**：走 `openplatform.aliyuncs.com` + OSS 公网上传，
+  私有云隔离环境不通（与 create-resource-file-upload 同一风险）。
+- **list_migrations**：私有云 404，无法查导入任务列表。
+- **结论**：migration 导入导出功能私有云整套未部署。start-migration 因拿不到 MigrationId 无法测试。
+
+已将 2 个接口从 API清单第二节（raw 可用）移至第三节（raw 不可用）。
+

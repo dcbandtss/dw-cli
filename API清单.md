@@ -220,19 +220,17 @@
 | `create-disync-task` | 创建DI同步任务 | `create_disync_task` | 已封装 |
 | `update-disync-task` | 更新DI同步任务 | `update_disync_task` | 已封装 |
 
-## 二、raw 透传可用接口（4 个）
+## 二、raw 透传可用接口（2 个，私有云可用但用户无需求暂不封装）
 
-> 私有云探活 ✅ 或 ⚠️（接口在，给正确参数可用）。后续逐个真实测试后封装。
+> 私有云探活 ✅ 或 ⚠️（接口在，给正确参数可用）。用户确认无此需求，暂不封装（raw 透传仍可用）。
 
 | SDK 方法 | 描述 | 私有云探活 | 备注 |
 |---|---|---|---|
-| `check_file_deployment` | 当您在DataWorks数据开发页面创建的文件提交成功后，文件将进入发布检查状态，DataWorks会将文件发布检查事件返回给您，您需要根据事件内容判断该文件是否可以继续进行发布校验。此时，可以通过将待发布文件的检查结果返回至DataWorks。 | ⚠️ | 接口通，需调参(MissingCheckerInstanceId) |
-| `create_import_migration` | 调用CreateImportMigration创建导入任务，导入任务包含数据源信息、任务、表等对象的DataWorks导入导出包。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `get_meta_table_list_by_category` | 该接口用于查询指定类目下的表。 | ⚠️ | 接口通，需调参(MissingCategoryId) |
-| `import_data_sources` | 批量导入本地数据源至目标DataWorks工作空间。 | ⚠️ | 接口通，需调参(MissingProjectId) |
-| `start_migration` | 调用StartMigration启动执行导入导出任务。 | ⚠️ | 接口通，需调参(MissingProjectId) |
+| `check_file_deployment` | 文件发布检查结果回填（Checker 回调接口）。 | ⚠️ | 用户无此需求跳过；checker_instance_id 依赖自定义扩展程序机制，CLI 无法独立获取 |
+| `get_meta_table_list_by_category` | 查询指定数据类目下的表。 | ⚠️ | 用户无此需求跳过（私有云未启用数据分类功能） |
+| `import_data_sources` | 批量导入数据源到工作空间。 | ⚠️ | 用户无此需求跳过 |
 
-## 三、raw 透传不可用接口（40 个）
+## 三、raw 透传不可用接口（42 个）
 
 > 私有云探活 ❌（服务端 InvalidAction.NotFound，未部署）或未探。raw 透传也透不通。
 
@@ -278,6 +276,8 @@
 | `terminate_disync_instance` | 下线数据集成实时同步任务。 | ❌ | 私有云未实现(404) |
 | `update_dialarm_rule` | 更新数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
 | `update_dijob` | 更新数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
+| `create_import_migration` | 创建导入迁移任务（导出包导入到目标空间）。 | ⚠️ | 私有云不可用：普通版无 MigrationId 返回，advance 版依赖 OSS 公网不通 |
+| `start_migration` | 启动执行导入迁移任务。 | ⚠️ | 私有云不可用：依赖 create_import_migration 返回的 MigrationId（拿不到） |
 
 ## 四、剔除 / 废弃·不建议（176 个）
 
