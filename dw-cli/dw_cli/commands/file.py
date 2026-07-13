@@ -144,8 +144,8 @@ def create_file(
     ),
     file_folder_path: str = typer.Option(
         ...,
-        help="目录路径（单斜杠），如 业务流程/dcb_test/folderMaxCompute。"
-             "也可用引擎名 业务流程/dcb_test/MaxCompute/（服务端自动映射）",
+        help="目录路径（单斜杠），如 业务流程/my_workflow/folderMaxCompute。"
+             "也可用引擎名 业务流程/my_workflow/MaxCompute/（服务端自动映射）",
     ),
     file_description: str = typer.Option("", help="文件描述"),
     input_list: str = typer.Option(
@@ -164,8 +164,8 @@ def create_file(
 
     注意：
       - file_folder_path 用 list-folders 返回的精确路径（单斜杠），如
-        「业务流程/dcb_test/folderMaxCompute」。也可用引擎名写法
-        「业务流程/dcb_test/MaxCompute/」（服务端自动映射到 folderMaxCompute），
+        「业务流程/my_workflow/folderMaxCompute」。也可用引擎名写法
+        「业务流程/my_workflow/MaxCompute/」（服务端自动映射到 folderMaxCompute），
         但推荐用精确路径，与 list-folders 一致。
       - SQL 节点（file_type=10）的 input_list 为必填字段，无依赖时传空串。
       - 资源类（file_type=12/13/14/15）建后须 submit-file 提交上线才能被 UDF 引用；
@@ -177,17 +177,17 @@ def create_file(
     🚀 Examples:
       # 建 ODPS SQL 节点
       dw-cli create-file --project-id 123456 --file-name my_node.sql \\
-        --file-type 10 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --file-type 10 --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content "SELECT 1;"
 
       # 建虚拟节点（file_type=99）
       dw-cli create-file --project-id 123456 --file-name start_node \\
-        --file-type 99 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --file-type 99 --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content ""
 
       # 建资源文件（大代码用 file://）
       dw-cli create-file --project-id 123456 --file-name my_udf.py \\
-        --file-type 12 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --file-type 12 --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content file://udf_code.py
 
     \b
@@ -499,7 +499,7 @@ def update_file(
     # ── 基本属性 ──
     file_name: str = typer.Option("", "--file-name", help="文件名"),
     file_folder_path: str = typer.Option("", "--file-folder-path",
-        help="目录路径，带引擎子目录层，如 业务流程/dcb_test/MaxCompute/"),
+        help="目录路径，带引擎子目录层，如 业务流程/my_workflow/MaxCompute/"),
     file_description: str = typer.Option("", "--file-description", help="文件描述"),
     owner: str = typer.Option("", "--owner", help="负责人"),
     content: str = typer.Option("", "--content",
@@ -614,7 +614,7 @@ def create_and_submit_file(
     ),
     file_folder_path: str = typer.Option(
         ...,
-        help="目录路径（单斜杠），如 业务流程/dcb_test/folderMaxCompute",
+        help="目录路径（单斜杠），如 业务流程/my_workflow/folderMaxCompute",
     ),
     file_description: str = typer.Option("", help="文件描述"),
     input_list: str = typer.Option(
@@ -676,7 +676,7 @@ def create_and_submit_file(
       # 建并提交 SQL 节点，配调度周期 + 上游依赖
       dw-cli create-and-submit-file --project-id 123456 \\
         --file-name my_node.sql --file-type 10 \\
-        --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content "SELECT 1;" --input-list "my_project_root" \\
         --cron-express "00 30 00 * * ?" --cycle-type DAY \\
         --para-value "dt=$bizdate"
@@ -684,13 +684,13 @@ def create_and_submit_file(
       # 建并提交资源文件（无需调度参数，跳过 update 步骤）
       dw-cli create-and-submit-file --project-id 123456 \\
         --file-name my_udf.py --file-type 12 \\
-        --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content file://udf_code.py
 
       # 建并提交虚拟节点（暂停调度）
       dw-cli create-and-submit-file --project-id 123456 \\
         --file-name start_node --file-type 99 \\
-        --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
+        --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content "" --scheduler-type PAUSE
 
     \b

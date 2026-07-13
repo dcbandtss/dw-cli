@@ -45,10 +45,10 @@ def list_folders(
     \b
     🚀 Examples:
       # 列出某业务流程下的子目录
-      dw-cli list-folders --project-id 123456 --parent-folder-path "业务流程/dcb_test"
+      dw-cli list-folders --project-id 123456 --parent-folder-path "业务流程/my_workflow"
 
       # --all 合并分页，只取路径
-      dw-cli list-folders --project-id 123456 --parent-folder-path "业务流程/dcb_test" \\
+      dw-cli list-folders --project-id 123456 --parent-folder-path "业务流程/my_workflow" \\
         --all --query "Data.Folders[*].FolderPath"
 
     \b
@@ -119,7 +119,7 @@ def get_folder(
     \b
     🚀 Examples:
       # 按路径取目录 ID
-      dw-cli get-folder --project-id 123456 --folder-path "业务流程/dcb_test"
+      dw-cli get-folder --project-id 123456 --folder-path "业务流程/my_workflow"
 
     \b
     📦 Output JSON Structure:
@@ -138,20 +138,20 @@ def create_folder(
     ctx: typer.Context,
     project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
     folder_path: str = typer.Option(..., "--folder-path",
-        help="新建目录的完整路径，单斜杠，必须带引擎子目录层，如 业务流程/dcb_test/MaxCompute/dwcli_sub"),
+        help="新建目录的完整路径，单斜杠，必须带引擎子目录层，如 业务流程/my_workflow/MaxCompute/dwcli_sub"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
     """[低危] 创建目录（create_ 前缀，默认执行，无需 --confirm）。
 
     folder_path 用单斜杠，必须带引擎子目录层（与 create-file 的 file_folder_path
-    规则一致），例如「业务流程/dcb_test/MaxCompute/dwcli_sub」。
+    规则一致），例如「业务流程/my_workflow/MaxCompute/dwcli_sub」。
 
     \b
     🚀 Examples:
-      # 在 dcb_test 业务流程的 MaxCompute 引擎下建子目录
+      # 在 my_workflow 业务流程的 MaxCompute 引擎下建子目录
       dw-cli create-folder --project-id 123456 \\
-        --folder-path "业务流程/dcb_test/MaxCompute/dwcli_sub"
+        --folder-path "业务流程/my_workflow/MaxCompute/dwcli_sub"
 
     \b
     📦 Output JSON Structure:

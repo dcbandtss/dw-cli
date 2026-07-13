@@ -47,7 +47,7 @@ def create_udf_file(
     resources: str = typer.Option(..., "--resources",
         help="函数引用的资源名，多个用逗号分隔（如 res1,res2）"),
     file_folder_path: str = typer.Option("", "--file-folder-path",
-        help="函数文件所在目录路径，带引擎子目录层，如 业务流程/dcb_test/MaxCompute/"),
+        help="函数文件所在目录路径，带引擎子目录层，如 业务流程/my_workflow/MaxCompute/"),
     cmd_description: str = typer.Option("", "--cmd-description", help="调用语法描述"),
     return_value: str = typer.Option("", "--return-value", help="返回值描述"),
     parameter_description: str = typer.Option("", "--parameter-description", help="输入参数描述"),
@@ -80,13 +80,13 @@ def create_udf_file(
       dw-cli create-udf-file --project-id 123456 \\
         --file-name DCBTest --class-name my_udf.DCBTest \\
         --function-type STRING --resources my_udf.py \\
-        --file-folder-path "业务流程/dcb_test/MaxCompute/"
+        --file-folder-path "业务流程/my_workflow/MaxCompute/"
 
       # 注册 Jar UDF（class-name 不带资源名）
       dw-cli create-udf-file --project-id 123456 \\
         --file-name MyUdf --class-name com.example.MyUdf \\
         --function-type STRING --resources my_udf.jar \\
-        --file-folder-path "业务流程/dcb_test/MaxCompute/"
+        --file-folder-path "业务流程/my_workflow/MaxCompute/"
 
     \b
     📦 Output JSON Structure:

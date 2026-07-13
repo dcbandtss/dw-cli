@@ -45,7 +45,7 @@ def create_resource_file(
     file_type: int = typer.Option(..., "--file-type",
         help="资源类型：12=Python, 13=JAR, 14=ARCHIVE(zip), 15=FILE(txt)"),
     file_folder_path: str = typer.Option(..., "--file-folder-path",
-        help="目录路径，带引擎子目录层，如 业务流程/dcb_test/MaxCompute/"),
+        help="目录路径，带引擎子目录层，如 业务流程/my_workflow/MaxCompute/"),
     origin_resource_name: str = typer.Option(..., "--origin-resource-name",
         help="原始资源名（一般与 file_name 一致）"),
     register_to_calc_engine: bool = typer.Option(
@@ -80,25 +80,25 @@ def create_resource_file(
       # 创建 Python 资源（文本正文行内）— 公有云
       dw-cli create-resource-file --project-id 123456 \\
         --file-name my_util.py --file-type 12 \\
-        --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
+        --file-folder-path "业务流程/my_workflow/MaxCompute/" \\
         --origin-resource-name my_util.py --content "def hello():\\n    return 1"
 
       # 从本地文件读正文 — 公有云
       dw-cli create-resource-file --project-id 123456 \\
         --file-name my_util.py --file-type 12 \\
-        --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
+        --file-folder-path "业务流程/my_workflow/MaxCompute/" \\
         --origin-resource-name my_util.py --content-file ./my_util.py
 
       # 二进制 jar 资源（用已上传的 OSS URL）— 公有云
       dw-cli create-resource-file --project-id 123456 \\
         --file-name my_udf.jar --file-type 13 \\
-        --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
+        --file-folder-path "业务流程/my_workflow/MaxCompute/" \\
         --origin-resource-name my_udf.jar \\
         --storage-url "http://bucket.../my_udf.jar" --register-to-calc-engine
 
       # ⚠️ 私有云建资源改用 create-file（推荐）：
       dw-cli create-file --project-id 123456 --file-name my_util.py --file-type 12 \\
-        --file-folder-path "业务流程/dcb_test/MaxCompute/" --content-file ./my_util.py
+        --file-folder-path "业务流程/my_workflow/MaxCompute/" --content-file ./my_util.py
 
     \b
     📦 Output JSON Structure:
@@ -170,7 +170,7 @@ def create_resource_file_upload(
       # 上传本地 jar（私有云可能失败）
       dw-cli create-resource-file-upload --project-id 123456 \\
         --file-name my_udf.jar --file-type 13 \\
-        --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
+        --file-folder-path "业务流程/my_workflow/MaxCompute/" \\
         --origin-resource-name my_udf.jar --file ./my_udf.jar \\
         --register-to-calc-engine
 
