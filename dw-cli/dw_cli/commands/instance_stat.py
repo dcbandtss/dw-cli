@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """实例统计类命令（探活确认可用，2026-07-07 封装）。
 
-真调环境：116687 空间（dqsc_prod 32890 也可用）。
+真调环境：123457 空间（my_project 123456 也可用）。
 时间格式：ISO 8601，如 2026-07-05T00:00:00+0800。
 """
 from __future__ import annotations
@@ -43,8 +43,8 @@ def list_success_instance_amount(
 
     
     🚀 Examples:
-      dw-cli list-success-instance-amount --project-id 116687
-      dw-cli list-success-instance-amount --project-id 32890 \
+      dw-cli list-success-instance-amount --project-id 123457
+      dw-cli list-success-instance-amount --project-id 123456 \
         --query "InstanceStatusTrend.AvgTrend[*].{Date:Date,Count:Count}"
 
     
@@ -67,7 +67,7 @@ def top_ten_elapsed_time_instance(
 
     
     🚀 Examples:
-      dw-cli top-ten-elapsed-time-instance --project-id 116687
+      dw-cli top-ten-elapsed-time-instance --project-id 123457
 
     
     📦 Output JSON Structure:
@@ -89,7 +89,7 @@ def top_ten_error_times_instance(
 
     
     🚀 Examples:
-      dw-cli top-ten-error-times-instance --project-id 116687
+      dw-cli top-ten-error-times-instance --project-id 123457
 
     
     📦 Output JSON Structure:
@@ -115,7 +115,7 @@ def list_instance_amount(
 
     
     🚀 Examples:
-      dw-cli list-instance-amount --project-id 116687 \
+      dw-cli list-instance-amount --project-id 123457 \
         --begin-date "2026-07-05T00:00:00+0800" --end-date "2026-07-07T23:59:59+0800"
 
     
@@ -142,8 +142,8 @@ def get_instance_status_statistic(
 
     \b
     ?? Examples:
-      dw-cli get-instance-status-statistic --project-id 32890 --biz-date 2026-07-09
-      dw-cli get-instance-status-statistic --project-id 32890 --biz-date 2026-07-09 \
+      dw-cli get-instance-status-statistic --project-id 123456 --biz-date 2026-07-09
+      dw-cli get-instance-status-statistic --project-id 123456 --biz-date 2026-07-09 \
         --dag-type MANUAL
 
     \b

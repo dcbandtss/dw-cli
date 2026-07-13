@@ -43,8 +43,8 @@ def get_remind(
 
     \b
     🚀 Examples:
-      dw-cli get-remind --remind-id 6733
-      dw-cli get-remind --remind-id 6733 \
+      dw-cli get-remind --remind-id 600001
+      dw-cli get-remind --remind-id 600001 \
         --query "Data.{Name:RemindName,Type:RemindType,Unit:RemindUnit,Methods:AlertMethods}"
 
     \b
@@ -90,12 +90,12 @@ def create_remind(
     🚀 Examples:
       # MAIL 通知 + 节点责任人（最简，私有云推荐）
       dw-cli create-remind --remind-name my_alert --remind-type FINISHED \
-        --remind-unit NODE --project-id 32890 --node-ids 2587817
+        --remind-unit NODE --project-id 123456 --node-ids 100001
 
       # MAIL + 指定接收人
       dw-cli create-remind --remind-name my_alert --remind-type FINISHED \
-        --remind-unit NODE --alert-unit OTHER --alert-targets 5243610875270216803 \
-        --project-id 32890 --node-ids 2587817 --alert-interval 1800 --max-alert-times 1
+        --remind-unit NODE --alert-unit OTHER --alert-targets 900001 \
+        --project-id 123456 --node-ids 100001 --alert-interval 1800 --max-alert-times 1
 
     \b
     📦 Output JSON Structure:
@@ -145,11 +145,11 @@ def update_remind(
     \b
     🚀 Examples:
       # 改名 + 启用
-      dw-cli update-remind --remind-id 6792 --project-id 32890 \
+      dw-cli update-remind --remind-id 600002 --project-id 123456 \
         --remind-name new_name --use-flag
 
       # 改最大告警次数
-      dw-cli update-remind --remind-id 6792 --project-id 32890 --max-alert-times 3
+      dw-cli update-remind --remind-id 600002 --project-id 123456 --max-alert-times 3
 
     \b
     📦 Output JSON Structure:
@@ -179,7 +179,7 @@ def delete_remind(
 
     \b
     🚀 Examples:
-      dw-cli delete-remind --remind-id 6792 --confirm
+      dw-cli delete-remind --remind-id 600002 --confirm
 
     \b
     📦 Output JSON Structure:

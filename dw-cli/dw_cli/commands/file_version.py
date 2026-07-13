@@ -42,7 +42,7 @@ def get_file_version(
 
     
     🚀 Examples:
-      dw-cli get-file-version --project-id 32890 --file-id 30704483 --file-version 1
+      dw-cli get-file-version --project-id 123456 --file-id 300001 --file-version 1
 
     
     📦 Output JSON Structure:
@@ -70,7 +70,7 @@ def list_file_versions(
 
     
     🚀 Examples:
-      dw-cli list-file-versions --project-id 32890 --file-id 30704483
+      dw-cli list-file-versions --project-id 123456 --file-id 300001
 
     
     📦 Output JSON Structure:
@@ -94,7 +94,7 @@ def get_file_type_statistic(
 
     
     🚀 Examples:
-      dw-cli get-file-type-statistic --project-env PROD --project-id 116687
+      dw-cli get-file-type-statistic --project-env PROD --project-id 123457
 
     
     📦 Output JSON Structure:

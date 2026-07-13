@@ -166,10 +166,10 @@ def list_nodes(
     \b
     🚀 Examples:
       # 列出空间下所有节点（--all 合并分页）
-      dw-cli list-nodes --project-id 116845 --project-env PROD --all
+      dw-cli list-nodes --project-id 123458 --project-env PROD --all
 
       # 按类型过滤，只取ID和名
-      dw-cli list-nodes --project-id 116845 --project-env PROD \\
+      dw-cli list-nodes --project-id 123458 --project-env PROD \\
         --program-type ODPS_SQL \\
         --query "Data.Nodes[*].{Id:NodeId, Name:NodeName}"
 
@@ -225,10 +225,10 @@ def offline_node(
     \b
     🚀 Examples:
       # 预览（不执行）
-      dw-cli offline-node --node-id 2549501 --project-id 116845 --dry-run
+      dw-cli offline-node --node-id 100003 --project-id 123458 --dry-run
 
       # 真下线（须显式确认）
-      dw-cli offline-node --node-id 2549501 --project-id 116845 --confirm
+      dw-cli offline-node --node-id 100003 --project-id 123458 --confirm
 
     \b
     📦 Output JSON Structure:
@@ -269,10 +269,10 @@ def update_node_run_mode(
     \b
     🚀 Examples:
       # 冻结节点
-      dw-cli update-node-run-mode --node-id 2583882 --project-env PROD --scheduler-type 2
+      dw-cli update-node-run-mode --node-id 100002 --project-env PROD --scheduler-type 2
 
       # 解冻（恢复正常调度）
-      dw-cli update-node-run-mode --node-id 2583882 --project-env PROD --scheduler-type 0
+      dw-cli update-node-run-mode --node-id 100002 --project-env PROD --scheduler-type 0
 
     \b
     📦 Output JSON Structure:
@@ -338,7 +338,7 @@ def update_node_owner(
 
     \b
     ?? Examples:
-      dw-cli update-node-owner --node-id 2587817 --user-id 5243610875270216803
+      dw-cli update-node-owner --node-id 100001 --user-id 900001
 
     \b
     ?? Output JSON Structure:

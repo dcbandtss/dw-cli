@@ -78,26 +78,26 @@ def create_resource_file(
     \b
     🚀 Examples:
       # 创建 Python 资源（文本正文行内）— 公有云
-      dw-cli create-resource-file --project-id 32890 \\
+      dw-cli create-resource-file --project-id 123456 \\
         --file-name my_util.py --file-type 12 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_util.py --content "def hello():\\n    return 1"
 
       # 从本地文件读正文 — 公有云
-      dw-cli create-resource-file --project-id 32890 \\
+      dw-cli create-resource-file --project-id 123456 \\
         --file-name my_util.py --file-type 12 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_util.py --content-file ./my_util.py
 
       # 二进制 jar 资源（用已上传的 OSS URL）— 公有云
-      dw-cli create-resource-file --project-id 32890 \\
+      dw-cli create-resource-file --project-id 123456 \\
         --file-name my_udf.jar --file-type 13 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_udf.jar \\
         --storage-url "http://bucket.../my_udf.jar" --register-to-calc-engine
 
       # ⚠️ 私有云建资源改用 create-file（推荐）：
-      dw-cli create-file --project-id 32890 --file-name my_util.py --file-type 12 \\
+      dw-cli create-file --project-id 123456 --file-name my_util.py --file-type 12 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" --content-file ./my_util.py
 
     \b
@@ -168,7 +168,7 @@ def create_resource_file_upload(
     \b
     🚀 Examples:
       # 上传本地 jar（私有云可能失败）
-      dw-cli create-resource-file-upload --project-id 32890 \\
+      dw-cli create-resource-file-upload --project-id 123456 \\
         --file-name my_udf.jar --file-type 13 \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/" \\
         --origin-resource-name my_udf.jar --file ./my_udf.jar \\

@@ -57,10 +57,10 @@ def list_data_sources(
     \b
     🚀 Examples:
       # 列出空间下所有数据源
-      dw-cli list-data-sources --project-id 32890 --all
+      dw-cli list-data-sources --project-id 123456 --all
 
       # 只看名称和类型（省 token 且安全）
-      dw-cli list-data-sources --project-id 32890 \\
+      dw-cli list-data-sources --project-id 123456 \\
         --query "Data.DataSources[*].{Name:Name, Type:DataSourceType, EnvType:EnvType}"
 
     \b
@@ -120,10 +120,10 @@ def export_data_sources(
     \b
     🚀 Examples:
       # 导出全部数据源
-      dw-cli export-data-sources --project-id 32890 --all
+      dw-cli export-data-sources --project-id 123456 --all
 
       # 只看名称和类型
-      dw-cli export-data-sources --project-id 32890 \\
+      dw-cli export-data-sources --project-id 123456 \\
         --query "Data.DataSources[*].{Name:Name, Type:DataSourceType}"
 
     \b
@@ -176,7 +176,7 @@ def test_network_connection(
     resource-group 取值：用 `raw list_resource_groups --resource-group-type 4`
     查数据集成资源组列表，取 Identifier 字段。type=4 是数据集成资源组，
     test-network-connection 测的是 DI 网络连通（调度/MaxCompute 等其他 type 资源组
-    传入会返回 invalid）。32890 的默认 DI 资源组标识是 `group_10003`。
+    传入会返回 invalid）。123456 的默认 DI 资源组标识是 `group_10003`。
 
     list_resource_groups 的 resource_group_type 数字含义（SDK 注释）：
       0=DataWorks, 1=调度, 2=MaxCompute, 3=PAI, 4=数据集成, 7=独享调度, 9=DataService Studio
@@ -184,11 +184,11 @@ def test_network_connection(
     \b
     🚀 Examples:
       # 测 mysql VPC 数据源与默认 DI 资源组的连通性
-      dw-cli test-network-connection --project-id 32890 \\
-        --datasource-name dcb_test_mysql_vpc --resource-group group_10003 --env-type "1"
+      dw-cli test-network-connection --project-id 123456 \\
+        --datasource-name my_datasource --resource-group group_10003 --env-type "1"
 
       # 测 odps 数据源
-      dw-cli test-network-connection --project-id 32890 \\
+      dw-cli test-network-connection --project-id 123456 \\
         --datasource-name odps_first --resource-group group_10003 --env-type "1"
 
     \b
@@ -238,12 +238,12 @@ def create_data_source(
     \b
     🚀 Examples:
       # 创建 odps 数据源（content 行内 JSON）
-      dw-cli create-data-source --project-id 32890 --name my_odps \\
+      dw-cli create-data-source --project-id 123456 --name my_odps \\
         --data-source-type odps --env-type 1 \\
         --content '{"accessId":"xxx","accessKey":"xxx","endpoint":"http://...","project":"my_prj","authType":"1"}'
 
       # 用文件传大 content
-      dw-cli create-data-source --project-id 32890 --name my_mysql \\
+      dw-cli create-data-source --project-id 123456 --name my_mysql \\
         --data-source-type mysql --env-type 1 --content file://mysql_ds.json
 
     \b
@@ -327,7 +327,7 @@ def update_data_source(
     
     ?? Examples:
       # ????????
-      dw-cli update-data-source --data-source-id 15603 --description "new desc"
+      dw-cli update-data-source --data-source-id 700001 --description "new desc"
 
     
     ?? Output JSON Structure:
@@ -358,7 +358,7 @@ def get_data_source_meta(
 
     \b
     ?? Examples:
-      dw-cli get-data-source-meta --project-id 32890 --datasource-name dcb_test_mysql_vpc
+      dw-cli get-data-source-meta --project-id 123456 --datasource-name my_datasource
 
     \b
     ?? Output JSON Structure:

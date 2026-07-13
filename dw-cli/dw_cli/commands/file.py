@@ -176,23 +176,23 @@ def create_file(
     \b
     🚀 Examples:
       # 建 ODPS SQL 节点
-      dw-cli create-file --project-id 32890 --file-name my_node.sql \\
+      dw-cli create-file --project-id 123456 --file-name my_node.sql \\
         --file-type 10 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
         --content "SELECT 1;"
 
       # 建虚拟节点（file_type=99）
-      dw-cli create-file --project-id 32890 --file-name start_node \\
+      dw-cli create-file --project-id 123456 --file-name start_node \\
         --file-type 99 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
         --content ""
 
       # 建资源文件（大代码用 file://）
-      dw-cli create-file --project-id 32890 --file-name my_udf.py \\
+      dw-cli create-file --project-id 123456 --file-name my_udf.py \\
         --file-type 12 --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
         --content file://udf_code.py
 
     \b
     📦 Output JSON Structure:
-      - 文件 ID: Data (直接是数字，如 30705114)
+      - 文件 ID: Data (直接是数字，如 300005)
       - 成功: {Data: <file_id>, Success: true}
     """
     if content is not None and content_file is not None:
@@ -261,7 +261,7 @@ def submit_file(
 
       # 提交失败：补 input/output 后重新提交
       dw-cli update-file --file-id <FID> --project-id <PID> \\
-        --input-list "dqsc_prod_root" --output-list "dqsc_prod.my_node_output"
+        --input-list "my_project_root" --output-list "my_project.my_node_output"
       dw-cli submit-file --file-id <FID> --project-id <PID> --comment "补依赖后提交"
 
       # 查发布包状态
@@ -316,16 +316,16 @@ def delete_file(
     \b
     🚀 Examples:
       # 预览（不执行）
-      dw-cli delete-file --file-id 30704827 --project-id 32890 --dry-run
+      dw-cli delete-file --file-id 300002 --project-id 123456 --dry-run
 
       # 真删除未提交文件
-      dw-cli delete-file --file-id 30704827 --project-id 32890 --confirm
+      dw-cli delete-file --file-id 300002 --project-id 123456 --confirm
 
       # 删已提交文件并自动等异步删完（推荐）
-      dw-cli delete-file --file-id 30704827 --project-id 32890 --confirm --wait
+      dw-cli delete-file --file-id 300002 --project-id 123456 --confirm --wait
 
       # 等久一点
-      dw-cli delete-file --file-id 30704827 --project-id 32890 --confirm --wait --timeout 600
+      dw-cli delete-file --file-id 300002 --project-id 123456 --confirm --wait --timeout 600
 
     \b
     📦 Output JSON Structure:
@@ -548,22 +548,22 @@ def update_file(
     \b
     🚀 Examples:
       # 改文件代码正文
-      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+      dw-cli update-file --file-id 300003 --project-id 123456 \\
         --content file://new_code.sql
 
       # 配置输入输出（SQL 节点提交前必填，否则 submit-file 报「输入输出不能为空」）
-      dw-cli update-file --file-id 30704830 --project-id 32890 \\
-        --input-list "dqsc_prod_root" \\
-        --output-list "dqsc_prod.my_node_output"
+      dw-cli update-file --file-id 300003 --project-id 123456 \\
+        --input-list "my_project_root" \\
+        --output-list "my_project.my_node_output"
 
       # 设调度 cron + 资源组 + 调度参数
-      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+      dw-cli update-file --file-id 300003 --project-id 123456 \\
         --cron-express "00 30 00 * * ?" --cycle-type DAY \\
         --resource-group-identifier "Serverless_res_group_xxx" \\
         --para-value "dt=$bizdate"
 
       # 设调度模式（NORMAL=正常, PAUSE=暂停, SKIP=空跑, MANUAL=手动）
-      dw-cli update-file --file-id 30704830 --project-id 32890 \\
+      dw-cli update-file --file-id 300003 --project-id 123456 \\
         --scheduler-type "PAUSE"
 
     \b
@@ -674,21 +674,21 @@ def create_and_submit_file(
     \b
     🚀 Examples:
       # 建并提交 SQL 节点，配调度周期 + 上游依赖
-      dw-cli create-and-submit-file --project-id 32890 \\
+      dw-cli create-and-submit-file --project-id 123456 \\
         --file-name my_node.sql --file-type 10 \\
         --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
-        --content "SELECT 1;" --input-list "dqsc_prod_root" \\
+        --content "SELECT 1;" --input-list "my_project_root" \\
         --cron-express "00 30 00 * * ?" --cycle-type DAY \\
         --para-value "dt=$bizdate"
 
       # 建并提交资源文件（无需调度参数，跳过 update 步骤）
-      dw-cli create-and-submit-file --project-id 32890 \\
+      dw-cli create-and-submit-file --project-id 123456 \\
         --file-name my_udf.py --file-type 12 \\
         --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
         --content file://udf_code.py
 
       # 建并提交虚拟节点（暂停调度）
-      dw-cli create-and-submit-file --project-id 32890 \\
+      dw-cli create-and-submit-file --project-id 123456 \\
         --file-name start_node --file-type 99 \\
         --file-folder-path "业务流程/dcb_test/folderMaxCompute" \\
         --content "" --scheduler-type PAUSE
@@ -871,9 +871,9 @@ def deploy_file(
     \b
     ?? Examples:
       # ???????
-      dw-cli deploy-file --file-id 30704483 --project-id 32890 --comment "??"
+      dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "??"
       # ????
-      dw-cli deploy-file --file-id 30704483 --project-id 32890 --comment "??" --confirm
+      dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "??" --confirm
 
     \b
     ?? Output JSON Structure:

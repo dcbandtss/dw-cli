@@ -39,10 +39,10 @@ def get_business(
     \b
     🚀 Examples:
       # 取业务流程详情
-      dw-cli get-business --business-id 34364 --project-id 32890
+      dw-cli get-business --business-id 400001 --project-id 123456
 
       # 只取名和负责人
-      dw-cli get-business --business-id 34364 --project-id 32890 \\
+      dw-cli get-business --business-id 400001 --project-id 123456 \\
         --query "Data.{Name:BusinessName, Owner:Owner}"
 
     \b
@@ -76,10 +76,10 @@ def list_business(
     \b
     🚀 Examples:
       # 列出空间下所有业务流程（--all 合并分页）
-      dw-cli list-business --project-id 32890 --all
+      dw-cli list-business --project-id 123456 --all
 
       # 按关键字过滤，只取ID和名
-      dw-cli list-business --project-id 32890 --keyword dcb \\
+      dw-cli list-business --project-id 123456 --keyword dcb \\
         --query "Data.Business[*].{Id:BusinessId, Name:BusinessName}"
 
     \b
@@ -125,7 +125,7 @@ def create_business(
     \b
     🚀 Examples:
       # 创建业务流程
-      dw-cli create-business --project-id 32890 \\
+      dw-cli create-business --project-id 123456 \\
         --business-name dwcli_test --description "dw-cli 测试"
 
     \b
@@ -158,10 +158,10 @@ def delete_business(
     \b
     🚀 Examples:
       # 预览（不执行）
-      dw-cli delete-business --business-id 34372 --project-id 32890 --dry-run
+      dw-cli delete-business --business-id 400003 --project-id 123456 --dry-run
 
       # 真删除（须显式确认）
-      dw-cli delete-business --business-id 34372 --project-id 32890 --confirm
+      dw-cli delete-business --business-id 400003 --project-id 123456 --confirm
 
     \b
     📦 Output JSON Structure:
@@ -209,7 +209,7 @@ def update_business(
 
     
     ?? Examples:
-      dw-cli update-business --business-id 34364 --project-id 32890 \
+      dw-cli update-business --business-id 400001 --project-id 123456 \
         --description "new description"
 
     
@@ -237,9 +237,9 @@ def establish_relation_table_to_business(
 
     
     ?? Examples:
-      dw-cli establish-relation-table-to-business --business-id 34364 \
-        --folder-id k0uxr6h53rte6puale3ncxsi --project-id 32890 \
-        --table-guid odps.dqsc_prod.my_table
+      dw-cli establish-relation-table-to-business --business-id 400001 \
+        --folder-id k0uxr6h53rte6puale3ncxsi --project-id 123456 \
+        --table-guid odps.my_project.my_table
 
     
     ?? Output JSON Structure:

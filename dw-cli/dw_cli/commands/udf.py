@@ -64,7 +64,7 @@ def create_udf_file(
       - 函数名（--file-name）= 类名，**不带资源名**。如类名 DCBTest，file-name 用
         `DCBTest`，调用时 `select DCBTest('xxx')`。
       - class-name（Python UDF）**必须带资源名**：格式 `资源名.类名`，如
-        `dcb_test_udf.DCBTest`。裸类名注册能成功但引用不到资源。
+        `my_udf.DCBTest`。裸类名注册能成功但引用不到资源。
       - class-name（Jar UDF）**不带资源名**：直接类名或带包路径，如 `com.example.MyUdf`。
       - resources 是已提交上线的资源名（.py/.jar），多个逗号分隔。
 
@@ -76,14 +76,14 @@ def create_udf_file(
 
     \b
     🚀 Examples:
-      # 注册 Python UDF（资源 dcb_test_udf.py 已提交上线）
-      dw-cli create-udf-file --project-id 32890 \\
-        --file-name DCBTest --class-name dcb_test_udf.DCBTest \\
-        --function-type STRING --resources dcb_test_udf.py \\
+      # 注册 Python UDF（资源 my_udf.py 已提交上线）
+      dw-cli create-udf-file --project-id 123456 \\
+        --file-name DCBTest --class-name my_udf.DCBTest \\
+        --function-type STRING --resources my_udf.py \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/"
 
       # 注册 Jar UDF（class-name 不带资源名）
-      dw-cli create-udf-file --project-id 32890 \\
+      dw-cli create-udf-file --project-id 123456 \\
         --file-name MyUdf --class-name com.example.MyUdf \\
         --function-type STRING --resources my_udf.jar \\
         --file-folder-path "业务流程/dcb_test/MaxCompute/"
@@ -134,9 +134,9 @@ def update_udf_file(
     \b
     🚀 Examples:
       # 更新 Python UDF 的类名和资源（class-name 带资源名）
-      dw-cli update-udf-file --project-id 32890 \\
-        --file-id "30704909" --class-name dcb_test_udf.DCBTestV2 \\
-        --function-type STRING --resources dcb_test_udf.py
+      dw-cli update-udf-file --project-id 123456 \\
+        --file-id "300004" --class-name my_udf.DCBTestV2 \\
+        --function-type STRING --resources my_udf.py
 
     \b
     📦 Output JSON Structure:

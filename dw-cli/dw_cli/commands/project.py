@@ -39,13 +39,13 @@ def get_project(
     \b
     🚀 Examples:
       # 按 ID 取工作空间详情
-      dw-cli get-project --project-id 32890
+      dw-cli get-project --project-id 123456
 
       # 按名称取工作空间详情
-      dw-cli get-project --project-identifier dqsc_prod
+      dw-cli get-project --project-identifier my_project
 
       # 只取关键信息
-      dw-cli get-project --project-id 32890 \\
+      dw-cli get-project --project-id 123456 \\
         --query "Data.{Id:ProjectId, Name:ProjectName, Mode:ProjectMode, Status:Status}"
 
     \b

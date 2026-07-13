@@ -177,7 +177,7 @@ def _finish_and_emit(instance, limit, query, output_fmt, logview) -> None:
 def run_sql(
     ctx: typer.Context,
     project: str = typer.Option(..., "--project",
-        help="MaxCompute 项目名（如 dqsc_prod），与 list-tables --odps-project 同构"),
+        help="MaxCompute 项目名（如 my_project），与 list-tables --odps-project 同构"),
     sql: str = typer.Option(..., "--sql",
         help="SQL 语句；或 file://query.sql 读文件（复用 load_arg）"),
     limit: int = typer.Option(100, "--limit",
@@ -196,14 +196,14 @@ def run_sql(
     \b
     🚀 Examples:
       # 读操作（SELECT）默认放行
-      dw-cli run-sql --project dqsc_prod \\
-        --sql "select * from t00_ods_table_cols_list limit 3"
+      dw-cli run-sql --project my_project \\
+        --sql "select * from my_table limit 3"
 
       # 长脚本走 file://
-      dw-cli run-sql --project dqsc_prod --sql file://query.sql
+      dw-cli run-sql --project my_project --sql file://query.sql
 
       # 写操作需 --confirm
-      dw-cli run-sql --project dqsc_prod \\
+      dw-cli run-sql --project my_project \\
         --sql "insert into t select * from s" --confirm
 
     \b
@@ -300,7 +300,7 @@ def get_sql_instance(
     🚀 Examples:
       # run-sql 超时降级后跟进
       dw-cli get-sql-instance --instance-id 20260709092621464gt655m43 \\
-        --project dqsc_prod
+        --project my_project
 
     \b
     📦 Output JSON Structure:

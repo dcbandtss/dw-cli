@@ -200,8 +200,8 @@ def raw(
 
     用法：
       dw-cli raw get_node --node-id 12345 --project-env PROD
-      dw-cli raw list_files --project-id 32890 --page-size 5
-      dw-cli raw delete_file --file-id 123 --project-id 32890 --confirm
+      dw-cli raw list_files --project-id 123456 --page-size 5
+      dw-cli raw delete_file --file-id 123 --project-id 123456 --confirm
 
     字段名用 kebab-case，内部转 snake_case 填入 Request。非法字段会报错并列出合法字段。
     写操作按方法名前缀判定高危（delete_/deploy_/stop_/terminate_/offline_ 须 --confirm）。
@@ -209,7 +209,7 @@ def raw(
 
     file:// 取值：参数值以 file:// 开头时读文件内容填入（aws CLI 风格），
     用于传大 JSON（如 List 字段、DI spec），避免 bash 转义：
-      dw-cli raw create_table --columns file://cols.json --project-id 32890
+      dw-cli raw create_table --columns file://cols.json --project-id 123456
     """
     try:
         _run_raw(ctx, api_name, confirm_flag, dry_run, query, output_fmt)

@@ -71,7 +71,7 @@ def run_cycle_dag_nodes(
     🚀 Examples:
       # 单节点补数据
       dw-cli run-cycle-dag-nodes --project-env PROD \
-        --include-node-ids 2587817 --root-node-id 2587817 \
+        --include-node-ids 100001 --root-node-id 100001 \
         --start-biz-date "2026-07-07 00:00:00" --end-biz-date "2026-07-07 00:00:00"
 
     
@@ -99,7 +99,7 @@ def run_manual_dag_nodes(
     ctx: typer.Context,
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
     project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
-    project_name: str = typer.Option(..., "--project-name", help="工作空间标识名（如 dqsc_prod）"),
+    project_name: str = typer.Option(..., "--project-name", help="工作空间标识名（如 my_project）"),
     flow_name: str = typer.Option(..., "--flow-name",
                                   help="手动业务流程名称（必须是 UseType=MANUAL_BIZ 的业务流程）"),
     include_node_ids: str = typer.Option(..., "--include-node-ids",
@@ -123,9 +123,9 @@ def run_manual_dag_nodes(
 
     
     🚀 Examples:
-      dw-cli run-manual-dag-nodes --project-env PROD --project-id 32890 \
-        --project-name dqsc_prod --flow-name run_manual_dag_nodes_test \
-        --include-node-ids 2589126 --biz-date "2026-07-07 00:00:00"
+      dw-cli run-manual-dag-nodes --project-env PROD --project-id 123456 \
+        --project-name my_project --flow-name run_manual_dag_nodes_test \
+        --include-node-ids 100005 --biz-date "2026-07-07 00:00:00"
 
     
     📦 Output JSON Structure:
@@ -181,7 +181,7 @@ def list_manual_dag_instances(
     ctx: typer.Context,
     dag_id: str = typer.Option(..., "--dag-id", help="DAG ID"),
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
-    project_name: str = typer.Option(..., "--project-name", help="工作空间标识名（如 dqsc_prod）"),
+    project_name: str = typer.Option(..., "--project-name", help="工作空间标识名（如 my_project）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -190,7 +190,7 @@ def list_manual_dag_instances(
     
     🚀 Examples:
       dw-cli list-manual-dag-instances --dag-id 374074487 \
-        --project-env PROD --project-name dqsc_prod
+        --project-env PROD --project-name my_project
 
     
     📦 Output JSON Structure:
@@ -220,7 +220,7 @@ def set_success_instance(
 
     
     🚀 Examples:
-      dw-cli set-success-instance --instance-id 15220455638 --project-env PROD
+      dw-cli set-success-instance --instance-id 200002 --project-env PROD
 
     
     ⚠️ 注意：实例状态必须为 FAILURE 或 CHECKING，SUCCESS 状态会报错

@@ -64,9 +64,9 @@ def create_import_migration(
     package_file: str = typer.Option(..., "--package-file",
         help="导出包文件内容（JSON 字符串）；或 file://path.zip 读文件"),
     calculate_engine_map: str = typer.Option("", "--calculate-engine-map",
-        help="计算引擎映射 JSON，如 {\"ODPS\":{\"iam_odps\":\"dqsc_prod\"}}"),
+        help="计算引擎映射 JSON，如 {\"ODPS\":{\"my_engine\":\"my_project\"}}"),
     workspace_map: str = typer.Option("", "--workspace-map",
-        help="工作空间映射 JSON，如 {\"iam_odps\":\"dqsc_prod\"}"),
+        help="工作空间映射 JSON，如 {\"my_engine\":\"my_project\"}"),
     resource_group_map: str = typer.Option("", "--resource-group-map",
         help="资源组映射 JSON（非必填）"),
     commit_rule: str = typer.Option("", "--commit-rule",
@@ -86,12 +86,12 @@ def create_import_migration(
     \b
     🚀 Examples:
       # 创建导入任务（包文件走 file://）
-      dw-cli create-import-migration --project-id 32890 \\
+      dw-cli create-import-migration --project-id 123456 \\
         --name "import_test_20260710" \\
         --package-type DATAWORKS_MODEL \\
         --package-file file://D:/work/10openapi/授权运营安全模型.zip \\
-        --calculate-engine-map '{"ODPS":{"iam_odps":"dqsc_prod"}}' \\
-        --workspace-map '{"iam_odps":"dqsc_prod"}' \\
+        --calculate-engine-map '{"ODPS":{"my_engine":"my_project"}}' \\
+        --workspace-map '{"my_engine":"my_project"}' \\
         --commit-rule file://commit_rule.json --confirm
 
       # commit_rule 样例（全 false = 不自动提交/部署，手动处理）
@@ -160,7 +160,7 @@ def start_migration(
     \b
     🚀 Examples:
       # 启动导入（先从 create-import-migration 拿到 MigrationId）
-      dw-cli start-migration --project-id 32890 --migration-id 12345 --confirm
+      dw-cli start-migration --project-id 123456 --migration-id 12345 --confirm
 
     \b
     📦 Output JSON Structure:

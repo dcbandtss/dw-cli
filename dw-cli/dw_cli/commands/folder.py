@@ -45,10 +45,10 @@ def list_folders(
     \b
     🚀 Examples:
       # 列出某业务流程下的子目录
-      dw-cli list-folders --project-id 32890 --parent-folder-path "业务流程/dcb_test"
+      dw-cli list-folders --project-id 123456 --parent-folder-path "业务流程/dcb_test"
 
       # --all 合并分页，只取路径
-      dw-cli list-folders --project-id 32890 --parent-folder-path "业务流程/dcb_test" \\
+      dw-cli list-folders --project-id 123456 --parent-folder-path "业务流程/dcb_test" \\
         --all --query "Data.Folders[*].FolderPath"
 
     \b
@@ -119,7 +119,7 @@ def get_folder(
     \b
     🚀 Examples:
       # 按路径取目录 ID
-      dw-cli get-folder --project-id 32890 --folder-path "业务流程/dcb_test"
+      dw-cli get-folder --project-id 123456 --folder-path "业务流程/dcb_test"
 
     \b
     📦 Output JSON Structure:
@@ -150,7 +150,7 @@ def create_folder(
     \b
     🚀 Examples:
       # 在 dcb_test 业务流程的 MaxCompute 引擎下建子目录
-      dw-cli create-folder --project-id 32890 \\
+      dw-cli create-folder --project-id 123456 \\
         --folder-path "业务流程/dcb_test/MaxCompute/dwcli_sub"
 
     \b
@@ -180,11 +180,11 @@ def delete_folder(
     \b
     🚀 Examples:
       # 预览（不执行）
-      dw-cli delete-folder --project-id 32890 \\
+      dw-cli delete-folder --project-id 123456 \\
         --folder-id k0uxr6h53rte6puale3ncxsi --dry-run
 
       # 真删除（须显式确认）
-      dw-cli delete-folder --project-id 32890 \\
+      dw-cli delete-folder --project-id 123456 \\
         --folder-id k0uxr6h53rte6puale3ncxsi --confirm
 
     \b
@@ -232,7 +232,7 @@ def update_folder(
     
     ?? Examples:
       dw-cli update-folder --folder-id k0uxr6h53rte6puale3ncxsi \
-        --project-id 32890 --folder-name new_name
+        --project-id 123456 --folder-name new_name
 
     
     ?? Output JSON Structure:

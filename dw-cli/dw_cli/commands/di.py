@@ -43,7 +43,7 @@ def list_diproject_config(
 
     \\b
     🚀 Examples:
-      dw-cli list-diproject-config --project-id 32890 --destination-type odps
+      dw-cli list-diproject-config --project-id 123456 --destination-type odps
 
     \\b
     📦 Output JSON Structure:
@@ -68,11 +68,11 @@ def update_diproject_config(
 
     \\b
     🚀 Examples:
-      dw-cli update-diproject-config --project-id 32890 --destination-type odps \\
+      dw-cli update-diproject-config --project-id 123456 --destination-type odps \\
         --project-config file://di_config.json
 
       # 内联
-      dw-cli update-diproject-config --project-id 32890 --destination-type odps \\
+      dw-cli update-diproject-config --project-id 123456 --destination-type odps \\
         --project-config '{"ADDCOLUMN":"NORMAL","DROPCOLUMN":"IGNORE"}'
 
     \\b
@@ -106,7 +106,7 @@ def list_ref_disync_tasks(
 
     \b
     ?? Examples:
-      dw-cli list-ref-disync-tasks --project-id 32890 --datasource-name dcb_test_mysql_vpc \
+      dw-cli list-ref-disync-tasks --project-id 123456 --datasource-name my_datasource \
         --task-type DI_OFFLINE --ref-type to
 
     \b
@@ -136,7 +136,7 @@ def create_disync_task(
 
     \b
     ?? Examples:
-      dw-cli create-disync-task --project-id 32890 --task-name my_di \
+      dw-cli create-disync-task --project-id 123456 --task-name my_di \
         --task-type DI_OFFLINE \
         --task-content file://di_task.json \
         --task-param file://di_param.json
@@ -173,7 +173,7 @@ def update_disync_task(
 
     \b
     ?? Examples:
-      dw-cli update-disync-task --file-id 30706157 --project-id 32890 \
+      dw-cli update-disync-task --file-id 300006 --project-id 123456 \
         --task-type DI_OFFLINE --task-content file://di_task.json
 
     \b

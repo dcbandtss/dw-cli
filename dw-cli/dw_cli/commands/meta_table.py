@@ -34,7 +34,7 @@ _DST_HELP = "数据源类型，如 odps / rds / mysql"
 _DB_HELP = "库名 / 项目空间名（odps 即项目标识）"
 _TBL_HELP = "表名（与 table-guid 二选一，table-guid 优先）"
 _GUID_HELP = "表全局唯一标识（与 table-name 二选一，优先）"
-# table_query：响应 Data 结构经真调确认（私有云 dqsc_prod.cli_test_partitions_table）
+# table_query：响应 Data 结构经真调确认（私有云 my_project.cli_test_partitions_table）
 # search_meta_tables → Data.DataEntityList[*].{TableName,TableGuid,ProjectName,...}
 _SEARCH_TQ = "Data.DataEntityList[*].{Name:TableName, Guid:TableGuid, Project:ProjectName}"
 # get_meta_table_partition → Data.DataEntityList[*].{PartitionName,PartitionGuid,...}
@@ -588,8 +588,8 @@ def get_meta_table_lineage(
 
     
     ?? Examples:
-      dw-cli get-meta-table-lineage --table-guid odps.dqsc_prod.my_table \
-        --database-name dqsc_prod --direction UP
+      dw-cli get-meta-table-lineage --table-guid odps.my_project.my_table \
+        --database-name my_project --direction UP
 
     
     ?? Output JSON Structure:
@@ -620,7 +620,7 @@ def get_meta_column_lineage(
 
     
     ?? Examples:
-      dw-cli get-meta-column-lineage --column-guid odps.dqsc_prod.my_table.my_col \
+      dw-cli get-meta-column-lineage --column-guid odps.my_project.my_table.my_col \
         --direction UP
 
     
@@ -629,7 +629,7 @@ def get_meta_column_lineage(
       - Data.TotalCount
 
     
-    ?? ???column_guid ??? odps. ??????? dqsc_prod.table.col?? 500 InternalError.Meta.Unknown?
+    ?? ???column_guid ??? odps. ??????? my_project.table.col?? 500 InternalError.Meta.Unknown?
     """
     _call_meta(ctx, "get_meta_column_lineage", dw_models.GetMetaColumnLineageRequest(
         column_guid=column_guid, direction=direction,
@@ -654,7 +654,7 @@ def get_meta_table_output(
 
     
     ?? Examples:
-      dw-cli get-meta-table-output --table-guid odps.dqsc_prod.my_table \
+      dw-cli get-meta-table-output --table-guid odps.my_project.my_table \
         --start-date 2026-07-01 --end-date 2026-07-09
 
     
@@ -688,7 +688,7 @@ def update_meta_table(
 
     
     ?? Examples:
-      dw-cli update-meta-table --table-guid odps.dqsc_prod.my_table \
+      dw-cli update-meta-table --table-guid odps.my_project.my_table \
         --caption "???" --env-type 1 --visibility 1
 
     
@@ -714,9 +714,9 @@ def update_meta_table_intro_wiki(
 
     \b
     ?? Examples:
-      dw-cli update-meta-table-intro-wiki --table-guid odps.dqsc_prod.my_table \
+      dw-cli update-meta-table-intro-wiki --table-guid odps.my_project.my_table \
         --content "?????"
-      dw-cli update-meta-table-intro-wiki --table-guid odps.dqsc_prod.my_table \
+      dw-cli update-meta-table-intro-wiki --table-guid odps.my_project.my_table \
         --content file://wiki.md
 
     \b

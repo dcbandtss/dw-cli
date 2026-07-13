@@ -38,14 +38,14 @@ def get_deployment(
     \b
     🚀 Examples:
       # 查发布包状态
-      dw-cli get-deployment --deployment-id 12345 --project-id 32890
+      dw-cli get-deployment --deployment-id 12345 --project-id 123456
 
       # 只取状态（注意 Status 在 Data.Deployment 下，不在 Data 顶层）
-      dw-cli get-deployment --deployment-id 12345 --project-id 32890 \\
+      dw-cli get-deployment --deployment-id 12345 --project-id 123456 \\
         --query "Data.Deployment.Status"
 
       # 查失败原因
-      dw-cli get-deployment --deployment-id 12345 --project-id 32890 \\
+      dw-cli get-deployment --deployment-id 12345 --project-id 123456 \\
         --query "Data.Deployment.ErrorMessage"
 
     \b

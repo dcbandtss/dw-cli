@@ -31,7 +31,7 @@ def _call(ctx: typer.Context, api_name: str, request, *, query, output_fmt):
 def list_nodes_by_output(
     ctx: typer.Context,
     outputs: str = typer.Option(..., "--outputs",
-                                help="节点输出名，多个用逗号分隔（如 dqsc_prod.some_node）"),
+                                help="节点输出名，多个用逗号分隔（如 my_project.some_node）"),
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
@@ -41,11 +41,11 @@ def list_nodes_by_output(
     
     🚀 Examples:
       # 查依赖某输出的节点
-      dw-cli list-nodes-by-output --outputs "shouquanyunyingyu_ybz.ads_auth_access_data" \
+      dw-cli list-nodes-by-output --outputs "my_project_b.my_output" \
         --project-env PROD
 
       # 只取节点 ID 和名称
-      dw-cli list-nodes-by-output --outputs "dqsc_prod.123456789.sql" --project-env PROD \
+      dw-cli list-nodes-by-output --outputs "my_project.123456789.sql" --project-env PROD \
         --query "Data[*].NodeList[*].{Id:NodeId,Name:NodeName}"
 
     
@@ -72,10 +72,10 @@ def list_node_input_or_output(
     
     🚀 Examples:
       # 查节点上游依赖
-      dw-cli list-node-input-or-output --node-id 2587817 --project-env PROD --io-type input
+      dw-cli list-node-input-or-output --node-id 100001 --project-env PROD --io-type input
 
       # 查节点输出
-      dw-cli list-node-input-or-output --node-id 2587817 --project-env PROD --io-type output
+      dw-cli list-node-input-or-output --node-id 100001 --project-env PROD --io-type output
 
     
     📦 Output JSON Structure:

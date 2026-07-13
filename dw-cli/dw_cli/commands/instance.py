@@ -43,10 +43,10 @@ def get_instance(
     \b
     🚀 Examples:
       # 取实例详情
-      dw-cli get-instance --instance-id 15187465334 --project-env PROD
+      dw-cli get-instance --instance-id 200001 --project-env PROD
 
       # 只取状态和节点名
-      dw-cli get-instance --instance-id 15187465334 --project-env PROD \\
+      dw-cli get-instance --instance-id 200001 --project-env PROD \\
         --query "Data.{Status:Status, Node:NodeName, BizDate:Bizdate}"
 
     \b
@@ -83,7 +83,7 @@ def get_instance_log(
     \b
     🚀 Examples:
       # 取实例最新日志（私有云可不传 history-id）
-      dw-cli get-instance-log --instance-id 15187465334 --project-env PROD
+      dw-cli get-instance-log --instance-id 200001 --project-env PROD
 
     \b
     📦 Output JSON Structure:
@@ -125,11 +125,11 @@ def list_instances(
     \b
     🚀 Examples:
       # 查某业务日期的实例
-      dw-cli list-instances --project-id 32890 --project-env PROD \\
+      dw-cli list-instances --project-id 123456 --project-env PROD \\
         --bizdate "2026-06-26 00:00:00"
 
       # 只取运行中和失败的实例
-      dw-cli list-instances --project-id 32890 --project-env PROD \\
+      dw-cli list-instances --project-id 123456 --project-env PROD \\
         --bizdate "2026-06-26 00:00:00" --status RUNNING \\
         --query "Data.Instances[*].{Id:InstanceId, Node:NodeName, Status:Status}"
 
@@ -181,7 +181,7 @@ def list_instance_history(
 
     \b
     🚀 Examples:
-      dw-cli list-instance-history --instance-id 15187465334 --project-env PROD
+      dw-cli list-instance-history --instance-id 200001 --project-env PROD
 
     \b
     📦 Output JSON Structure:
@@ -207,7 +207,7 @@ def restart_instance(
 
     \b
     🚀 Examples:
-      dw-cli restart-instance --instance-id 15187465334 --project-env PROD
+      dw-cli restart-instance --instance-id 200001 --project-env PROD
 
     \b
     📦 Output JSON Structure:
@@ -230,7 +230,7 @@ def resume_instance(
 
     \b
     🚀 Examples:
-      dw-cli resume-instance --instance-id 15187465334 --project-env PROD
+      dw-cli resume-instance --instance-id 200001 --project-env PROD
 
     \b
     📦 Output JSON Structure:
@@ -261,10 +261,10 @@ def stop_instance(
     \b
     🚀 Examples:
       # 预览（不执行）
-      dw-cli stop-instance --instance-id 15187465334 --project-env PROD --dry-run
+      dw-cli stop-instance --instance-id 200001 --project-env PROD --dry-run
 
       # 真终止（须显式确认，且实例须在运行态）
-      dw-cli stop-instance --instance-id 15187465334 --project-env PROD --confirm
+      dw-cli stop-instance --instance-id 200001 --project-env PROD --confirm
 
     \b
     📦 Output JSON Structure:
@@ -299,7 +299,7 @@ def suspend_instance(
 
     \b
     🚀 Examples:
-      dw-cli suspend-instance --instance-id 15187465334 --project-env PROD
+      dw-cli suspend-instance --instance-id 200001 --project-env PROD
 
     \b
     📦 Output JSON Structure:

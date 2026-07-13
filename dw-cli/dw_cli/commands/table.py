@@ -50,7 +50,7 @@ def create_table(
         help="列定义 JSON 数组，如 '[{\"ColumnName\":\"id\",\"ColumnType\":\"bigint\"}]'。"
              "大 JSON 用 file://path 传文件，如 --columns file://cols.json"),
     app_guid: str = typer.Option("", "--app-guid",
-        help="MaxCompute 项目 GUID，格式 odps.{projectName}。如 odps.dqsc_prod"),
+        help="MaxCompute 项目 GUID，格式 odps.{projectName}。如 odps.my_project"),
     comment: str = typer.Option("", "--comment", help="表注释"),
     life_cycle: int = typer.Option(None, "--life-cycle", help="表生命周期（天）"),
     env_type: int = typer.Option(None, "--env-type", help="环境：0=开发 / 1=生产"),
@@ -84,17 +84,17 @@ def create_table(
     \b
     🚀 Examples:
       # 创建简单表
-      dw-cli create-table --project-id 32890 --table-name test_table \\
-        --app-guid odps.dqsc_prod \\
+      dw-cli create-table --project-id 123456 --table-name test_table \\
+        --app-guid odps.my_project \\
         --columns '[{"ColumnName":"id","ColumnType":"bigint"},{"ColumnName":"name","ColumnType":"string"}]'
 
       # 用文件传列定义
-      dw-cli create-table --project-id 32890 --table-name test_table \\
-        --app-guid odps.dqsc_prod --columns file://cols.json --life-cycle 90
+      dw-cli create-table --project-id 123456 --table-name test_table \\
+        --app-guid odps.my_project --columns file://cols.json --life-cycle 90
 
       # 创建分区表（IsPartitionCol 标记分区列）
-      dw-cli create-table --project-id 32890 --table-name test_part_table \\
-        --app-guid odps.dqsc_prod --life-cycle 365 \\
+      dw-cli create-table --project-id 123456 --table-name test_part_table \\
+        --app-guid odps.my_project --life-cycle 365 \\
         --columns '[{"ColumnName":"id","ColumnType":"bigint"},{"ColumnName":"dt","ColumnType":"string","IsPartitionCol":true}]'
 
     \b
@@ -192,16 +192,16 @@ def delete_table(
     \b
     🚀 Examples:
       # 预览（不执行）
-      dw-cli delete-table --table-name test_table --project-id 32890 \\
-        --app-guid odps.dqsc_prod --dry-run
+      dw-cli delete-table --table-name test_table --project-id 123456 \\
+        --app-guid odps.my_project --dry-run
 
       # 真删除（须 --confirm）
-      dw-cli delete-table --table-name test_table --project-id 32890 \\
-        --app-guid odps.dqsc_prod --confirm
+      dw-cli delete-table --table-name test_table --project-id 123456 \\
+        --app-guid odps.my_project --confirm
 
       # 删除并等待完成
-      dw-cli delete-table --table-name test_table --project-id 32890 \\
-        --app-guid odps.dqsc_prod --confirm --wait
+      dw-cli delete-table --table-name test_table --project-id 123456 \\
+        --app-guid odps.my_project --confirm --wait
 
     \b
     📦 Output JSON Structure:
@@ -271,7 +271,7 @@ def get_ddl_job_status(
 def list_tables(
     ctx: typer.Context,
     odps_project: str = typer.Option(..., "--odps-project",
-        help="MaxCompute 项目名，如 dqsc_prod"),
+        help="MaxCompute 项目名，如 my_project"),
     limit: int = typer.Option(100, "--limit", help="返回上限，默认 100 防几万表爆上下文"),
     offset: int = typer.Option(0, "--offset", help="跳过前 N 个，偏移翻页"),
     keyword: str = typer.Option("", "--keyword", help="表名包含子串过滤（客户端侧）"),
@@ -287,20 +287,20 @@ def list_tables(
     \b
     🚀 Examples:
       # 列出表（默认前 100 个）
-      dw-cli list-tables --odps-project dqsc_prod
+      dw-cli list-tables --odps-project my_project
 
       # 只取表名
-      dw-cli list-tables --odps-project dqsc_prod \\
+      dw-cli list-tables --odps-project my_project \\
         --query "Data.TableEntityList[*].EntityContent.TableName"
 
       # 按关键字过滤
-      dw-cli list-tables --odps-project dqsc_prod --keyword user --limit 50
+      dw-cli list-tables --odps-project my_project --keyword user --limit 50
 
       # 翻页：跳过前 200，取第 201~300
-      dw-cli list-tables --odps-project dqsc_prod --offset 200 --limit 100
+      dw-cli list-tables --odps-project my_project --offset 200 --limit 100
 
       # 拉全量（软截断 5000 + 警告）
-      dw-cli list-tables --odps-project dqsc_prod --all
+      dw-cli list-tables --odps-project my_project --all
 
     \b
     📦 Output JSON Structure:
