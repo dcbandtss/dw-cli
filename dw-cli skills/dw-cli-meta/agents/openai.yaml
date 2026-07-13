@@ -1,0 +1,9 @@
+interface:
+  brand_color: '#8B5CF6'
+  default_prompt: 用 $dw-cli-meta 查询 DataWorks 私有云表元数据、字段、血缘、分区，或建表删表、列出表列表。
+  display_name: dw-cli 元数据与表管理
+  icon_large: ./assets/large-logo.svg
+  icon_small: ./assets/small-400px.png
+  short_description: 查询表/字段/分区/血缘元数据，管理建表删表与表列表
+policy:
+  allow_implicit_invocation: true
