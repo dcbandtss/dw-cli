@@ -117,6 +117,9 @@ dw-cli doctor              # 全链路诊断
 
 > ⬆️ **每个命令的详细参数、示例与输出结构请运行 `dw-cli <command> --help` 查看。**
 > 所有命令默认输出 json（机器可读），人看加 `-o table`，复杂参数用 `file://path` 传文件。
+>
+> ⚠️ **project-id 必须是用户有权限的真实空间 ID**。示例中的 `123456` 是占位值，直接照抄会报 `UserNotInProject`。
+> 若不确定空间 ID，先问用户，或用 `get-project --project-identifier <空间标识>` 查询。
 
 ## 私有云特性
 

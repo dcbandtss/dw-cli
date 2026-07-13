@@ -80,3 +80,26 @@ dw-cli doctor
 dw-cli check-credentials
 ```
 输出凭据来源、类型、脱敏前缀、是否 STS。绝不输出完整 AK/SK。
+## 常见错误排错
+
+### Invalid.Tenant.UserNotInProject
+
+```
+code: Invalid.Tenant.UserNotInProject
+message: The user is not in the project.
+```
+
+**原因**：当前凭据对应的账号未加入该 project-id 对应的项目空间。
+
+**解决**：
+1. 确认 project-id 正确（向用户确认真实空间 ID，不要用示例占位值）
+2. 若需查询自己的空间 ID，用 `list-project-ids --user-id <UID>`
+3. 若空间正确但无权限，需在 DataWorks 控制台将账号加入项目成员
+
+### 401 / 403 / endpoint 不通
+
+先跑 `dw-cli doctor` 自检，doctor 会定位是凭据、endpoint 还是 API 问题。不要盲目重试。
+
+### 凭据来源异常
+
+跑 `dw-cli check-credentials` 确认来源与脱敏前缀。多账号用 `--profile <name>` 切换。
