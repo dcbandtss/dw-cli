@@ -1,0 +1,9 @@
+interface:
+  brand_color: '#EF4444'
+  default_prompt: 用 $dw-cli-ops 查询 DataWorks 私有云节点/实例状态、重跑失败任务、触发 DAG 执行、或管理告警规则。
+  display_name: dw-cli 运维中心
+  icon_large: ./assets/large-logo.svg
+  icon_small: ./assets/small-400px.png
+  short_description: 管理 DataWorks 节点调度、实例运维、DAG 运行与告警
+policy:
+  allow_implicit_invocation: true
