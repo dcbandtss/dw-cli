@@ -50,3 +50,6 @@ desktop.ini
 *.log
 *.zip
 *.pdf
+# 开发内部文档/工具（不对外发布）
+docs/
+scripts/
