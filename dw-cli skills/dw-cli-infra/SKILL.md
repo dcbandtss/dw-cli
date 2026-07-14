@@ -129,6 +129,7 @@ dw-cli doctor              # 全链路诊断
 - **test-network-connection env_type 是 str**（`"0"`/`"1"`），不是 int。
 - **VPC 数据源连通性**：需配置 VpcId/VSwitchId，勾选数据源在 VPC 下。
 
+> 数据源 content JSON 格式（19 种类型）见 [references/data-sources/README.md](references/data-sources/README.md)
 > 私有云固定参数与 ODPS endpoint 见 [references/private-cloud-params.md](references/private-cloud-params.md)
 > 完整命令参数表见 [references/command-reference.md](references/command-reference.md)
 

@@ -130,3 +130,4 @@ description: |
 
 > 完整命令参数见 [references/command-reference.md](references/command-reference.md)
 > 节点类型编码表见 [references/node-types.md](references/node-types.md)
+> 调度配置详解见 [references/scheduling-guide.md](references/scheduling-guide.md)
