@@ -26,7 +26,7 @@
 | `instanceId` | 是 | `drdsusrxxxxx` | DRDS 实例 ID |
 | `username` | 是 | `my_user` | 用户名 |
 | `password` | 是 | `my_password` | 密码 |
-| `ownerId` | 否 | `11319610128350286` | 所属账号 ID |
+| `ownerId` | 否 | `9000000000000000003` | 所属账号 ID |
 | `tag` | 是 | `drds` | 标签，实例模式固定 drds |
 
 ## content 示例
@@ -50,7 +50,7 @@
   "password": "my_password",
   "instanceId": "drdsusrxxxxx",
   "tag": "drds",
-  "ownerId": "11319610128350286",
+  "ownerId": "9000000000000000003",
   "username": "my_user"
 }
 ```

@@ -14,7 +14,7 @@
 | `emrClusterId` | 是 | `C-xxxxx` | EMR 集群 ID |
 | `emrResourceQueueName` | 是 | `default` | EMR 资源队列名 |
 | `emrEndpoint` | 是 | `emr.aliyuncs.com` | EMR 端点 |
-| `emrUserId` | 是 | `224833315798889783` | EMR 用户 ID |
+| `emrUserId` | 是 | `9000000000000000004` | EMR 用户 ID |
 | `emrProjectId` | 是 | `FP-xxxxx` | EMR 项目 ID |
 | `emrAccessMode` | 否 | `simple` | 访问模式 |
 | `name` | 是 | `my_emr` | 数据源名称 |
@@ -30,7 +30,7 @@
   "emrResourceQueueName": "default",
   "emrEndpoint": "emr.aliyuncs.com",
   "accessKey": "你的SK",
-  "emrUserId": "224833315798889783",
+  "emrUserId": "9000000000000000004",
   "name": "my_emr",
   "emrAccessMode": "simple",
   "region": "cn-hangzhou-zjzwy01-d01",

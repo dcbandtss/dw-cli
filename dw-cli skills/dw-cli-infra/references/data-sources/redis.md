@@ -11,8 +11,8 @@
 |---|---|---|---|
 | `address` | 是 | `[{"host":"xxx.redis.rds.aliyuncs.com","port":"6379"}]` | Redis 地址（JSON 字符串，host+port） |
 | `password` | 是 | `my_password` | Redis 密码 |
-| `aliyunKp` | 否 | `5243610875270216803` | 阿里云子账号 UID（部分实例需要） |
-| `aliyunKpMain` | 否 | `1319610128350286` | 阿里云主账号 UID（部分实例需要） |
+| `aliyunKp` | 否 | `9000000000000000001` | 阿里云子账号 UID（部分实例需要） |
+| `aliyunKpMain` | 否 | `9000000000000000002` | 阿里云主账号 UID（部分实例需要） |
 | `tag` | 否 | `public` | 网络标签 |
 
 ## content 示例

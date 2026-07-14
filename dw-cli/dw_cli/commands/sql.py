@@ -299,7 +299,7 @@ def get_sql_instance(
     \b
     🚀 Examples:
       # run-sql 超时降级后跟进
-      dw-cli get-sql-instance --instance-id 20260709092621464gt655m43 \\
+      dw-cli get-sql-instance --instance-id 2026070100000000abc1234567 \\
         --project my_project
 
     \b
