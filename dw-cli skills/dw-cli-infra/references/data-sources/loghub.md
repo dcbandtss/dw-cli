@@ -3,14 +3,17 @@
 > dw-cli create-data-source 的 `--content` 参数 JSON 格式参考。
 > `--data-source-type` 值见下表。`--content` 支持 `file://path` 加载。
 
+
+
 ## content 字段
 
 | 字段 | 必填 | 示例值 | 说明 |
 |---|---|---|---|
 | `accessId` | 是 | `你的AK` | SLS AccessKey ID |
 | `accessKey` | 是 | `你的SK` | SLS AccessKey Secret |
-| `endpoint` | 是 | `http://cn-hangzhou.log.aliyuncs.com` | SLS 端点 |
-| `project` | 是 | `my_project` | SLS 项目名 |
+| `endpoint` | 是 | `http://data.cn-hangzhou-zjzwy01-d01.sls-pub.cloud.zj.gov.cn` | SLS 端点（私有云固定） |
+| `project` | 是 | `my_project` | SLS 项目（日志库）名 |
+| `tag` | 否 | `public` | 网络标签 |
 
 ## content 示例
 
@@ -18,8 +21,9 @@
 {
   "accessId": "你的AK",
   "accessKey": "你的SK",
-  "endpoint": "http://cn-hangzhou.log.aliyuncs.com",
-  "project": "my_project"
+  "endpoint": "http://data.cn-hangzhou-zjzwy01-d01.sls-pub.cloud.zj.gov.cn",
+  "project": "my_project",
+  "tag": "public"
 }
 ```
 
@@ -39,4 +43,4 @@ dw-cli test-network-connection --project-id 123456 \
   --datasource-name my_loghub --resource-group <rg_id>
 ```
 
-> ⚠️ 待真调验证（mock，参考 DataHub 格式推断）。
+> 私有云 endpoint 格式 data.cn-hangzhou-zjzwy01-d01.sls-pub.cloud.zj.gov.cn。

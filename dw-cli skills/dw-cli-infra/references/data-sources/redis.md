@@ -3,12 +3,16 @@
 > dw-cli create-data-source 的 `--content` 参数 JSON 格式参考。
 > `--data-source-type` 值见下表。`--content` 支持 `file://path` 加载。
 
+
+
 ## content 字段
 
 | 字段 | 必填 | 示例值 | 说明 |
 |---|---|---|---|
-| `address` | 是 | `[{"host":"xxx.redis.rds.aliyuncs.com","port":6379}]` | Redis 地址（JSON 字符串） |
+| `address` | 是 | `[{"host":"xxx.redis.rds.aliyuncs.com","port":"6379"}]` | Redis 地址（JSON 字符串，host+port） |
 | `password` | 是 | `my_password` | Redis 密码 |
+| `aliyunKp` | 否 | `5243610875270216803` | 阿里云子账号 UID（部分实例需要） |
+| `aliyunKpMain` | 否 | `1319610128350286` | 阿里云主账号 UID（部分实例需要） |
 | `tag` | 否 | `public` | 网络标签 |
 
 ## content 示例
@@ -16,7 +20,7 @@
 ```json
 {
   "password": "my_password",
-  "address": "[{\"host\":\"xxx.redis.rds.aliyuncs.com\",\"port\":6379}]",
+  "address": "[{\"host\":\"xxx.redis.rds.aliyuncs.com\",\"port\":\"6379\"}]",
   "tag": "public"
 }
 ```
@@ -37,4 +41,4 @@ dw-cli test-network-connection --project-id 123456 \
   --datasource-name my_redis --resource-group <rg_id>
 ```
 
-> ⚠️ 待真调验证（参考官方样例）。注意 address 是 JSON 字符串内的 JSON。
+> address 是 JSON 字符串内的 JSON。部分实例含 aliyunKp/aliyunKpMain 账号 UID 字段。

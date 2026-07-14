@@ -3,6 +3,8 @@
 > dw-cli create-data-source 的 `--content` 参数 JSON 格式参考。
 > `--data-source-type` 值见下表。`--content` 支持 `file://path` 加载。
 
+
+
 ## content 字段
 
 | 字段 | 必填 | 示例值 | 说明 |
@@ -10,7 +12,7 @@
 | `accessId` | 是 | `你的AK` | OSS AccessKey ID |
 | `accessKey` | 是 | `你的SK` | OSS AccessKey Secret |
 | `bucket` | 是 | `my-bucket` | OSS bucket 名 |
-| `endpoint` | 是 | `http://oss-cn-shanghai.aliyuncs.com` | OSS 端点 |
+| `endpoint` | 是 | `http://oss-cn-hangzhou-zjzwy01-d01-a.cloud.zj.gov.cn/my-bucket` | OSS 端点（私有云格式含 bucket） |
 | `tag` | 否 | `public` | 网络标签 |
 
 ## content 示例
@@ -20,7 +22,7 @@
   "accessId": "你的AK",
   "accessKey": "你的SK",
   "bucket": "my-bucket",
-  "endpoint": "http://oss-cn-shanghai.aliyuncs.com",
+  "endpoint": "http://oss-cn-hangzhou-zjzwy01-d01-a.cloud.zj.gov.cn/my-bucket",
   "tag": "public"
 }
 ```
@@ -41,4 +43,4 @@ dw-cli test-network-connection --project-id 123456 \
   --datasource-name my_oss --resource-group <rg_id>
 ```
 
-> ⚠️ 待真调验证（参考官方样例）。私有云 OSS 端点需确认。
+> 私有云 endpoint 格式含 bucket 路径。

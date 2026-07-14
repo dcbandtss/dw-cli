@@ -3,6 +3,8 @@
 > dw-cli create-data-source 的 `--content` 参数 JSON 格式参考。
 > `--data-source-type` 值见下表。`--content` 支持 `file://path` 加载。
 
+
+
 ## content 字段
 
 | 字段 | 必填 | 示例值 | 说明 |
@@ -17,9 +19,9 @@
 ```json
 {
   "jdbcUrl": "jdbc:postgresql://my-host:5432/my_db",
+  "username": "my_user",
   "password": "my_password",
-  "tag": "public",
-  "username": "my_user"
+  "tag": "public"
 }
 ```
 
@@ -38,5 +40,3 @@ dw-cli create-data-source --project-id 123456 \
 dw-cli test-network-connection --project-id 123456 \
   --datasource-name my_postgresql --resource-group <rg_id>
 ```
-
-> ⚠️ 待真调验证（参考官方样例）。
