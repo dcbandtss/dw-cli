@@ -83,3 +83,6 @@ t99.txt
 skills-lock.json
 *.zip
 *.pdf
+# dw-cli skill 开发临时文件
+commit_rule.json
+icon/
