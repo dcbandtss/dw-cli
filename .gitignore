@@ -1,4 +1,4 @@
-# ── Python 编译缓存/打包产物(可重建,不入库) ──────────────────────
+# Python 编译缓存/打包产物
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -7,82 +7,46 @@ build/
 dist/
 .eggs/
 
-# ── 虚拟环境 ───────────────────────────────────────────────────────
+# 虚拟环境
 .venv/
 venv/
 env/
 ENV/
 
-# ── 凭据 / 密钥(安全红线:永不入库) ─────────────────────────────────
-# 环境变量文件
+# 凭据 / 密钥（安全红线：永不入库）
 .env
 .env.*
 *.env
-# alibabacloud 凭据 ini(可能含明文 AK/SK)
 credentials.ini
 *.credentials
 credentials/
-# 私有云/阿里云常见凭据文件名
 testconfig.json
 *.ak
 *.sk
-# 通用密钥文件
 *.pem
 *.key
 *.p12
 
-# 真调测试临时文件（含真实 DB 连接/密码，永不入库）
+# 真调测试临时文件（含真实 DB 连接/密码）
 tmp_*.json
 tmp_*.py
 tmp_*.sql
 
-# ── IDE / 编辑器 ───────────────────────────────────────────────────
+# IDE / 编辑器
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# ── OS ─────────────────────────────────────────────────────────────
+# OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# ── 本仓库范围之外的工作区内容(d:/work/10openapi 顶层杂物) ─────────
-# 仓库只纳入: dw-cli/ + API清单.md + docs/(dw-cli 相关)
-# 其余目录/文件一律排除,避免无关内容污染私有 CLI 仓库
-
-# 其他项目目录
-330300代码/
-dataworks_sdk2/
-dataworks导出/
-flink_sdk/
-idg_prod/
-odps历史脚本定时清理/
-ods层数据落库/
-oss2/
-ripple-desk-1.0.0/
-skill开发/
-钉钉发送文件测试/
-阿里云*/
-.claude/
-.obsidian/
-aliyun dataworks skills/
-
-# 数据文件(CSV / 日志 / 大文本,非 CLI 开发产物)
+# 数据文件（CSV / 日志 / 大文本，非 CLI 开发产物）
 *.csv
 *.xlsx
-dataworks_export.log
-t99.txt
-20200518网页清单.txt
-归档项目库总清单.csv
-
-# 其他无关顶层文件
-企业级*
-分析*
-skills-lock.json
+*.log
 *.zip
 *.pdf
-# dw-cli skill 开发临时文件
-commit_rule.json
-icon/
