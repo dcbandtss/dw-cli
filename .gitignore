@@ -1,4 +1,4 @@
-# Python 编译缓存/打包产物
+﻿# Python 编译缓存/打包产物
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -53,3 +53,6 @@ desktop.ini
 # 开发内部文档/工具（不对外发布）
 docs/
 scripts/
+
+# 内部文件清单（不入库）
+文件清单.md
