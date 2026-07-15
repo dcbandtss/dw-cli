@@ -19,20 +19,38 @@ dw-cli 把 DataWorks 2020-05-18 SDK 的 104 个 API 封装成一套语义化命�
 
 ### 1. 安装 CLI
 
-```bash
-# 前置：Python >= 3.10
-python --version
+前置：Python >= 3.10
 
-# 从 GitHub 安装（推荐 pipx，隔离环境不污染全局）
+```bash
+python --version
+```
+
+**方式一：从 GitHub 安装**
+
+```bash
+# 推荐 pipx（隔离环境不污染全局）
 pipx install git+https://github.com/dcbandtss/dw-cli.git
 
 # 或用 pip
 pip install git+https://github.com/dcbandtss/dw-cli.git
+```
 
-# 或从源码安装（开发模式）
-git clone https://github.com/dcbandtss/dw-cli.git
+**方式二：国内用户从 Gitee 安装（指定阿里云镜像加速）**
+
+```bash
+# pip 指定阿里云镜像 + Gitee 源
+pip install git+https://gitee.com/assassinv/dw-cli.git -i https://mirrors.aliyun.com/pypi/simple/
+
+# 或 pipx
+pipx install git+https://gitee.com/assassinv/dw-cli.git
+```
+
+**方式三：从源码安装（开发模式）**
+
+```bash
+git clone https://github.com/dcbandtss/dw-cli.git   # 国内用户：git clone https://gitee.com/assassinv/dw-cli.git
 cd dw-cli/dw-cli
-pip install -e .
+pip install -e .                                    # 国内用户加 -i https://mirrors.aliyun.com/pypi/simple/
 ```
 
 > 详细安装步骤（SSH key 配置、Token 方式、离线安装等）见 [安装指南](skills/dw-cli-infra/references/installation-guide.md)。
@@ -104,8 +122,12 @@ dw-cli 的命令设计为「agent 可读」：默认输出 JSON，`--query` 裁�
 
 ### 安装 skill
 
+前置：已安装 [Node.js](https://nodejs.org/)（npx 需要）。`npx skills add` 自动探测你的 AI Agent，把 skill 复制到对应目录，无需手动指定路径。
+
+**方式一：从 GitHub 安装**
+
 ```bash
-# 一键安装全部 4 个 skill（自动适配你的 Agent）
+# 一键安装全部 4 个 skill
 npx skills add dcbandtss/dw-cli
 
 # 或只装需要的
@@ -115,8 +137,20 @@ npx skills add dcbandtss/dw-cli@dw-cli-dev
 npx skills add dcbandtss/dw-cli@dw-cli-meta
 ```
 
-> 前提：已安装 Node.js（npx 需要）。
-> `npx skills add` 自动探测你的 Agent，把 skill 转换/复制到对应目录，无需手动指定路径。
+**方式二：国内用户从 Gitee 安装**
+
+```bash
+# 一键安装全部 4 个 skill
+npx skills add https://gitee.com/assassinv/dw-cli.git
+
+# 或只装需要的（用 --skill 指定）
+npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-infra
+npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-ops
+npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-dev
+npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-meta
+```
+
+> 两种方式安装的 skill 内容完全一致，Gitee 与 GitHub 保持镜像同步。
 
 ### 选哪个 skill
 
