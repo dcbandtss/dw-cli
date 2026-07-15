@@ -29,20 +29,20 @@ python --version
 
 ```bash
 # 推荐 pipx（隔离环境不污染全局）
-pipx install git+https://github.com/dcbandtss/dw-cli.git
+pipx install "git+https://github.com/dcbandtss/dw-cli.git#subdirectory=dw-cli"
 
 # 或用 pip
-pip install git+https://github.com/dcbandtss/dw-cli.git
+pip install "git+https://github.com/dcbandtss/dw-cli.git#subdirectory=dw-cli"
 ```
 
 **方式二：国内用户从 Gitee 安装（指定阿里云镜像加速）**
 
 ```bash
 # pip 指定阿里云镜像 + Gitee 源
-pip install git+https://gitee.com/assassinv/dw-cli.git -i https://mirrors.aliyun.com/pypi/simple/
+pip install "git+https://gitee.com/assassinv/dw-cli.git#subdirectory=dw-cli" -i https://mirrors.aliyun.com/pypi/simple/
 
 # 或 pipx
-pipx install git+https://gitee.com/assassinv/dw-cli.git
+pipx install "git+https://gitee.com/assassinv/dw-cli.git#subdirectory=dw-cli"
 ```
 
 **方式三：从源码安装（开发模式）**
