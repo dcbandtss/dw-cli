@@ -35,9 +35,11 @@ cd dw-cli/dw-cli
 pip install -e .
 ```
 
+> 详细安装步骤（SSH key 配置、Token 方式、离线安装等）见 [安装指南](skills/dw-cli-infra/references/installation-guide.md)。
+
 ### 2. 配置凭据
 
-优先级：环境变量 > ini 文件 > aliyun-cli 配置 > ECS RAM 角色
+优先级：环境变量 > ini 文件 > aliyun-cli 配置 > ECS RAM 角色（详见 [凭据链详解](skills/dw-cli-infra/references/credential-chain.md)）
 
 **环境变量（最简，推荐）：**
 
@@ -57,6 +59,18 @@ export ALIBABA_CLOUD_ACCESS_KEY_ID="你的AK"
 export ALIBABA_CLOUD_ACCESS_KEY_SECRET="你的SK"
 ```
 
+**ini 配置文件（一次配置永久生效，多账号首选）：**
+
+在 `~/.alibabacloud/credentials.ini` 写：
+
+```ini
+[default]
+type = access_key
+access_key_id = <your-ak>
+access_key_secret = <your-sk>
+```
+
+> 完整 ini 配置方法（多账号、角色扮演、aliyun-cli 配置等）见 [凭据链详解](skills/dw-cli-infra/references/credential-chain.md)。
 > 安全铁律：绝不硬编码/echo/print AK/SK 值。`check-credentials` 只显示来源 + 脱敏前缀。
 
 ### 3. 验证环境
@@ -106,12 +120,12 @@ npx skills add dcbandtss/dw-cli@dw-cli-meta
 
 ### 选哪个 skill
 
-| Skill | 适用场景 | 你对 AI Agent 说的话 |
-|-------|---------|---------------------|
-| **dw-cli-infra** | 环境自检、项目空间查询、数据源管理（创建/连通性测试） | "帮我检查 dw-cli 环境" / "查一下这个空间有哪些数据源" / "测试数据源连通性" |
-| **dw-cli-ops** | 节点调度、实例运维、任务重跑、DAG 运行控制、告警规则、迁移 | "帮我查今天有没有失败的任务实例" / "重跑这个失败的节点" / "查告警规则" |
-| **dw-cli-dev** | 创建节点文件、配置调度依赖、提交上线、管理 UDF/资源/DI、执行 SQL | "帮我建一个 SQL 节点并上线" / "配一下调度周期" / "执行这段 SQL" |
-| **dw-cli-meta** | 元数据查询（表/字段/分区/血缘）、建表删表、表列表（PyODPS 直连） | "查这张表的字段信息" / "建一张表" / "列出空间里有哪些表" |
+| Skill | 适用场景 | 你对 AI Agent 说的话 | Skill 文档 |
+|-------|---------|---------------------|-----------|
+| **dw-cli-infra** | 环境自检、项目空间查询、数据源管理（创建/连通性测试） | "帮我检查 dw-cli 环境" / "查一下这个空间有哪些数据源" / "测试数据源连通性" | [SKILL.md](skills/dw-cli-infra/SKILL.md) · [凭据链](skills/dw-cli-infra/references/credential-chain.md) · [数据源格式](skills/dw-cli-infra/references/data-sources/README.md) |
+| **dw-cli-ops** | 节点调度、实例运维、任务重跑、DAG 运行控制、告警规则、迁移 | "帮我查今天有没有失败的任务实例" / "重跑这个失败的节点" / "查告警规则" | [SKILL.md](skills/dw-cli-ops/SKILL.md) · [运维工作流](skills/dw-cli-ops/references/ops-workflows.md) |
+| **dw-cli-dev** | 创建节点文件、配置调度依赖、提交上线、管理 UDF/资源/DI、执行 SQL | "帮我建一个 SQL 节点并上线" / "配一下调度周期" / "执行这段 SQL" | [SKILL.md](skills/dw-cli-dev/SKILL.md) · [节点类型](skills/dw-cli-dev/references/node-types.md) · [调度指南](skills/dw-cli-dev/references/scheduling-guide.md) |
+| **dw-cli-meta** | 元数据查询（表/字段/分区/血缘）、建表删表、表列表（PyODPS 直连） | "查这张表的字段信息" / "建一张表" / "列出空间里有哪些表" | [SKILL.md](skills/dw-cli-meta/SKILL.md) · [GUID 与 PyODPS](skills/dw-cli-meta/references/guid-and-pyodps.md) |
 
 ### 工作原理
 
@@ -127,9 +141,16 @@ Agent 在内部自动处理所有 `dw-cli` 命令——你只需用自然语言�
 
 ## 命令概览
 
-完整命令分组运行 `dw-cli --help` 查看（6 面板：Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / Migration / Escape Hatch）。
+完整命令分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Escape Hatch 等面板）。
 
-每个命令的详细参数与示例运行 `dw-cli <command> --help`。
+每个命令的详细参数与示例运行 `dw-cli <command> --help`。各 skill 的完整命令参考：
+
+| Skill | 命令参考文档 |
+|-------|-------------|
+| infra | [command-reference](skills/dw-cli-infra/references/command-reference.md) |
+| ops | [command-reference](skills/dw-cli-ops/references/command-reference.md) |
+| dev | [command-reference](skills/dw-cli-dev/references/command-reference.md) |
+| meta | [command-reference](skills/dw-cli-meta/references/command-reference.md) |
 
 常用命令速查：
 
@@ -144,6 +165,8 @@ dw-cli run-sql --project-id 123456 --sql "SELECT 1"  # 执行 SQL
 ---
 
 ## 配置
+
+> 私有云固定参数（RegionId / endpoint / ODPS endpoint / Tunnel endpoint）硬编码在 `core/client.py`，不可通过 CLI 参数覆盖。详见 [私有云固定参数](skills/dw-cli-infra/references/private-cloud-params.md)。
 
 ### 环境变量
 
@@ -201,7 +224,7 @@ dw-cli create-data-source --content file://ds.json --project-id 123456 --name my
 
 ### `create-data-source` content 格式不知道怎么写
 
-参考 skill 的 `references/data-sources/` 目录（19 种数据源类型的 content JSON 格式表）。安装 `dw-cli-infra` skill 后 Agent 能自动引用。
+参考 [数据源格式参考](skills/dw-cli-infra/references/data-sources/README.md)（19 种数据源类型的 content JSON 格式表）。安装 `dw-cli-infra` skill 后 Agent 能自动引用。
 
 ---
 
