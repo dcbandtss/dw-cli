@@ -28,7 +28,7 @@ $env:ALIBABA_CLOUD_ACCESS_KEY_SECRET = "<your-sk>"
 
 仅当前 PowerShell 会话有效，关窗口失效。
 
-### 方式三：ini 配置文件（共享给同事首选）
+### 方式三：ini 配置文件
 
 一次配置永久生效，所有阿里云 SDK 通用，不污染每次 shell。
 
