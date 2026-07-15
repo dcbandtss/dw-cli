@@ -1,39 +1,51 @@
 # dw-cli
 
-浙江政务云私有化部署 DataWorks 的命令行工具。基于 alibabacloud-dataworks-public20200518（新 Tea SDK）+ 凭据链鉴权，所有命令输出 JSON。
+DataWorks 私有云命令行工具，基于阿里云 2020-05-18 SDK + 凭据链鉴权。
+
+本目录为 CLI 源码包。面向用户的安装与使用文档见仓库根目录 [README.md](../README.md)。
 
 ## 为何存在
 
-阿里云官方 Aliyun CLI 要求 2024-05-18 API，私有服务器拒绝（InvalidVersion）。只有 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，后续 skill 在其之上构建。
+阿里云官方 CLI 要求 2024-05-18 API，私有云服务端拒绝（InvalidVersion），仅 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，封装成 104 个语义化命令 + raw 逃生舱。
 
-## 鉴权（重要）
+## 安装（开发模式）
 
-**不硬编码 AK/SK。** 走 alibabacloud 凭据链。支持三种方式，按优先级：
+```bash
+# 前置：Python >= 3.10
+python --version
 
-### 方式一：默认链（什么都不传）
+# editable 安装，使 dw-cli 成为 PATH 命令
+pip install -e .
 
-不传任何鉴权参数时，按顺序自动尝试，命中即用：
+# 验证
+dw-cli --version
+dw-cli --help
+```
 
-1. **环境变量** `ALIBABA_CLOUD_ACCESS_KEY_ID` / `ALIBABA_CLOUD_ACCESS_KEY_SECRET`（可选 `ALIBABA_CLOUD_SECURITY_TOKEN` 临时令牌）
-2. **aliyun-cli 配置** `~/.alibabacloud/config.json`（`aliyun configure` 生成，自动命中）
-3. **ini 配置文件** `~/.alibabacloud/credentials.ini` 的 `[default]` 段
-4. ECS RAM 角色 / Credentials URI（本机 Windows 通常用不上）
+## 凭据配置
 
-### 方式二：环境变量（临时/CI）
+**不硬编码 AK/SK。** 走 alibabacloud 凭据链。优先级：
+
+1. **环境变量** `ALIBABA_CLOUD_ACCESS_KEY_ID` / `ALIBABA_CLOUD_ACCESS_KEY_SECRET`
+2. **ini 配置文件** `~/.alibabacloud/credentials.ini`
+3. **aliyun-cli 配置** `~/.alibabacloud/config.json`（`aliyun configure` 生成）
+4. ECS RAM 角色 / Credentials URI
+
+### 环境变量（临时 / CI）
 
 ```powershell
 $env:ALIBABA_CLOUD_ACCESS_KEY_ID = "<your-ak>"
 $env:ALIBABA_CLOUD_ACCESS_KEY_SECRET = "<your-sk>"
 ```
 
-仅当前 PowerShell 会话有效，关窗口失效。
+```bash
+export ALIBABA_CLOUD_ACCESS_KEY_ID="<your-ak>"
+export ALIBABA_CLOUD_ACCESS_KEY_SECRET="<your-sk>"
+```
 
-### 方式三：ini 配置文件
+### ini 配置文件（一次配置永久生效）
 
-一次配置永久生效，所有阿里云 SDK 通用，不污染每次 shell。
-
-**重要：每段必须含 `type = access_key` 字段**，否则报 `unsupported credential type None`。
-在 `C:\Users\<用户>\.alibabacloud\credentials.ini` 写：
+在 `~/.alibabacloud/credentials.ini` 写：
 
 ```ini
 [default]
@@ -42,105 +54,91 @@ access_key_id = <your-ak>
 access_key_secret = <your-sk>
 ```
 
-多账号时加段：
+多账号加段：
 
 ```ini
-[default]
-type = access_key
-access_key_id = <ak-a>
-access_key_secret = <sk-a>
-
 [work]
 type = access_key
 access_key_id = <ak-b>
 access_key_secret = <sk-b>
 ```
 
-> 也支持其他类型：`type = ram_role_arn`（角色扮演）、`type = ecs_ram_role`（ECS 实例角色）、
-> `type = rsa_key_pair`（密钥对）、`type = oidc_role_arn`（OIDC）。本私有云场景一般用 `access_key`。
+> 每段必须含 `type = access_key`，否则报 `unsupported credential type None`。
+> 也支持 `ram_role_arn` / `ecs_ram_role` / `rsa_key_pair` / `oidc_role_arn`。
 
 ### 全局选项（多账号切换）
 
-置于子命令**之前**：
+置于子命令之前：
 
 ```bash
-python dw_cli.py --profile work list-folders --project-id 32890
-python dw_cli.py --credentials-file D:\my\custom.ini --profile work list-folders --project-id 32890
+dw-cli --profile work list-folders --project-id 123456
+dw-cli --credentials-file D:\my\custom.ini --profile work list-folders --project-id 123456
 ```
 
-- `--profile / -p <段名>`：读 ini 的指定段（如 `[work]`）
-- `--credentials-file <路径>`：指定非默认位置的 ini 文件
-
-### 排查鉴权问题
+### 排查凭据问题
 
 ```bash
-python dw_cli.py check-credentials
+dw-cli check-credentials
 ```
 
-打印当前命中的凭据来源 + 脱敏 AK 前缀（只显示前 6 位 + `***`，不泄露完整密钥）。配错时报错并给出配置指引。
+打印当前命中的凭据来源 + 脱敏 AK 前缀（只显示前 6 位 + `***`）。
 
-`source` 字段含义对照：
-- `default/env` —— 命中环境变量
-- `default/cli_profile` —— 命中 aliyun-cli 配置
-- `default/profile` —— 命中 ini 文件 `[default]` 段
-- `profile/static_ak` —— 经 `--profile` 命中 ini 指定段的 AK
+## 自检
 
-## 安装（开发期）
+遇到问题先跑：
 
 ```bash
-pip install -r requirements.txt
-```
-
-调用（开发期不装包，python 前缀）：
-```bash
-python dw_cli.py --help
-python dw_cli.py list-folders --project-id 32890
-python dw_cli.py check-credentials
-python dw_cli.py doctor
-```
-
-稳定后可 `pip install -e .`（待补 pyproject.toml），使 `dw-cli` 成为 PATH 命令。
-
-## 命令
-
-| 命令 | 说明 |
-|------|------|
-| `check-credentials` | 检测当前凭据来源（脱敏）+ 配置指引 |
-| `doctor` | 自动排查：SDK 版本 / 凭据 / endpoint 连通性 / 端到端 API 调用 |
-| `list-folders` | 列出子目录 |
-| `list-files` | 列出文件 |
-| `get-file` | 查询单个文件 |
-| `create-file` | 新建文件 |
-
-### doctor（遇到问题先自排查）
-
-```bash
-python dw_cli.py doctor
-# 或带多账号：python dw_cli.py --profile work doctor
+dw-cli doctor
 ```
 
 依次检查 4 步，输出 JSON 报告，退出码全过 0、否则 1：
 
-1. **sdk_versions** — Python + 各依赖包版本（缺失则报 not installed）
-2. **credentials** — 凭据加载（来源 + 脱敏前缀，不泄露明文）
-3. **endpoint_network** — 私有云 endpoint DNS 解析 + TCP 443 可达性
-4. **api_roundtrip** — 端到端真实只读调用（list_projects，无需 project-id）
+1. **sdk_versions** — Python + 各依赖包版本
+2. **credentials** — 凭据加载（来源 + 脱敏前缀）
+3. **endpoint_network** — 私有云 endpoint DNS 解析 + TCP 可达性
+4. **api_roundtrip** — 端到端真实只读调用（list_projects）
 
-任一 `fail` 看 `detail` 定位失败点。Agent 报错前应先跑此命令自排查。
+## 命令概览
 
-### create-file 注意事项
+共 104 个语义化命令 + raw 逃生舱。完整分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Escape Hatch 等面板）。
 
-- `--file-folder-path` 必须用**单斜杠**并带**引擎子目录层**，如 `业务流程/dcb_test/MaxCompute/`。
-  不要直接用 `list-folders` 返回的 `FolderPath`（双斜杠、无引擎层，会导致「不合法的目录路径」错误）。
-- SQL 节点（`--file-type 10`）的 `--input-list` 必填，无依赖时传空串（默认即空串）。
-- `--content` 与 `--content-file` 二选一。多行 SQL 推荐用 `--content-file` 读文件。
+每个命令的详细参数与示例：`dw-cli <command> --help`。
 
 ## 文件结构
 
 ```
 dw-cli/
-├── dw_cli.py            # Typer CLI 入口（5 命令）
-├── dataworks_client.py  # 客户端工厂：凭据链 + 固定 版本/region/endpoint，唯一正确性来源
-├── requirements.txt
-└── README.md
+├── pyproject.toml          # 包元数据 + 依赖 + entry point (dw-cli = dw_cli.main:app)
+├── requirements.txt        # 依赖锁定
+├── AGENTS.md               # Agent 开发规范
+├── dw_cli/                 # Python 包
+│   ├── main.py             # Typer 入口 + 命令注册 + AI RULES
+│   ├── commands/           # 各业务域命令模块
+│   │   ├── node.py         # 节点管理
+│   │   ├── file.py         # 文件开发（create/update/submit/delete）
+│   │   ├── instance.py     # 实例运维
+│   │   ├── sql.py          # SQL 执行（run-sql + logview 替换）
+│   │   ├── table.py        # 表管理（create/delete/list，list 走 PyODPS 直连）
+│   │   ├── data_source.py  # 数据源管理
+│   │   ├── di.py           # 数据集成
+│   │   ├── dag.py          # DAG 运行控制
+│   │   ├── remind.py       # 告警规则
+│   │   ├── migration.py    # 迁移
+│   │   ├── meta_table.py   # 元数据查询
+│   │   ├── raw.py          # raw 逃生舱（透传未封装 API）
+│   │   └── ...             # 其他模块
+│   └── core/               # 基础设施层
+│       ├── client.py       # 客户端工厂：凭据链 + 固定版本/region/endpoint
+│       ├── odps_client.py  # PyODPS 连接（list-tables / run-sql 复用）
+│       ├── output.py       # 三层输出（json/table/text）+ Tea envelope 解包
+│       ├── confirm.py      # 高危操作门禁（delete_/offline_/stop_ 前缀需 --confirm）
+│       ├── errors.py      # 错误归类 + 退出码分区（0/1/2/3）
+│       ├── load_arg.py     # file:// 参数加载
+│       └── paging.py       # --all 分页合并
+├── tests/                  # 测试
+└── README.md               # 本文件
 ```
+
+## License
+
+[Apache-2.0](../LICENSE)
