@@ -5,7 +5,7 @@
 
 ## 这是什么
 
-dw-cli 是浙江政务云私有化 DataWorks 的命令行工具，基于 alibabacloud-dataworks-public20200518 SDK。
+dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks-public20200518 SDK。
 私有云 endpoint=`dataworks-public.cloud.zj.gov.cn`，region=`cn-hangzhou-zjzwy01-d01`。
 官方 Aliyun CLI 要求 2024 API 版本被私有服务器拒绝，本 CLI 固化 2020-05-18 版可用调用。
 
@@ -87,20 +87,20 @@ dw-cli 是浙江政务云私有化 DataWorks 的命令行工具，基于 alibaba
 dw-cli doctor
 
 # 查节点
-dw-cli get-node --node-id 2587817
+dw-cli get-node --node-id 100001
 
 # 查实例日志
-dw-cli get-instance-log --instance-id 15220455638
+dw-cli get-instance-log --instance-id 10000001
 
 # 列表裁剪 + 表格输出
-dw-cli list-instances --project-id 32890 --begin-date "2026-07-07T00:00:00+0800" `
+dw-cli list-instances --project-id 123456 --begin-date "2026-07-07T00:00:00+0800" `
   --end-date "2026-07-07T23:59:59+0800" -q "Data.Instances[*].{Id:InstanceId,Status:Status}" -o table
 
 # 高危操作（需 --confirm）
-dw-cli delete-file --project-id 32890 --file-id 12345 --confirm
+dw-cli delete-file --project-id 123456 --file-id 12345 --confirm
 
 # 大 JSON 从文件读
-dw-cli create-data-source --project-id 32890 --content file://ds.json
+dw-cli create-data-source --project-id 123456 --content file://ds.json
 
 # raw 透传
 dw-cli raw ListReminds --page-size 10
@@ -109,7 +109,7 @@ dw-cli raw ListReminds --page-size 10
 ## 多账号切换
 
 ```powershell
-dw-cli -p prod_profile get-node --node-id 2587817
+dw-cli -p prod_profile get-node --node-id 100001
 dw-cli --credentials-file C:\path\credentials.ini -p myprofile doctor
 ```
 
@@ -120,4 +120,4 @@ dw-cli --credentials-file C:\path\credentials.ini -p myprofile doctor
 - offline-node 私有云可能 404（部分版本未部署）。
 - list-tables 走 PyODPS 直连（DataWorks API 私有云 404），需 `pip install pyodps`。
 - list/export-data-sources 的 Content 字段含明文凭据，table 模式默认隐藏，JSON 模式注意别泄露。
-- create-folder 路径必须含引擎子目录（如 `业务流程/dcb_test/MaxCompute/子目录`）。
+- create-folder 路径必须含引擎子目录（如 `业务流程/my_flow/MaxCompute/子目录`）。

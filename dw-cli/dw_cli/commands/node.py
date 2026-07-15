@@ -39,10 +39,10 @@ def get_node(
     \b
     🚀 Examples:
       # 取节点详情
-      dw-cli get-node --node-id 2548063 --project-env PROD
+      dw-cli get-node --node-id 100001 --project-env PROD
 
       # 只取节点名和类型
-      dw-cli get-node --node-id 2548063 --project-env PROD \\
+      dw-cli get-node --node-id 100001 --project-env PROD \\
         --query "Data.{Name:NodeName, Type:ProgramType, Sched:SchedulerType}"
 
     \b
@@ -75,7 +75,7 @@ def get_node_code(
     \b
     🚀 Examples:
       # 取节点代码（原样输出字符串）
-      dw-cli get-node-code --node-id 2548063 --project-env PROD
+      dw-cli get-node-code --node-id 100001 --project-env PROD
 
     \b
     📦 Output JSON Structure:
@@ -99,10 +99,10 @@ def get_node_parents(
     \b
     🚀 Examples:
       # 取上游节点
-      dw-cli get-node-parents --node-id 2548063 --project-env PROD
+      dw-cli get-node-parents --node-id 100001 --project-env PROD
 
       # 只取上游节点名和ID
-      dw-cli get-node-parents --node-id 2548063 --project-env PROD \\
+      dw-cli get-node-parents --node-id 100001 --project-env PROD \\
         --query "Data.Nodes[*].{Id:NodeId, Name:NodeName}"
 
     \b
@@ -128,10 +128,10 @@ def get_node_children(
     \b
     🚀 Examples:
       # 取下游节点
-      dw-cli get-node-children --node-id 2548063 --project-env PROD
+      dw-cli get-node-children --node-id 100001 --project-env PROD
 
       # 只取下游节点名和类型
-      dw-cli get-node-children --node-id 2548063 --project-env PROD \\
+      dw-cli get-node-children --node-id 100001 --project-env PROD \\
         --query "Data.Nodes[*].{Name:NodeName, Type:ProgramType}"
 
     \b

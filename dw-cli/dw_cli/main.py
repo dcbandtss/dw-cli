@@ -128,7 +128,7 @@ _AI_RULES = (
     "🤖 AI AGENT MANDATORY RULES（AI 代理强制守则）\n\n"
     "1. OUTPUT FORMAT: 默认输出即 json（机器可读），人看加 -o table。\n\n"
     "2. COMPLEX PAYLOADS: 大 JSON 参数用 file://path 传文件，避免 bash 转义：\n"
-    "   dw-cli raw create_table --columns file://cols.json --project-id 32890\n\n"
+    "   dw-cli raw create_table --columns file://cols.json --project-id 123456\n\n"
     "3. SAFETY FIRST: [高危] 命令（delete_/deploy_/stop_/terminate_/offline_）\n"
     "   须 --confirm 或 --dry-run；默认拒绝（exit 2）。\n\n"
     "4. ENV CHECK: 遇 401/403 或 endpoint 不通，先跑 dw-cli doctor 自排查，勿盲重试。\n\n"

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""dw-cli —— 浙江政务云私有化部署 DataWorks 的命令行工具。
+"""dw-cli —— 私有云 DataWorks 的命令行工具。
 
 基于 alibabacloud-dataworks-public20200518（新 Tea SDK）+ 凭据链鉴权。
 所有命令输出 JSON。所有调用经 dataworks_client 统一构造客户端，禁止绕过。
@@ -270,7 +270,7 @@ def create_file(
     ),
     file_folder_path: str = typer.Option(
         ...,
-        help="目录路径，单斜杠，带引擎子目录，如 业务流程/dcb_test/MaxCompute/",
+        help="目录路径，单斜杠，带引擎子目录，如 业务流程/my_flow/MaxCompute/",
     ),
     file_description: str = typer.Option("", help="文件描述"),
     input_list: str = typer.Option(
@@ -287,7 +287,7 @@ def create_file(
 
     注意：
       - file_folder_path 必须用单斜杠并带引擎子目录层，例如
-        「业务流程/dcb_test/MaxCompute/」。不要直接用 list-folders 返回的
+        「业务流程/my_flow/MaxCompute/」。不要直接用 list-folders 返回的
         FolderPath（其为双斜杠且无引擎层，会导致「不合法的目录路径」错误）。
       - SQL 节点（file_type=10）的 input_list 为必填字段，无依赖时传空串。
     """

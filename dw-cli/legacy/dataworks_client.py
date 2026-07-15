@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """DataWorks OpenAPI 客户端工厂 —— 唯一正确性来源。
 
-固化在浙江政务云私有化部署 DataWorks 上验证可行的调用模式：
+固化在私有云 DataWorks 上验证可行的调用模式：
   - SDK 版本固定为 2020-05-18（私有服务器拒绝 2024 版，InvalidVersion）。
   - 鉴权走 alibabacloud 凭据链，不硬编码 AK/SK。
   - region 固定 cn-hangzhou-zjzwy01-d01，endpoint 固定私有云地址。
