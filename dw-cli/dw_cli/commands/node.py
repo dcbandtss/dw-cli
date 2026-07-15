@@ -328,20 +328,20 @@ def _list_common(*, dw_client, runtime, method, build_req, items_key,
 @app.command("update-node-owner")
 def update_node_owner(
     ctx: typer.Context,
-    node_id: int = typer.Option(..., "--node-id", help="?? ID"),
-    user_id: str = typer.Option(..., "--user-id", help="???? ID?????? ID?"),
-    project_env: str = typer.Option("PROD", "--project-env", help="???PROD/DEV"),
+    node_id: int = typer.Option(..., "--node-id", help="节点 ID"),
+    user_id: str = typer.Option(..., "--user-id", help="负责人 ID（新负责人 ID）"),
+    project_env: str = typer.Option("PROD", "--project-env", help="环境 PROD/DEV"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """?????????
+    """更新节点负责人
 
     \b
-    ?? Examples:
+    💡 Examples:
       dw-cli update-node-owner --node-id 100001 --user-id 900001
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Success: true / RequestId
     """
     _call_node(ctx, "update_node_owner", dw_models.UpdateNodeOwnerRequest(

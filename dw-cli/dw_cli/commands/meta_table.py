@@ -569,7 +569,7 @@ def _call_meta(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
         errors.fail(error)
 
 # ---------------------------------------------------------------------------
-# ??? / ??? / ??? / ???????2026-07-09 ??????????
+# 表血缘 / 字段血缘 / 表产出 / 修改表属性：2026-07-09 新增 4 个命令
 # ---------------------------------------------------------------------------
 
 @app.command("get-meta-table-lineage")
@@ -577,14 +577,14 @@ def get_meta_table_lineage(
     ctx: typer.Context,
     table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
-    direction: str = typer.Option(..., "--direction", help="?????UP(??) / DOWN(??)"),
+    direction: str = typer.Option(..., "--direction", help="血缘方向 UP(上游) / DOWN(下游)"),
     data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
-    page_size: int = typer.Option(100, "--page-size", help="????"),
-    next_primary_key: str = typer.Option(None, "--next-primary-key", help="?????HasNext=true ?? NextPrimaryKey?"),
+    page_size: int = typer.Option(100, "--page-size", help="分页大小"),
+    next_primary_key: str = typer.Option(None, "--next-primary-key", help="分页游标（HasNext=true 时传 NextPrimaryKey）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """???????????/?????
+    """查询表血缘关系（上游/下游）
 
     
     ?? Examples:
@@ -594,7 +594,7 @@ def get_meta_table_lineage(
     
     ?? Output JSON Structure:
       - Data.DataEntityList[*].{TableName, TableGuid, ...}
-      - Data.HasNext: ??????
+      - Data.HasNext: 是否有下一页
     """
     _call_meta(ctx, "get_meta_table_lineage", dw_models.GetMetaTableLineageRequest(
         table_guid=table_guid, database_name=database_name, direction=direction,
@@ -607,16 +607,16 @@ def get_meta_table_lineage(
 def get_meta_column_lineage(
     ctx: typer.Context,
     column_guid: str = typer.Option(..., "--column-guid",
-                                    help="???????? odps.project.table.column?????? odps. ??????500?"),
-    direction: str = typer.Option(..., "--direction", help="?????UP(??) / DOWN(??)"),
+                                    help="字段 GUID，格式 odps.project.table.column（必须带 odps. 前缀，否则报 500）"),
+    direction: str = typer.Option(..., "--direction", help="血缘方向 UP(上游) / DOWN(下游)"),
     data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(None, "--database-name", help=_DB_HELP),
-    page_size: int = typer.Option(100, "--page-size", help="????"),
-    page_num: int = typer.Option(1, "--page-num", help="?????? page_num ?? page_number?"),
+    page_size: int = typer.Option(100, "--page-size", help="分页大小"),
+    page_num: int = typer.Option(1, "--page-num", help="页码（注意：接口用 page_num 而非 page_number）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """?????????
+    """查询字段血缘关系
 
     
     ?? Examples:
@@ -629,7 +629,7 @@ def get_meta_column_lineage(
       - Data.TotalCount
 
     
-    ?? ???column_guid ??? odps. ??????? my_project.table.col?? 500 InternalError.Meta.Unknown?
+    注意：column_guid 必须带 odps. 前缀，如 odps.my_project.table.col，否则报 500 InternalError.Meta.Unknown
     """
     _call_meta(ctx, "get_meta_column_lineage", dw_models.GetMetaColumnLineageRequest(
         column_guid=column_guid, direction=direction,
@@ -642,15 +642,15 @@ def get_meta_column_lineage(
 def get_meta_table_output(
     ctx: typer.Context,
     table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
-    start_date: str = typer.Option(..., "--start-date", help="???? yyyy-MM-dd"),
-    end_date: str = typer.Option(..., "--end-date", help="???? yyyy-MM-dd"),
-    page_size: int = typer.Option(100, "--page-size", help="????"),
+    start_date: str = typer.Option(..., "--start-date", help="开始日期 yyyy-MM-dd"),
+    end_date: str = typer.Option(..., "--end-date", help="结束日期 yyyy-MM-dd"),
+    page_size: int = typer.Option(100, "--page-size", help="分页大小"),
     page_number: int = typer.Option(1, "--page-number", help="??"),
     task_id: str = typer.Option(None, "--task-id", help="?? ID ??"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """???????????????????
+    """查询表的产出信息（哪些任务写入了该表）
 
     
     ?? Examples:
@@ -672,19 +672,19 @@ def get_meta_table_output(
 def update_meta_table(
     ctx: typer.Context,
     table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
-    caption: str = typer.Option(None, "--caption", help="????/??"),
-    env_type: int = typer.Option(None, "--env-type", help="????"),
+    caption: str = typer.Option(None, "--caption", help="表中文名/别名"),
+    env_type: int = typer.Option(None, "--env-type", help="环境类型"),
     visibility: int = typer.Option(None, "--visibility", help="???"),
-    new_owner_id: str = typer.Option(None, "--new-owner-id", help="???? ID"),
+    new_owner_id: str = typer.Option(None, "--new-owner-id", help="新负责人 ID"),
     category_id: int = typer.Option(None, "--category-id", help="?? ID"),
     schema: str = typer.Option(None, "--schema", help="schema"),
-    added_labels: str = typer.Option(None, "--added-labels", help="?????????"),
-    removed_labels: str = typer.Option(None, "--removed-labels", help="?????????"),
-    project_id: int = typer.Option(None, "--project-id", help="???? ID"),
+    added_labels: str = typer.Option(None, "--added-labels", help="要添加的标签列表（逗号分隔）"),
+    removed_labels: str = typer.Option(None, "--removed-labels", help="要移除的标签列表（逗号分隔）"),
+    project_id: int = typer.Option(None, "--project-id", help="项目空间 ID"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """??????????/???/?????
+    """更新表属性（中文名/环境/负责人）
 
     
     ?? Examples:
@@ -693,7 +693,7 @@ def update_meta_table(
 
     
     ?? Output JSON Structure:
-      - UpdateResult: true??????????
+      - UpdateResult: true（成功）或错误信息
     """
     _call_meta(ctx, "update_meta_table", dw_models.UpdateMetaTableRequest(
         table_guid=table_guid, caption=caption, env_type=env_type,
@@ -706,22 +706,22 @@ def update_meta_table(
 def update_meta_table_intro_wiki(
     ctx: typer.Context,
     table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
-    content: str = typer.Option(..., "--content", help="??????? file:// ?????"),
+    content: str = typer.Option(..., "--content", help="表介绍内容（支持 file:// 从文件读取）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """?????????wiki?????????
+    """更新表的 wiki 介绍（数据地图中显示）
 
     \b
     ?? Examples:
       dw-cli update-meta-table-intro-wiki --table-guid odps.my_project.my_table \
-        --content "?????"
+        --content "表介绍内容"
       dw-cli update-meta-table-intro-wiki --table-guid odps.my_project.my_table \
         --content file://wiki.md
 
     \b
     ?? Output JSON Structure:
-      - UpdateResult: true?????
+      - UpdateResult: true（成功）
     """
     content = load_arg(content)
     _call_meta(ctx, "update_meta_table_intro_wiki", dw_models.UpdateMetaTableIntroWikiRequest(

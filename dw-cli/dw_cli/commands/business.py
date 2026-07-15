@@ -196,24 +196,24 @@ def _call_business(ctx: typer.Context, api_name: str, request, *, query, output_
 @app.command("update-business")
 def update_business(
     ctx: typer.Context,
-    business_id: int = typer.Option(..., "--business-id", help="???? ID"),
-    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
-    business_name: str = typer.Option(None, "--business-name", help="??????"),
-    description: str = typer.Option(None, "--description", help="??????"),
-    owner: str = typer.Option(None, "--owner", help="??? ID"),
-    project_identifier: str = typer.Option(None, "--project-identifier", help="???????"),
+    business_id: int = typer.Option(..., "--business-id", help="业务流程 ID"),
+    project_id: int = typer.Option(..., "--project-id", help="业务流程 ID"),
+    business_name: str = typer.Option(None, "--business-name", help="业务流程名称"),
+    description: str = typer.Option(None, "--description", help="描述"),
+    owner: str = typer.Option(None, "--owner", help="负责人 ID"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """????????????????
+    """更新业务流程信息
 
     
-    ?? Examples:
+    💡 Examples:
       dw-cli update-business --business-id 400001 --project-id 123456 \
         --description "new description"
 
     
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Success: true / HttpStatusCode: 200
     """
     _call_business(ctx, "update_business", dw_models.UpdateBusinessRequest(
@@ -225,24 +225,24 @@ def update_business(
 @app.command("establish-relation-table-to-business")
 def establish_relation_table_to_business(
     ctx: typer.Context,
-    business_id: str = typer.Option(..., "--business-id", help="???? ID"),
-    folder_id: str = typer.Option(..., "--folder-id", help="??? ID"),
-    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
-    table_guid: str = typer.Option(..., "--table-guid", help="????? odps.project.table"),
-    project_identifier: str = typer.Option(None, "--project-identifier", help="???????"),
+    business_id: str = typer.Option(..., "--business-id", help="项目空间 ID"),
+    folder_id: str = typer.Option(..., "--folder-id", help="目录 ID"),
+    project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
+    table_guid: str = typer.Option(..., "--table-guid", help="表 GUID，格式 odps.project.table"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """????????????????????????
+    """将表关联到业务流程
 
     
-    ?? Examples:
+    💡 Examples:
       dw-cli establish-relation-table-to-business --business-id 400001 \
         --folder-id k0uxr6h53rte6puale3ncxsi --project-id 123456 \
         --table-guid odps.my_project.my_table
 
     
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Success: true / HttpStatusCode: 200
     """
     _call_business(ctx, "establish_relation_table_to_business",

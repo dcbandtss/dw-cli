@@ -856,32 +856,32 @@ def _call_file(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
 def deploy_file(
     ctx: typer.Context,
     file_id: int = typer.Option(..., "--file-id", help="?? ID"),
-    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
-    node_id: int = typer.Option(None, "--node-id", help="?? ID??????????????"),
-    comment: str = typer.Option("", "--comment", help="????"),
-    project_identifier: str = typer.Option(None, "--project-identifier", help="???????"),
-    confirm_flag: bool = typer.Option(False, "--confirm", help="?????deploy_ ????????????"),
+    project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
+    node_id: int = typer.Option(None, "--node-id", help="节点 ID（已提交文件传 node_id，未提交传 file_id）"),
+    comment: str = typer.Option("", "--comment", help="发布备注"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符"),
+    confirm_flag: bool = typer.Option(False, "--confirm", help="确认发布（deploy_ 前缀，须显式确认）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """?????????????? --confirm??
+    """发布文件到生产环境（--confirm 确认）
 
-    deploy_file ????????????????????????????????
+    deploy_file 用于将已提交的文件发布到生产环境，与 submit_file 的区别
 
     \b
     ?? Examples:
-      # ???????
+      # 已提交文件用 node_id
       dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "??"
-      # ????
+      # 未提交文件用 file_id
       dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "??" --confirm
 
     \b
     ?? Output JSON Structure:
-      - Data: ???? ID ? true
+      - Data: 发布 ID 或 true
     """
     from dw_cli.core import confirm
     decision = confirm.check_write("deploy_file", confirm=confirm_flag, dry_run=False,
-                                   dry_run_summary=f"????? {file_id} ?????")
+                                   dry_run_summary=f"将发布文件 {file_id} 到生产环境")
     if not decision.will_execute:
         return
     _call_file(ctx, "deploy_file", dw_models.DeployFileRequest(

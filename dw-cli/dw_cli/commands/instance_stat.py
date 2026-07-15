@@ -129,25 +129,25 @@ def list_instance_amount(
 @app.command("get-instance-status-statistic")
 def get_instance_status_statistic(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
-    biz_date: str = typer.Option(..., "--biz-date", help="???? yyyy-MM-dd"),
+    project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
+    biz_date: str = typer.Option(..., "--biz-date", help="业务日期 yyyy-MM-dd"),
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
     dag_type: str = typer.Option("DAILY", "--dag-type", help="DAG ???DAILY(??)/MANUAL(??)/SMOKE_TEST(??)/SUPPLY_DATA(???)/BUSINESS_PROCESS_DAG(???)"),
-    scheduler_period: str = typer.Option(None, "--scheduler-period", help="?????DAY/?"),
-    scheduler_type: str = typer.Option(None, "--scheduler-type", help="?????NORMAL/MANUAL/PAUSE/SKIP"),
+    scheduler_period: str = typer.Option(None, "--scheduler-period", help="调度周期 DAY/周/月等"),
+    scheduler_type: str = typer.Option(None, "--scheduler-type", help="调度类型 NORMAL/MANUAL/PAUSE/SKIP"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """?????????????????????
+    """获取实例状态统计信息
 
     \b
-    ?? Examples:
+    💡 Examples:
       dw-cli get-instance-status-statistic --project-id 123456 --biz-date 2026-07-09
       dw-cli get-instance-status-statistic --project-id 123456 --biz-date 2026-07-09 \
         --dag-type MANUAL
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - StatusCount.{TotalCount, StatusCount: [...]}
     """
     _call(ctx, "get_instance_status_statistic", dw_models.GetInstanceStatusStatisticRequest(

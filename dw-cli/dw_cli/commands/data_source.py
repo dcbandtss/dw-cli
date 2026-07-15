@@ -315,27 +315,27 @@ def _call_data_source(ctx: typer.Context, api_name: str, request, *, query, outp
 def update_data_source(
     ctx: typer.Context,
     data_source_id: int = typer.Option(..., "--data-source-id", help="??? ID"),
-    description: str = typer.Option(None, "--description", help="?????"),
-    content: str = typer.Option(None, "--content", help="??????? JSON ?????? file://????????? content ??????????"),
+    description: str = typer.Option(None, "--description", help="描述"),
+    content: str = typer.Option(None, "--content", help="数据源配置 JSON（支持 file:// 从文件读取，不传则只更新其他字段）"),
     env_type: int = typer.Option(None, "--env-type", help="???0=?? / 1=??"),
     status: str = typer.Option(None, "--status", help="??"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """?????????????????
+    """更新数据源配置
 
     
     ?? Examples:
-      # ????????
+      # 只更新描述
       dw-cli update-data-source --data-source-id 700001 --description "new desc"
 
     
     ?? Output JSON Structure:
-      - Data: true??????
+      - Data: true（成功）
 
     
-    ?? ???content ??????accessKey/password????? content ????????
-    ?????????????? list-data-sources ?? content ???
+    注意：content 含 accessKey/password，不传 content 则保留原值
+    如需查看当前 content，用 list-data-sources 的 content 字段
     """
     content = load_arg(content)
     _call_data_source(ctx, "update_data_source", dw_models.UpdateDataSourceRequest(
@@ -346,15 +346,15 @@ def update_data_source(
 @app.command("get-data-source-meta")
 def get_data_source_meta(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
-    datasource_name: str = typer.Option(..., "--datasource-name", help="?????"),
-    env_type: str = typer.Option("1", "--env-type", help="???0=?? / 1=???????"),
-    page_size: int = typer.Option(100, "--page-size", help="????"),
+    project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
+    datasource_name: str = typer.Option(..., "--datasource-name", help="数据源名称"),
+    env_type: str = typer.Option("1", "--env-type", help="环境类型：0=开发 / 1=生产（默认）"),
+    page_size: int = typer.Option(100, "--page-size", help="分页大小"),
     page_number: int = typer.Option(1, "--page-number", help="??"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """????????????????
+    """获取数据源元信息
 
     \b
     ?? Examples:
@@ -362,7 +362,7 @@ def get_data_source_meta(
 
     \b
     ?? Output JSON Structure:
-      - Data.Meta: JSON ????? dbTables[].tableInfos[] ?????
+      - Data.Meta: JSON 格式，含 dbTables[].tableInfos[] 等表结构信息
       - Data.Status: success
     """
     _call_data_source(ctx, "get_data_source_meta", dw_models.GetDataSourceMetaRequest(
