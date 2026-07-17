@@ -148,10 +148,19 @@ def create_folder(
     规则一致），例如「业务流程/my_workflow/MaxCompute/dwcli_sub」。
 
     \b
+    📝 路径前缀规则:
+      - 普通业务流程: 业务流程/<业务流程名>/<引擎>/...
+      - 手动业务流程: 手动业务流程/<业务流程名>/<引擎>/...
+
+    \b
     🚀 Examples:
-      # 在 my_workflow 业务流程的 MaxCompute 引擎下建子目录
+      # 在 my_workflow 普通业务流程的 MaxCompute 引擎下建子目录
       dw-cli create-folder --project-id 123456 \\
         --folder-path "业务流程/my_workflow/MaxCompute/dwcli_sub"
+
+      # 在 my_manual_biz 手动业务流程下建子目录
+      dw-cli create-folder --project-id 123456 \\
+        --folder-path "手动业务流程/my_manual_biz/MaxCompute/dwcli_sub"
 
     \b
     📦 Output JSON Structure:

@@ -117,7 +117,7 @@ description: |
 ## 私有云特性
 
 - **create-file 节点类型编码**：10=ODPS SQL, 24=ODPS Script, 225=Spark, 11=MR, 221=PyODPS 2, 1221=PyODPS 3, 6=Shell, 99=虚拟节点, 1089=跨租户节点, 12=Python资源, 13=JAR, 14=ARCHIVE, 15=FILE。详见 [references/node-types.md](references/node-types.md)
-- **create-folder 路径必须带引擎子目录层**：`业务流程/my_workflow/MaxCompute/my_sub`（不能只写到业务流程层）。也可用 `业务流程/my_workflow/folderMaxCompute`（服务端自动映射）。
+- **create-folder / create-file 路径必须带引擎子目录层**：普通业务流程前缀 业务流程/my_workflow/MaxCompute/my_sub，手动业务流程前缀 手动业务流程/my_workflow/MaxCompute/my_sub。也可用 业务流程/my_workflow/folderMaxCompute（服务端自动映射）。create-business 用 --use-type MANUAL_BIZ 创建手动业务流程（默认 NORMAL）。
 - **get-file IO 在 NodeConfiguration**：InputList/OutputList 在 `Data.NodeConfiguration` 下（不在 `Data.File` 下）。
 - **submit-file 需真实的已提交上游输出名**：父节点输出名必须是已上线节点的真实输出名，不能编造。
 - **delete-file 已提交文件返回 DeploymentId**：提交后的文件删除走异步流程，需用 get-deployment 轮询。

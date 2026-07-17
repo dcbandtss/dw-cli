@@ -120,4 +120,7 @@ dw-cli --credentials-file C:\path\credentials.ini -p myprofile doctor
 - offline-node 私有云可能 404（部分版本未部署）。
 - list-tables 走 PyODPS 直连（DataWorks API 私有云 404），需 `pip install pyodps`。
 - list/export-data-sources 的 Content 字段含明文凭据，table 模式默认隐藏，JSON 模式注意别泄露。
-- create-folder 路径必须含引擎子目录（如 `业务流程/my_flow/MaxCompute/子目录`）。
+- create-folder / create-file 路径必须含引擎子目录。
+  普通业务流程前缀: 业务流程/my_flow/MaxCompute/子目录
+  手动业务流程前缀: 手动业务流程/my_flow/MaxCompute/子目录
+  create-business 用 --use-type MANUAL_BIZ 创建手动业务流程（默认 NORMAL）。

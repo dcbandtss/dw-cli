@@ -167,6 +167,8 @@ def create_file(
         「业务流程/my_workflow/folderMaxCompute」。也可用引擎名写法
         「业务流程/my_workflow/MaxCompute/」（服务端自动映射到 folderMaxCompute），
         但推荐用精确路径，与 list-folders 一致。
+      - 路径前缀规则：普通业务流程用「业务流程/<业务流程名>/...」，
+        手动业务流程用「手动业务流程/<业务流程名>/...」。
       - SQL 节点（file_type=10）的 input_list 为必填字段，无依赖时传空串。
       - 资源类（file_type=12/13/14/15）建后须 submit-file 提交上线才能被 UDF 引用；
         ConnectionName 服务端自动填 odps_first，无需显式传。

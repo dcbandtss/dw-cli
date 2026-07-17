@@ -117,6 +117,7 @@ def create_business(
     business_name: str = typer.Option(..., "--business-name", help="业务流程名称"),
     description: str = typer.Option("", "--description", help="业务流程描述"),
     owner: str = typer.Option("", "--owner", help="负责人（用户 ID），留空则默认当前账号"),
+    use_type: str = typer.Option("NORMAL", "--use-type", help="用途类型：NORMAL（普通业务流程，默认）/ MANUAL_BIZ（手动业务流程）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -124,18 +125,29 @@ def create_business(
 
     \b
     🚀 Examples:
-      # 创建业务流程
+      # 创建普通业务流程（默认）
       dw-cli create-business --project-id 123456 \\
         --business-name dwcli_test --description "dw-cli 测试"
+
+      # 创建手动业务流程
+      dw-cli create-business --project-id 123456 \\
+        --business-name my_manual_biz --use-type MANUAL_BIZ
 
     \b
     📦 Output JSON Structure:
       - 业务流程ID: BusinessId (注意：直接在顶层，不在 Data 里！)
       - 成功:       Success: true
+
+    \b
+    📝 注意事项:
+      - 普通业务流程的文件夹路径前缀: 业务流程/<业务流程名>/
+      - 手动业务流程的文件夹路径前缀: 手动业务流程/<业务流程名>/
+      - create-folder 和 create-file 的 --file-folder-path 需匹配对应前缀。
     """
     _call_business(ctx, "create_business", dw_models.CreateBusinessRequest(
         project_id=project_id, business_name=business_name,
         description=description or None, owner=owner or None,
+        use_type=use_type,
     ), query=query, output_fmt=output_fmt)
 
 

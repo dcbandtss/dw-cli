@@ -82,10 +82,20 @@ dw-cli list-business --project-id 123456
 
 ### create-business
 ```bash
+# 普通业务流程（默认）
 dw-cli create-business --project-id 123456 --business-name my_workflow \
   --owner <uid> --description "my workflow"
+
+# 手动业务流程
+dw-cli create-business --project-id 123456 --business-name my_manual_biz \
+  --use-type MANUAL_BIZ
 ```
 BusinessId 在响应体顶层返回（不在 Data 下）。
+
+路径前缀规则：
+- 普通业务流程: 业务流程/<业务流程名>/...
+- 手动业务流程: 手动业务流程/<业务流程名>/...
+create-folder 和 create-file 的路径参数需匹配对应前缀。
 
 ## UDF
 
