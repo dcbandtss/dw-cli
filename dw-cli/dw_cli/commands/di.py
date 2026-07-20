@@ -98,19 +98,19 @@ def list_ref_disync_tasks(
     task_type: str = typer.Option(..., "--task-type", help="任务类型 DI_OFFLINE(离线同步)/DI_REALTIME(实时同步)"),
     ref_type: str = typer.Option(..., "--ref-type", help="引用类型 from(来源)/to(目标)"),
     page_size: int = typer.Option(100, "--page-size", help="分页大小"),
-    page_number: int = typer.Option(1, "--page-number", help="??"),
+    page_number: int = typer.Option(1, "--page-number", help="页码"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
     """查询数据集成任务的引用关系列表
 
     \b
-    ?? Examples:
+    🚀 Examples:
       dw-cli list-ref-disync-tasks --project-id 123456 --datasource-name my_datasource \
         --task-type DI_OFFLINE --ref-type to
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data.DISyncTasks[*].{FileId, ...}
     """
     _call(ctx, "list_ref_disync_tasks", dw_models.ListRefDISyncTasksRequest(
@@ -135,14 +135,19 @@ def create_disync_task(
     """创建数据集成同步任务
 
     \b
-    ?? Examples:
+    💡 建议：DI 离线同步节点优先用 create-file（--file-type 23）创建，生成图形化节点便于在
+    DataWorks 页面检查；不支持图形化的数据源再用本命令。详见 dev skill 的
+    references/create-file-di-guide.md。
+
+    \b
+    🚀 Examples:
       dw-cli create-disync-task --project-id 123456 --task-name my_di \
         --task-type DI_OFFLINE \
         --task-content file://di_task.json \
         --task-param file://di_param.json
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data.FileId: 新建的文件 ID
       - Data.Status: success
 
@@ -172,12 +177,12 @@ def update_disync_task(
     """更新数据集成同步任务（DI_OFFLINE 等类型）
 
     \b
-    ?? Examples:
+    🚀 Examples:
       dw-cli update-disync-task --file-id 300006 --project-id 123456 \
         --task-type DI_OFFLINE --task-content file://di_task.json
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data.Status: success
     """
     task_content = load_arg(task_content)

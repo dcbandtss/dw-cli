@@ -96,6 +96,9 @@ description: |
 | create-disync-task | 创建 DI 同步任务 | 低危 |
 | update-disync-task | 更新 DI 同步任务 | 低危 |
 
+> 💡 **创建 DI 节点优先用 create-file**（--file-type 23）：生成图形化节点，便于在 DataWorks 页面检查。
+> 不支持图形化的数据源仍用 create-disync-task。完整指南见 [references/create-file-di-guide.md](references/create-file-di-guide.md)。
+
 ### 节点 IO
 
 | 命令 | 说明 | 风险 |
@@ -116,7 +119,7 @@ description: |
 
 ## 私有云特性
 
-- **create-file 节点类型编码**：10=ODPS SQL, 24=ODPS Script, 225=Spark, 11=MR, 221=PyODPS 2, 1221=PyODPS 3, 6=Shell, 99=虚拟节点, 1089=跨租户节点, 12=Python资源, 13=JAR, 14=ARCHIVE, 15=FILE。详见 [references/node-types.md](references/node-types.md)
+- **create-file 节点类型编码**：10=ODPS SQL, 23=DI 离线同步, 24=ODPS Script, 225=Spark, 11=MR, 221=PyODPS 2, 1221=PyODPS 3, 6=Shell, 99=虚拟节点, 1089=跨租户节点, 12=Python资源, 13=JAR, 14=ARCHIVE, 15=FILE。详见 [references/node-types.md](references/node-types.md)
 - **create-folder / create-file 路径必须带引擎子目录层**：普通业务流程前缀 业务流程/my_workflow/MaxCompute/my_sub，手动业务流程前缀 手动业务流程/my_workflow/MaxCompute/my_sub。也可用 业务流程/my_workflow/folderMaxCompute（服务端自动映射）。create-business 用 --use-type MANUAL_BIZ 创建手动业务流程（默认 NORMAL）。
 - **get-file IO 在 NodeConfiguration**：InputList/OutputList 在 `Data.NodeConfiguration` 下（不在 `Data.File` 下）。
 - **submit-file 需真实的已提交上游输出名**：父节点输出名必须是已上线节点的真实输出名，不能编造。

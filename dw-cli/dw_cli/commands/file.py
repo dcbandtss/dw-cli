@@ -135,7 +135,7 @@ def create_file(
     project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
     file_name: str = typer.Option(..., help="文件名，如 123456789.sql"),
     file_type: int = typer.Option(
-        ..., help="文件类型（节点编码），常用：10=ODPS SQL, 24=ODPS Script, "
+        ..., help="文件类型（节点编码），常用：10=ODPS SQL, 23=DI 离线同步, 24=ODPS Script, "
                   "225=ODPS Spark, 11=ODPS MR, 221=PyODPS 2, 1221=PyODPS 3, "
                   "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1089=跨租户节点, "
                   "1115=参数节点, 1106=for-each, 1103=do-while, 1101=分支, "
@@ -167,6 +167,8 @@ def create_file(
         「业务流程/my_workflow/folderMaxCompute」。也可用引擎名写法
         「业务流程/my_workflow/MaxCompute/」（服务端自动映射到 folderMaxCompute），
         但推荐用精确路径，与 list-folders 一致。
+      - DI 离线同步节点（file_type=23）建议用本命令创建（生成图形化节点便于页面检查），
+        详见 dev skill 的 references/create-file-di-guide.md。不支持图形化的数据源用 create-disync-task。
       - 路径前缀规则：普通业务流程用「业务流程/<业务流程名>/...」，
         手动业务流程用「手动业务流程/<业务流程名>/...」。
       - SQL 节点（file_type=10）的 input_list 为必填字段，无依赖时传空串。
@@ -607,7 +609,7 @@ def create_and_submit_file(
     project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
     file_name: str = typer.Option(..., help="文件名，如 123456789.sql"),
     file_type: int = typer.Option(
-        ..., help="文件类型（节点编码），常用：10=ODPS SQL, 24=ODPS Script, "
+        ..., help="文件类型（节点编码），常用：10=ODPS SQL, 23=DI 离线同步, 24=ODPS Script, "
                   "225=ODPS Spark, 11=ODPS MR, 221=PyODPS 2, 1221=PyODPS 3, "
                   "1010=SQL 组件；通用：6=Shell, 99=虚拟节点, 1089=跨租户节点, "
                   "1115=参数节点, 1106=for-each, 1103=do-while, 1101=分支, "
