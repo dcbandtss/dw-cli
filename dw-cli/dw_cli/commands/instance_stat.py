@@ -132,7 +132,7 @@ def get_instance_status_statistic(
     project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
     biz_date: str = typer.Option(..., "--biz-date", help="业务日期 yyyy-MM-dd"),
     project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
-    dag_type: str = typer.Option("DAILY", "--dag-type", help="DAG ???DAILY(??)/MANUAL(??)/SMOKE_TEST(??)/SUPPLY_DATA(???)/BUSINESS_PROCESS_DAG(???)"),
+    dag_type: str = typer.Option("DAILY", "--dag-type", help="DAG 类型：DAILY(日调度)/MANUAL(手动)/SMOKE_TEST(冒烟)/SUPPLY_DATA(补数据)/BUSINESS_PROCESS_DAG(业务流程)"),
     scheduler_period: str = typer.Option(None, "--scheduler-period", help="调度周期 DAY/周/月等"),
     scheduler_type: str = typer.Option(None, "--scheduler-type", help="调度类型 NORMAL/MANUAL/PAUSE/SKIP"),
     query: Optional[str] = query_option(),

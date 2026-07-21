@@ -587,12 +587,12 @@ def get_meta_table_lineage(
     """查询表血缘关系（上游/下游）
 
     
-    ?? Examples:
+    🚀 Examples:
       dw-cli get-meta-table-lineage --table-guid odps.my_project.my_table \
         --database-name my_project --direction UP
 
     
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data.DataEntityList[*].{TableName, TableGuid, ...}
       - Data.HasNext: 是否有下一页
     """
@@ -619,12 +619,12 @@ def get_meta_column_lineage(
     """查询字段血缘关系
 
     
-    ?? Examples:
+    🚀 Examples:
       dw-cli get-meta-column-lineage --column-guid odps.my_project.my_table.my_col \
         --direction UP
 
     
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data.DataEntityList[*].{ColumnName, ColumnGuid, ...}
       - Data.TotalCount
 
@@ -645,20 +645,20 @@ def get_meta_table_output(
     start_date: str = typer.Option(..., "--start-date", help="开始日期 yyyy-MM-dd"),
     end_date: str = typer.Option(..., "--end-date", help="结束日期 yyyy-MM-dd"),
     page_size: int = typer.Option(100, "--page-size", help="分页大小"),
-    page_number: int = typer.Option(1, "--page-number", help="??"),
-    task_id: str = typer.Option(None, "--task-id", help="?? ID ??"),
+    page_number: int = typer.Option(1, "--page-number", help="页码"),
+    task_id: str = typer.Option(None, "--task-id", help="任务 ID 列表"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
     """查询表的产出信息（哪些任务写入了该表）
 
     
-    ?? Examples:
+    🚀 Examples:
       dw-cli get-meta-table-output --table-guid odps.my_project.my_table \
         --start-date 2026-07-01 --end-date 2026-07-09
 
     
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data.DataEntityList[*].{...}
       - Data.TotalCount
     """
@@ -674,9 +674,9 @@ def update_meta_table(
     table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
     caption: str = typer.Option(None, "--caption", help="表中文名/别名"),
     env_type: int = typer.Option(None, "--env-type", help="环境类型"),
-    visibility: int = typer.Option(None, "--visibility", help="???"),
+    visibility: int = typer.Option(None, "--visibility", help="可见性"),
     new_owner_id: str = typer.Option(None, "--new-owner-id", help="新负责人 ID"),
-    category_id: int = typer.Option(None, "--category-id", help="?? ID"),
+    category_id: int = typer.Option(None, "--category-id", help="分类 ID"),
     schema: str = typer.Option(None, "--schema", help="schema"),
     added_labels: str = typer.Option(None, "--added-labels", help="要添加的标签列表（逗号分隔）"),
     removed_labels: str = typer.Option(None, "--removed-labels", help="要移除的标签列表（逗号分隔）"),
@@ -687,12 +687,12 @@ def update_meta_table(
     """更新表属性（中文名/环境/负责人）
 
     
-    ?? Examples:
+    🚀 Examples:
       dw-cli update-meta-table --table-guid odps.my_project.my_table \
-        --caption "???" --env-type 1 --visibility 1
+        --caption "表中文名" --env-type 1 --visibility 1
 
     
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - UpdateResult: true（成功）或错误信息
     """
     _call_meta(ctx, "update_meta_table", dw_models.UpdateMetaTableRequest(
@@ -713,14 +713,14 @@ def update_meta_table_intro_wiki(
     """更新表的 wiki 介绍（数据地图中显示）
 
     \b
-    ?? Examples:
+    🚀 Examples:
       dw-cli update-meta-table-intro-wiki --table-guid odps.my_project.my_table \
         --content "表介绍内容"
       dw-cli update-meta-table-intro-wiki --table-guid odps.my_project.my_table \
         --content file://wiki.md
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - UpdateResult: true（成功）
     """
     content = load_arg(content)

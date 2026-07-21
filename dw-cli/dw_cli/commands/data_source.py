@@ -314,23 +314,23 @@ def _call_data_source(ctx: typer.Context, api_name: str, request, *, query, outp
 @app.command("update-data-source")
 def update_data_source(
     ctx: typer.Context,
-    data_source_id: int = typer.Option(..., "--data-source-id", help="??? ID"),
+    data_source_id: int = typer.Option(..., "--data-source-id", help="数据源 ID"),
     description: str = typer.Option(None, "--description", help="描述"),
     content: str = typer.Option(None, "--content", help="数据源配置 JSON（支持 file:// 从文件读取，不传则只更新其他字段）"),
-    env_type: int = typer.Option(None, "--env-type", help="???0=?? / 1=??"),
-    status: str = typer.Option(None, "--status", help="??"),
+    env_type: int = typer.Option(None, "--env-type", help="环境类型：0=开发 / 1=生产"),
+    status: str = typer.Option(None, "--status", help="状态"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
     """更新数据源配置
 
     
-    ?? Examples:
+    🚀 Examples:
       # 只更新描述
       dw-cli update-data-source --data-source-id 700001 --description "new desc"
 
     
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data: true（成功）
 
     
@@ -350,18 +350,18 @@ def get_data_source_meta(
     datasource_name: str = typer.Option(..., "--datasource-name", help="数据源名称"),
     env_type: str = typer.Option("1", "--env-type", help="环境类型：0=开发 / 1=生产（默认）"),
     page_size: int = typer.Option(100, "--page-size", help="分页大小"),
-    page_number: int = typer.Option(1, "--page-number", help="??"),
+    page_number: int = typer.Option(1, "--page-number", help="状态"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
     """获取数据源元信息
 
     \b
-    ?? Examples:
+    🚀 Examples:
       dw-cli get-data-source-meta --project-id 123456 --datasource-name my_datasource
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data.Meta: JSON 格式，含 dbTables[].tableInfos[] 等表结构信息
       - Data.Status: success
     """

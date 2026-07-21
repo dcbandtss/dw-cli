@@ -859,7 +859,7 @@ def _call_file(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
 @app.command("deploy-file")
 def deploy_file(
     ctx: typer.Context,
-    file_id: int = typer.Option(..., "--file-id", help="?? ID"),
+    file_id: int = typer.Option(..., "--file-id", help="文件 ID"),
     project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
     node_id: int = typer.Option(None, "--node-id", help="节点 ID（已提交文件传 node_id，未提交传 file_id）"),
     comment: str = typer.Option("", "--comment", help="发布备注"),
@@ -873,14 +873,14 @@ def deploy_file(
     deploy_file 用于将已提交的文件发布到生产环境，与 submit_file 的区别
 
     \b
-    ?? Examples:
+    🚀 Examples:
       # 已提交文件用 node_id
-      dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "??"
+      dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "发布备注"
       # 未提交文件用 file_id
-      dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "??" --confirm
+      dw-cli deploy-file --file-id 300001 --project-id 123456 --comment "发布备注" --confirm
 
     \b
-    ?? Output JSON Structure:
+    📦 Output JSON Structure:
       - Data: 发布 ID 或 true
     """
     from dw_cli.core import confirm
