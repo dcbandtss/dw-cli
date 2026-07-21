@@ -55,6 +55,15 @@ pip install -e .                                    # 国内用户加 -i https:/
 
 > 详细安装步骤（SSH key 配置、Token 方式、离线安装等）见 [安装指南](skills/dw-cli-infra/references/installation-guide.md)。
 
+**验证安装：**
+
+\\ash
+dw-cli --version       # 显示版本号（如 0.1.2）说明安装成功
+dw-cli --help          # 显示全部命令分组
+\
+> 如果 dw-cli --version 提示找不到命令，检查 Python 的 Scripts 目录是否在 PATH 中：
+> where dw-cli（Windows）或 which dw-cli（Linux/Mac）。
+
 ### 2. 配置凭据
 
 优先级：环境变量 > ini 文件 > aliyun-cli 配置 > ECS RAM 角色（详见 [凭据链详解](skills/dw-cli-infra/references/credential-chain.md)）

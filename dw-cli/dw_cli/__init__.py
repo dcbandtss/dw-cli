@@ -5,4 +5,4 @@
 所有 API 调用经 core.client 统一构造客户端与 RuntimeOptions（注入 RegionId），禁止绕过。
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
