@@ -30,7 +30,7 @@ app = typer.Typer(help="meta_table 类命令：表元数据查询")
 
 # 表定位公共帮助文案
 _CLUSTER_HELP = "集群 ID（MaxCompute 一般留空）"
-_DST_HELP = "数据源类型，如 odps / rds / mysql"
+_DST_HELP = "数据源类型，默认 odps（MaxCompute）；查关系型数据库时传 rds / mysql 等"
 _DB_HELP = "库名 / 项目空间名（odps 即项目标识）"
 _TBL_HELP = "表名（与 table-guid 二选一，table-guid 优先）"
 _GUID_HELP = "表全局唯一标识（与 table-name 二选一，优先）"
@@ -50,7 +50,7 @@ _TABLES_TQ = "Data.DataEntityList[*].{Name:TableName, Guid:TableGuid}"
 @app.command("check-meta-table")
 def check_meta_table(
     ctx: typer.Context,
-    data_source_type: str = typer.Option(..., "--data-source-type", help=_DST_HELP),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
     table_name: str = typer.Option("", "--table-name", help=_TBL_HELP),
     table_guid: str = typer.Option("", "--table-guid", help=_GUID_HELP),
@@ -84,7 +84,7 @@ def check_meta_table(
 @app.command("check-meta-partition")
 def check_meta_partition(
     ctx: typer.Context,
-    data_source_type: str = typer.Option(..., "--data-source-type", help=_DST_HELP),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
     partition: str = typer.Option(..., "--partition", help="分区名，多级分区用完整路径如 dt=20260625/pt=biz_alarm/adm_div_code=310100"),
     table_name: str = typer.Option("", "--table-name", help=_TBL_HELP),
@@ -123,7 +123,7 @@ def check_meta_partition(
 @app.command("get-meta-table-basic-info")
 def get_meta_table_basic_info(
     ctx: typer.Context,
-    data_source_type: str = typer.Option(..., "--data-source-type", help=_DST_HELP),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
     table_name: str = typer.Option("", "--table-name", help=_TBL_HELP),
     table_guid: str = typer.Option("", "--table-guid", help=_GUID_HELP),
@@ -190,7 +190,7 @@ def get_meta_table_intro_wiki(
 @app.command("get-meta-table-column")
 def get_meta_table_column(
     ctx: typer.Context,
-    data_source_type: str = typer.Option(..., "--data-source-type", help=_DST_HELP),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
     table_name: str = typer.Option("", "--table-name", help=_TBL_HELP),
     table_guid: str = typer.Option("", "--table-guid", help=_GUID_HELP),
@@ -254,7 +254,7 @@ def get_meta_table_column(
 @app.command("get-meta-table-full-info")
 def get_meta_table_full_info(
     ctx: typer.Context,
-    data_source_type: str = typer.Option(..., "--data-source-type", help=_DST_HELP),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
     table_name: str = typer.Option("", "--table-name", help=_TBL_HELP),
     table_guid: str = typer.Option("", "--table-guid", help=_GUID_HELP),
@@ -366,7 +366,7 @@ def get_meta_table_change_log(
 @app.command("get-meta-table-partition")
 def get_meta_table_partition(
     ctx: typer.Context,
-    data_source_type: str = typer.Option(..., "--data-source-type", help=_DST_HELP),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
     table_name: str = typer.Option("", "--table-name", help=_TBL_HELP),
     table_guid: str = typer.Option("", "--table-guid", help=_GUID_HELP),

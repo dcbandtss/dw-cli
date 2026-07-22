@@ -261,6 +261,21 @@ dw-cli create-data-source --content file://ds.json --project-id 123456 --name my
 
 `run-sql` 已自动做 logview 地址替换（cloud → cloud-inner），正常情况下无需手动处理。若仍报错，确认网络能访问 cloud-inner 域名。
 
+### PowerShell 中文乱码
+
+PowerShell 默认编码页不是 UTF-8，dw-cli 输出的中文可能显示为乱码。解决方法：
+
+```powershell
+# 方法一：设置环境变量（推荐，当前会话生效）
+$env:PYTHONUTF8 = 1
+$env:PYTHONIOENCODING = "utf-8"
+
+# 方法二：切换控制台编码页
+chcp 65001
+```
+
+在 Python 脚本中用 subprocess 调用 dw-cli 时，Python 默认能正确处理 UTF-8 输出，不受 PowerShell 编码页影响。
+
 ### `list-tables 报 MissingDependency`
 
 未安装 pyodps。运行 `pip install pyodps`。pyodps 缺失只影响 list-tables / run-sql，其他命令不受限。
