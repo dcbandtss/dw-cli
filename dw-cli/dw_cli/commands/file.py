@@ -152,10 +152,10 @@ def create_file(
         "", help="上游依赖输出名，无依赖传空串（SQL 节点必填字段，留空即可）"
     ),
     content: Optional[str] = typer.Option(
-        None, help="文件内容（行内）。与 --content-file 二选一"
+        None, help="文件内容。支持行内传内容，或用 file://path 从文件读取（多行 SQL/大代码推荐）"
     ),
     content_file: Optional[str] = typer.Option(
-        None, help="从文件读取内容（多行 SQL 推荐）。与 --content 二选一"
+        None, "--content-file", help="[已废弃] 请改用 --content file://path。保留仅为兼容旧用法"
     ),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
@@ -194,24 +194,24 @@ def create_file(
         --file-type 12 --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content file://udf_code.py
 
+      # 同上，用 --content-file（已废弃，等价于 --content file://）
+      dw-cli create-file --project-id 123456 --file-name my_udf.py \\
+        --file-type 12 --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
+        --content-file udf_code.py
+
     \b
     📦 Output JSON Structure:
       - 文件 ID: Data (直接是数字，如 300005)
       - 成功: {Data: <file_id>, Success: true}
     """
-    if content is not None and content_file is not None:
-        errors.usage_error("--content 与 --content-file 互斥，请只指定一个。")
     if content is None and content_file is None:
-        errors.usage_error("必须提供 --content 或 --content-file 之一。")
+        errors.usage_error("必须提供 --content（行内或 file://path）。")
 
     if content_file is not None:
-        try:
-            with open(content_file, "r", encoding="utf-8") as f:
-                file_content = f.read()
-        except OSError as e:
-            errors.usage_error(f"读取 --content-file 失败: {e}")
+        # 兼容旧 --content-file（已废弃），等价于 --content file://path
+        file_content = load_arg("file://" + content_file)
     else:
-        file_content = content
+        file_content = load_arg(content)
 
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
@@ -625,10 +625,10 @@ def create_and_submit_file(
         "", help="上游依赖输出名，无依赖传空串（SQL 节点必填字段，留空即可）"
     ),
     content: Optional[str] = typer.Option(
-        None, help="文件内容（行内）。与 --content-file 二选一"
+        None, help="文件内容。支持行内传内容，或用 file://path 从文件读取（多行 SQL/大代码推荐）"
     ),
     content_file: Optional[str] = typer.Option(
-        None, help="从文件读取内容（多行 SQL 推荐）。与 --content 二选一"
+        None, "--content-file", help="[已废弃] 请改用 --content file://path。保留仅为兼容旧用法"
     ),
     comment: str = typer.Option("", "--comment", help="提交备注"),
     # ── 调度参数（可选，任意一个非空时自动插一步 update-file）──
@@ -691,6 +691,12 @@ def create_and_submit_file(
         --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
         --content file://udf_code.py
 
+      # 同上，用 --content-file（已废弃，等价于 --content file://）
+      dw-cli create-and-submit-file --project-id 123456 \\
+        --file-name my_udf.py --file-type 12 \\
+        --file-folder-path "业务流程/my_workflow/folderMaxCompute" \\
+        --content-file udf_code.py
+
       # 建并提交虚拟节点（暂停调度）
       dw-cli create-and-submit-file --project-id 123456 \\
         --file-name start_node --file-type 99 \\
@@ -707,19 +713,14 @@ def create_and_submit_file(
       - submit_response: submit-file 的原始响应
     """
     # 1. 参数校验（与 create-file 一致）
-    if content is not None and content_file is not None:
-        errors.usage_error("--content 与 --content-file 互斥，请只指定一个。")
     if content is None and content_file is None:
-        errors.usage_error("必须提供 --content 或 --content-file 之一。")
+        errors.usage_error("必须提供 --content（行内或 file://path）。")
 
     if content_file is not None:
-        try:
-            with open(content_file, "r", encoding="utf-8") as f:
-                file_content = f.read()
-        except OSError as e:
-            errors.usage_error(f"读取 --content-file 失败: {e}")
+        # 兼容旧 --content-file（已废弃），等价于 --content file://path
+        file_content = load_arg("file://" + content_file)
     else:
-        file_content = content
+        file_content = load_arg(content)
 
     # 处理 file:// 大 JSON 字段
     ip = load_arg(input_parameters)
