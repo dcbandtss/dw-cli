@@ -94,15 +94,22 @@ dw-cli top-ten-elapsed-time-instance --project-id 123456 --bizdate "2026-07-12 0
 
 ### run-manual-dag-nodes（低危，但触发真实执行）
 ```bash
-dw-cli run-manual-dag-nodes --project-id 123456 --business-id 400002 --node-ids 100001,100002
+dw-cli run-manual-dag-nodes --project-env PROD --project-id 123456 \
+  --project-name my_project --flow-name my_manual_biz \
+  --include-node-ids 100001 --biz-date "2026-07-27 00:00:00"
 ```
 触发手动业务流程 DAG 执行。返回 DagId，用 `get-dag` 轮询状态。
+- `--flow-name` 必须是手动业务流程（UseType=MANUAL_BIZ）。
+- `--biz-date` 格式 `yyyy-MM-dd HH:mm:ss`（必须含时间部分）。
+- **bizdate 是业务日期=T-1（前一天自然日）**：如 7月28日调度执行，bizdate 填 2026-07-27。
 
 ### run-cycle-dag-nodes（低危，但触发真实执行）
 ```bash
-dw-cli run-cycle-dag-nodes --project-id 123456 --node-ids 100001,100002
+dw-cli run-cycle-dag-nodes --project-env PROD \
+  --include-node-ids 100001 --root-node-id 100001 \
+  --start-biz-date "2026-07-27 00:00:00" --end-biz-date "2026-07-27 00:00:00"
 ```
-触发周期调度 DAG 执行。
+触发周期调度 DAG 补数据。`--start-biz-date` / `--end-biz-date` 格式同上（必须含时间部分）。
 
 ### get-dag
 ```bash

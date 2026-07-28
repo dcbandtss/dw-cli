@@ -45,6 +45,17 @@ dw-cli get-file --file-id 300001 --project-id 123456 -o table
 ```
 IO 在 `Data.NodeConfiguration.InputList` / `Data.NodeConfiguration.OutputList`（不在 Data.File 下）。
 
+### list-files
+```bash
+# 列出全部文件（分页合并）
+dw-cli list-files --project-id 123456 --all
+
+# 按业务流程 ID 过滤（BusinessId 是数字，JMESPath 用反引号）
+dw-cli list-files --project-id 123456 --all \
+  --query "Data.Files[?BusinessId==\`34435\`].{FileId:FileId, Name:FileName}"
+```
+> ⚠️ BusinessId 是**数字类型**，JMESPath 过滤用反引号：`[?BusinessId==\`34435\`]`，不要用引号 `'34435'`（类型不匹配返回空）。
+
 ### submit-file
 ```bash
 dw-cli submit-file --file-id 300001 --project-id 123456

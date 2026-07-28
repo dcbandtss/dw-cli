@@ -18,6 +18,26 @@ app = typer.Typer(help="DAG 运行控制（补数据/手动工作流/DAG查询/�
 
 _PROJ_ENV_HELP = "环境：PROD（生产，默认）/ DEV（开发）"
 
+_BIZDATE_FORMAT_HELP = (
+    "业务日期，格式 yyyy-MM-dd HH:mm:ss（必须含时间部分）"
+    "。bizdate 是 T-1（前一天自然日），如 2026-07-28 调度执行，bizdate 填 2026-07-27"
+)
+
+
+def _check_bizdate(value: str, param_name: str):
+    """校验 biz_date 格式必须含时间部分，不含则报错。"""
+    if not value or len(value) < 10:
+        return value
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}", value):
+        raise errors.usage_error(
+            f"{param_name} 格式必须含时间部分（yyyy-MM-dd HH:mm:ss），"
+            f"当前值 '{value}' 可能只传了日期。"
+            f"注意：bizdate 是业务日期=T-1，如 7月28日调度执行填 2026-07-27 00:00:00"
+        )
+    return value
+
+
 
 def _call(ctx: typer.Context, api_name: str, request, *, query, output_fmt):
     """单对象/单动作统一调用出口。"""
@@ -40,9 +60,9 @@ def run_cycle_dag_nodes(
                                          help="要补数据的节点 ID，多个用逗号分隔"),
     root_node_id: int = typer.Option(..., "--root-node-id", help="根节点 ID（补数据的起始节点）"),
     start_biz_date: str = typer.Option(..., "--start-biz-date",
-                                       help="补数据开始业务日期，格式 yyyy-MM-dd HH:mm:ss"),
+                                       help=_BIZDATE_FORMAT_HELP + "（补数据开始日期）"),
     end_biz_date: str = typer.Option(..., "--end-biz-date",
-                                     help="补数据结束业务日期，格式 yyyy-MM-dd HH:mm:ss"),
+                                     help=_BIZDATE_FORMAT_HELP + "（补数据结束日期）"),
     name: str = typer.Option("dwcli_cycle", "--name", help="补数据任务名称"),
     parallelism: bool = typer.Option(True, "--parallelism",
                                      help="是否允许多节点并行补数据"),
@@ -82,6 +102,8 @@ def run_cycle_dag_nodes(
     ⚠️ 注意：这是写操作（生成补数据实例），低危不拦。biz_date 格式必须含时间部分
     （yyyy-MM-dd HH:mm:ss），只传日期会报 "is too short"。
     """
+    start_biz_date = _check_bizdate(start_biz_date, "--start-biz-date")
+    end_biz_date = _check_bizdate(end_biz_date, "--end-biz-date")
     _call(ctx, "run_cycle_dag_nodes", dw_models.RunCycleDagNodesRequest(
         project_env=project_env, include_node_ids=include_node_ids,
         root_node_id=root_node_id, start_biz_date=start_biz_date,
@@ -105,7 +127,7 @@ def run_manual_dag_nodes(
     include_node_ids: str = typer.Option(..., "--include-node-ids",
                                          help="要运行的节点 ID（手动业务流程里的节点），多个逗号分隔"),
     biz_date: str = typer.Option(..., "--biz-date",
-                                 help="业务日期，格式 yyyy-MM-dd HH:mm:ss"),
+                                 help=_BIZDATE_FORMAT_HELP),
     start_biz_date: str = typer.Option(None, "--start-biz-date",
                                        help="开始业务日期（默认同 biz-date）"),
     end_biz_date: str = typer.Option(None, "--end-biz-date",
@@ -137,8 +159,11 @@ def run_manual_dag_nodes(
         "业务流程不存在"。用 list-business 查 UseType 区分。
       - include_node_ids 必须是手动业务流程里的节点（手动节点），周期节点会报
         "未成功生成根节点，调度时间不在区间内"。
-      - biz_date 格式必须含时间部分（yyyy-MM-dd HH:mm:ss）。
+      - biz_date 格式必须含时间部分（yyyy-MM-dd HH:mm:ss），只传日期会报错。
+      - bizdate 含义：业务日期=T-1（前一天自然日）。如 7月28日调度执行，bizdate 填 2026-07-27。
+        ${bizdate} 在 SQL 里取的就是这个值。
     """
+    biz_date = _check_bizdate(biz_date, "--biz-date")
     _call(ctx, "run_manual_dag_nodes", dw_models.RunManualDagNodesRequest(
         project_env=project_env, project_id=project_id, project_name=project_name,
         flow_name=flow_name, include_node_ids=include_node_ids,

@@ -33,7 +33,35 @@ def list_files(
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
-    """列出工作空间内的文件。"""
+    """列出工作空间内的文件。
+
+    \b
+    🚀 Examples:
+      # 列出全部文件（分页合并）
+      dw-cli list-files --project-id 123456 --all
+
+      # 只取关键字段
+      dw-cli list-files --project-id 123456 --all \
+        --query "Data.Files[*].{FileId:FileId, Name:FileName, BizId:BusinessId, Status:CommitStatus}"
+
+      # 按业务流程 ID 过滤（BusinessId 是数字，JMESPath 用反引号不用引号）
+      dw-cli list-files --project-id 123456 --all \
+        --query "Data.Files[?BusinessId==\`34435\`]"
+
+    \b
+    📦 Output JSON Structure:
+      - 文件列表: Data.Files[] (数组)
+      - 文件 ID: Data.Files[*].FileId
+      - 文件名:   Data.Files[*].FileName
+      - 业务流程 ID: Data.Files[*].BusinessId (数字类型)
+      - 提交状态: Data.Files[*].CommitStatus
+
+    \b
+    ⚠️ JMESPath 注意:
+      - BusinessId 是数字类型，过滤时用反引号（数字），不要用引号（字符串）
+        正确: [?BusinessId==\`34435\`]   错误: [?BusinessId=='34435']
+      - 按文件名过滤也同理，FileName 是字符串用引号: [?FileName=='my_node.sql']
+    """
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -242,6 +270,19 @@ def submit_file(
         False, "--skip-all-deploy-file-extensions",
         help="是否跳过发布文件扩展名检查"
     ),
+    wait: bool = typer.Option(
+        False, "--wait",
+        help="[AI 推荐] 提交后自动轮询 get-deployment 直到发布完成。"
+             "未带此参数时只返回 DeploymentId，需自行轮询",
+    ),
+    timeout: int = typer.Option(
+        300, "--timeout",
+        help="--wait 的轮询超时秒数，默认 300。超时未到终态则退出码 1 并带当前状态",
+    ),
+    poll_interval: int = typer.Option(
+        3, "--poll-interval",
+        help="--wait 的轮询间隔秒数，默认 3",
+    ),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -268,16 +309,35 @@ def submit_file(
         --input-list "my_project_root" --output-list "my_project.my_node_output"
       dw-cli submit-file --file-id <FID> --project-id <PID> --comment "补依赖后提交"
 
-      # 查发布包状态
+      # 提交并自动等发布完成（推荐，提交后立即运行前必加）
+      dw-cli submit-file --file-id <FID> --project-id <PID> --comment "提交" --wait
+
+      # 等久一点
+      dw-cli submit-file --file-id <FID> --project-id <PID> --wait --timeout 600
+
+      # 查发布包状态（不用 --wait 时需手动轮询）
       dw-cli get-deployment --deployment-id <DeploymentId> --project-id <PID> \\
         --query "Data.Deployment.Status"
 
     \b
     📦 Output JSON Structure:
-      - 成功: {Data: <DeploymentId>, Success: true}
+      - 不带 --wait: {Data: <DeploymentId>, Success: true}
         Data 是发布包 ID（整数），不是 true
+      - 带 --wait 到终态: {submit_response, deployment_id, final_status, timed_out, deployment}
+        final_status=1 退出 0；2(失败) 或超时退出 1
       - 发布包状态: Data.Deployment.Status（0=待执行, 1=成功, 2=失败）
+
+    \b
+    💡 注意：submit-file 是异步操作，返回 DeploymentId 后发布可能尚未完成。
+    提交后立即运行（如 run-manual-dag-nodes）前务必加 --wait 或手动轮询到 Status=1。
     """
+    if wait:
+        _submit_and_wait(ctx, file_id, project_id, comment,
+                         skip_all_deploy_file_extensions,
+                         timeout, poll_interval,
+                         query=query, output_fmt=output_fmt)
+        return
+
     _call_file(ctx, "submit_file", dw_models.SubmitFileRequest(
         file_id=file_id, project_id=project_id, comment=comment or None,
         skip_all_deploy_file_extensions=skip_all_deploy_file_extensions,
@@ -474,6 +534,130 @@ def _delete_and_wait(
     if final_status == 2:
         errors.fail(errors.DwCliError(
             f"异步删除失败（DeploymentId={deployment_id}, Status=2）"
+            + (f": {error_message}" if error_message else ""),
+            code="DeploymentFailed",
+            category=errors.CATEGORY_BUSINESS,
+            recommend="用 dw-cli get-deployment --deployment-id 查详情，或页面查看发布包。",
+        ))
+    else:
+        errors.fail(errors.DwCliError(
+            f"轮询超时（{timeout}s），当前 Status={final_status}（DeploymentId={deployment_id}）",
+            code="DeploymentTimeout",
+            category=errors.CATEGORY_BUSINESS,
+            recommend=f"用 dw-cli get-deployment --deployment-id {deployment_id} --project-id {project_id} 继续查。",
+        ))
+
+
+def _submit_and_wait(
+    ctx: typer.Context, file_id: int, project_id: int, comment: str,
+    skip_all_deploy_file_extensions: bool,
+    timeout: int, poll_interval: int, *, query: Optional[str], output_fmt: str,
+):
+    """提交文件 + 自动轮询 get-deployment 到终态（--wait 场景）。
+
+    流程：
+      1. 调 submit_file_with_options，解包响应取 DeploymentId（Data 字段）。
+      2. 无 DeploymentId → 直接 emit 原响应（异常情况）。
+      3. 有 DeploymentId → 循环 get-deployment 取 Data.Deployment.Status，
+         直到 1(成功)/2(失败) 终态或 timeout 超时。
+      4. 终态 1 → 退出 0；2 → 退出 1；超时 → 退出 1 并带当前状态。
+    """
+    import time
+
+    from dw_cli.core import output as output_mod
+
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    # 1. 发起提交
+    try:
+        resp = dw_client.submit_file_with_options(
+            dw_models.SubmitFileRequest(
+                file_id=file_id, project_id=project_id, comment=comment or None,
+                skip_all_deploy_file_extensions=skip_all_deploy_file_extensions,
+            ),
+            runtime,
+        )
+    except Exception as error:
+        errors.fail(error)
+        return
+
+    body = output_mod._to_jsonable(resp)
+    # submit_file 的 DeploymentId 在 Data 字段（与 delete_file 在顶层不同）
+    deployment_id = None
+    if isinstance(body, dict):
+        data_val = body.get("Data")
+        if isinstance(data_val, (int, str)):
+            deployment_id = data_val
+
+    # 2. 无 DeploymentId：异常情况，原样输出
+    if not deployment_id:
+        output_mod.emit(resp, query=query, output=output_fmt)
+        return
+
+    # 3. 有 DeploymentId：轮询 get-deployment 直到终态或超时
+    output_mod.diag(
+        f"[wait] 提交成功，DeploymentId={deployment_id}，轮询发布状态..."
+    )
+    deadline = _now_monotonic() + timeout
+    final_status = None
+    error_message = ""
+    deploy_detail = None
+    timed_out = False
+    while True:
+        try:
+            d_resp = dw_client.get_deployment_with_options(
+                dw_models.GetDeploymentRequest(
+                    deployment_id=deployment_id, project_id=project_id,
+                ),
+                runtime,
+            )
+        except Exception as error:
+            errors.fail(error)
+            return
+        d_body = output_mod._to_jsonable(d_resp)
+        data_obj = d_body.get("Data") if isinstance(d_body, dict) else None
+        deploy_detail = data_obj.get("Deployment") if isinstance(data_obj, dict) else None
+        status = None
+        if isinstance(deploy_detail, dict):
+            raw_status = deploy_detail.get("Status")
+            if raw_status is not None:
+                try:
+                    status = int(raw_status)
+                except (TypeError, ValueError):
+                    status = raw_status
+            error_message = deploy_detail.get("ErrorMessage") or deploy_detail.get("error_message") or ""
+        final_status = status
+        if status in (1, 2):
+            break
+        if _now_monotonic() >= deadline:
+            timed_out = True
+            break
+        time.sleep(poll_interval)
+
+    output_mod.diag(
+        f"[wait] 轮询结束: Status={final_status}"
+        + (f", ErrorMessage={error_message}" if error_message else "")
+        + (f"（超时 {timeout}s）" if timed_out else "")
+    )
+
+    result = {
+        "submit_response": body,
+        "deployment_id": deployment_id,
+        "final_status": final_status,
+        "timed_out": timed_out,
+        "error_message": error_message or None,
+    }
+    if isinstance(deploy_detail, dict):
+        result["deployment"] = deploy_detail
+    output_mod.emit(result, query=query, output=output_fmt)
+
+    if final_status == 1:
+        return
+    if final_status == 2:
+        errors.fail(errors.DwCliError(
+            f"发布失败（DeploymentId={deployment_id}, Status=2）"
             + (f": {error_message}" if error_message else ""),
             code="DeploymentFailed",
             category=errors.CATEGORY_BUSINESS,

@@ -49,7 +49,12 @@ def load_arg(value):
         )
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return f.read()
+            content = f.read()
+        # 自动去除 UTF-8 BOM（PowerShell Set-Content -Encoding UTF8 会写 BOM，
+        # 导致 PyODPS3 等节点报 SyntaxError: invalid character in identifier）
+        if content.startswith("\ufeff"):
+            content = content.lstrip("\ufeff")
+        return content
     except OSError as e:
         raise errors.DwCliError(
             f"读取 file:// 文件失败: {path} ({e})",
