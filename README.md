@@ -64,9 +64,7 @@ dw-cli --help          # 显示全部命令分组
 > 如果 dw-cli --version 提示找不到命令，检查 Python 的 Scripts 目录是否在 PATH 中：
 > where dw-cli（Windows）或 which dw-cli（Linux/Mac）。
 
-### 更新 dw-cli 与 Skills
-
-**更新 CLI：**
+### 更新 CLI
 
 ```bash
 # 方式一：源码安装（editable 模式，直接 git pull 即生效）
@@ -79,19 +77,6 @@ pip install --force-reinstall "git+https://github.com/dcbandtss/dw-cli.git#subdi
 # 国内用户：
 pip install --force-reinstall "git+https://gitee.com/assassinv/dw-cli.git#subdirectory=dw-cli" -i https://mirrors.aliyun.com/pypi/simple/
 ```
-
-**更新 Skills：**
-
-```bash
-# 方式一：npx 重新安装（覆盖旧版本）
-npx skills add dcbandtss/dw-cli                              # GitHub
-npx skills add https://gitee.com/assassinv/dw-cli.git        # Gitee（国内用户）
-
-# 方式二：手动更新（如果你是 git clone 到 ~/.codex/skills/ 的）
-cd ~/.codex/skills/dw-cli-infra && git pull   # 每个 skill 目录各自 pull
-```
-
-> Skills 与 CLI 独立更新，互不影响。CLI 改了参数就重装 CLI，Skills 改了文档就重装 Skills。
 
 ### 2. 配置凭据
 
@@ -189,6 +174,19 @@ npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-meta
 ```
 
 > 两种方式安装的 skill 内容完全一致，Gitee 与 GitHub 保持镜像同步。
+
+### 更新 Skills
+
+```bash
+# 方式一：npx 重新安装（覆盖旧版本）
+npx skills add dcbandtss/dw-cli                              # GitHub
+npx skills add https://gitee.com/assassinv/dw-cli.git        # Gitee（国内用户）
+
+# 方式二：手动更新（如果你是 git clone 到 ~/.codex/skills/ 的）
+cd ~/.codex/skills/dw-cli-infra && git pull   # 每个 skill 目录各自 pull
+```
+
+> Skills 与 CLI 独立更新，互不影响。CLI 改了参数就重装 CLI，Skills 改了文档就重装 Skills。
 
 ### 选哪个 skill
 
