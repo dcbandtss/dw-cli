@@ -64,6 +64,35 @@ dw-cli --help          # 显示全部命令分组
 > 如果 dw-cli --version 提示找不到命令，检查 Python 的 Scripts 目录是否在 PATH 中：
 > where dw-cli（Windows）或 which dw-cli（Linux/Mac）。
 
+### 更新 dw-cli 与 Skills
+
+**更新 CLI：**
+
+```bash
+# 方式一：源码安装（editable 模式，直接 git pull 即生效）
+cd dw-cli
+git pull                    # 国内用户从 Gitee 克隆的：git pull https://gitee.com/assassinv/dw-cli.git
+dw-cli --version           # 确认版本号已更新
+
+# 方式二：pip 安装（非 editable，需重装）
+pip install --force-reinstall "git+https://github.com/dcbandtss/dw-cli.git#subdirectory=dw-cli"
+# 国内用户：
+pip install --force-reinstall "git+https://gitee.com/assassinv/dw-cli.git#subdirectory=dw-cli" -i https://mirrors.aliyun.com/pypi/simple/
+```
+
+**更新 Skills：**
+
+```bash
+# 方式一：npx 重新安装（覆盖旧版本）
+npx skills add dcbandtss/dw-cli                              # GitHub
+npx skills add https://gitee.com/assassinv/dw-cli.git        # Gitee（国内用户）
+
+# 方式二：手动更新（如果你是 git clone 到 ~/.codex/skills/ 的）
+cd ~/.codex/skills/dw-cli-infra && git pull   # 每个 skill 目录各自 pull
+```
+
+> Skills 与 CLI 独立更新，互不影响。CLI 改了参数就重装 CLI，Skills 改了文档就重装 Skills。
+
 ### 2. 配置凭据
 
 优先级：环境变量 > ini 文件 > aliyun-cli 配置 > ECS RAM 角色（详见 [凭据链详解](skills/dw-cli-infra/references/credential-chain.md)）
