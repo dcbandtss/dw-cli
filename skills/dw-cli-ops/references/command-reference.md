@@ -23,9 +23,14 @@ dw-cli get-node --node-id 100001 -o table
 
 ### list-nodes
 ```bash
-dw-cli list-nodes --project-id 123456
+# 分页列出
+dw-cli list-nodes --project-id 123456 --project-env PROD
+# --all 自动翻页合并（大空间自动加大 page_size，私有云 page_number 上限 100）
+dw-cli list-nodes --project-id 123456 --project-env PROD --all
+# 按负责人过滤
 dw-cli list-nodes --project-id 123456 --owner <uid>
 ```
+负责人字段在响应里是 `OwnerId`（不是 `Owner`）。
 
 ### get-node-code
 ```bash

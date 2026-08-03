@@ -35,6 +35,7 @@ def get_project(
     """获取工作空间的详细信息。
 
     --project-id 和 --project-identifier 二选一。都传时 --project-id 优先。
+    ⚠️ 私有云不支持 --project-identifier（报 ProjectId is mandatory），请用 --project-id。
 
     \b
     🚀 Examples:

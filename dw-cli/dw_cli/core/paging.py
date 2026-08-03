@@ -64,22 +64,32 @@ def fetch_all(
             items = [items] if items is not None else []
         merged.extend(items)
 
-        # total 取首页的 total_count（若存在）
+        # total 取首页的 TotalCount（在 envelope_path 下，如 Data.TotalCount）
         if total is None:
-            total = (
-                jmespath.search("total_count", page)
-                or jmespath.search("TotalCount", page)
-            )
+            if envelope_path:
+                total = (
+                    jmespath.search(envelope_path + ".TotalCount", page)
+                    or jmespath.search(envelope_path + ".total_count", page)
+                )
+            else:
+                total = (
+                    jmespath.search("total_count", page)
+                    or jmespath.search("TotalCount", page)
+                )
 
         # 游标分页：取 next_token，有则继续，无则结束
         next_tok = None
         if next_token_path:
             next_tok = jmespath.search(next_token_path, page)
+        # 用 total 判断是否到尾页（比"空页=末页"更可靠，防 API 中间页抽风返回空）
+        if total is not None and len(merged) >= total:
+            break
+
         if next_tok:
             token = next_tok
             page_no += 1
         elif not items:
-            # 偏移分页：空页即末页
+            # 偏移分页：空页即末页（无 total 时的兜底）
             break
         else:
             # 偏移分页：还有可能下一页，继续翻直到空页

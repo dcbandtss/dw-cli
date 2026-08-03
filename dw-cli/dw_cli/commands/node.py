@@ -22,7 +22,7 @@ from dw_cli.commands import auth_params, output_option, query_option
 app = typer.Typer(help="node 类命令")
 
 # table 默认精简列
-_NODES_TABLE_QUERY = "Data.Nodes[*].{Id:NodeId, Name:NodeName, Type:ProgramType, Owner:Owner}"
+_NODES_TABLE_QUERY = "Data.Nodes[*].{Id:NodeId, Name:NodeName, Type:ProgramType, Owner:OwnerId}"
 _PROJ_ENV_HELP = "环境：PROD（生产）/ DEV（开发）"
 
 
@@ -179,7 +179,7 @@ def list_nodes(
       - 节点ID:   Data.Nodes[*].NodeId
       - 节点名:   Data.Nodes[*].NodeName
       - 节点类型: Data.Nodes[*].ProgramType
-      - 负责人:   Data.Nodes[*].Owner
+      - 负责人:   Data.Nodes[*].OwnerId
       - 总数:     Data.TotalCount
     """
     auth = auth_params(ctx)
@@ -308,12 +308,27 @@ def _list_common(*, dw_client, runtime, method, build_req, items_key,
     使 --all 与单页的 --query 基准一致（都用 Data.<items_key>[*]）。
     """
     if all_pages:
+        # 私有云 page_number 上限 100，自动加大 page_size 避免超限
+        effective_cap = limit if limit is not None else paging.DEFAULT_SOFT_CAP
+        min_ps = (effective_cap + 99) // 100  # ceil(effective_cap / 100)
+        actual_ps = max(page_size, min_ps)
+        if actual_ps != page_size:
+            output.diag(
+                f"[INFO] --all 自动加大 page_size {page_size} -> {actual_ps}"
+                f"（私有云 page_number 上限 100）"
+            )
+            _orig_build_req = build_req
+            def build_req(pn, token):
+                req = _orig_build_req(pn, token)
+                req.page_size = actual_ps
+                return req
+
         def fetch_page(pn, token):
             resp = getattr(dw_client, f"{method}_with_options")(build_req(pn, token), runtime)
             return output._to_jsonable(resp)
 
         merged = paging.fetch_all(
-            fetch_page=fetch_page, page_size=page_size,
+            fetch_page=fetch_page, page_size=actual_ps,
             limit=limit, items_path=f"Data.{items_key}", envelope_path="Data",
         )
         paging.emit_paginated(merged, query=query, output=output_fmt, default_table_query=table_query)
