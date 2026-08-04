@@ -13,6 +13,8 @@
 | `--confirm` | 确认执行高危命令 |
 | `--dry-run` | 只打印不执行 |
 
+> 💡 **找 project-id**：所有需要 `--project-id` 的命令，都可先用 `dw-cli list-projects --all` 查项目名对应的数字 ID。
+
 ## 文件开发
 
 ### create-file

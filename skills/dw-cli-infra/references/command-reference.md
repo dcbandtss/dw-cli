@@ -54,6 +54,18 @@ dw-cli delete-data-source --data-source-id 700001 --confirm
 
 ## 项目空间
 
+### list-projects
+```bash
+# 列出所有工作空间（找 project-id 的首选命令）
+dw-cli list-projects --all
+# 按名称过滤
+dw-cli list-projects --all --keyword my_project
+# 只取 ID 和名称
+dw-cli list-projects --all --keyword my \
+  --query "PageResult.ProjectList[*].{Id:ProjectId, Name:ProjectIdentifier}"
+```
+💡 **找 project-id**：所有需要 `--project-id` 的命令，都可先用 `list-projects --all` 查项目名对应的数字 ID。
+
 ### get-project
 ```bash
 dw-cli get-project --project-id 123456

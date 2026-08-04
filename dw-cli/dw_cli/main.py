@@ -82,7 +82,7 @@ _CMD_PANELS = {
     "create-business": _PANEL_NODE, "delete-business": _PANEL_NODE, "update-business": _PANEL_NODE, "establish-relation-table-to-business": _PANEL_NODE,
     "create-table": _PANEL_TABLE, "delete-table": _PANEL_TABLE,
     "get-ddl-job-status": _PANEL_TABLE, "list-tables": _PANEL_TABLE,
-    "get-project": _PANEL_PROJ, "list-project-ids": _PANEL_PROJ,
+    "get-project": _PANEL_PROJ, "list-project-ids": _PANEL_PROJ, "list-projects": _PANEL_PROJ,
     "list-data-sources": _PANEL_META, "export-data-sources": _PANEL_META,
     "test-network-connection": _PANEL_META, "delete-data-source": _PANEL_META,
     "create-data-source": _PANEL_META, "update-data-source": _PANEL_META, "get-data-source-meta": _PANEL_META, "list-diproject-config": _PANEL_META, "update-diproject-config": _PANEL_META, "list-ref-disync-tasks": _PANEL_META, "create-disync-task": _PANEL_META, "update-disync-task": _PANEL_META,

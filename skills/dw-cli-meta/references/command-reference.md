@@ -4,6 +4,9 @@
 
 ## 通用选项
 
+> 💡 **找 project-id**：所有需要 `--project-id` 的命令，都可先用 `dw-cli list-projects --all` 查项目名对应的数字 ID。
+
+
 | 选项 | 说明 |
 |---|---|
 | `--profile <name>` | 指定 ini 凭据段（多账号） |

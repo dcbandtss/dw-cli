@@ -8,7 +8,7 @@
    get-project 响应 Data 含 env_types(List[str]) 和 tags(List[Tags子对象])。
 
 create-project 剔除（创建空间由控制台完成，CLI 不覆盖）。
-get-project-detail 废弃不纳入。list-projects 已在 doctor 探活链路中复用。
+get-project-detail 废弃不纳入。list-projects 已封装为独立命令（支持分页/--all/--keyword 过滤）。
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from typing import Optional
 import typer
 from alibabacloud_dataworks_public20200518 import models as dw_models
 
-from dw_cli.core import client, errors, output
+from dw_cli.core import client, errors, output, paging
 from dw_cli.commands import auth_params, output_option, query_option
 
 app = typer.Typer(help="project 类命令")
@@ -71,6 +71,124 @@ def get_project(
         project_id=project_id,
         project_identifier=project_identifier or None,
     ), query=query, output_fmt=output_fmt)
+
+
+_PROJECTS_TABLE_QUERY = (
+    "PageResult.ProjectList[*]."
+    "{Id:ProjectId, Name:ProjectIdentifier, DisplayName:ProjectName, Desc:ProjectDescription, Status:ProjectStatusCode}"
+)
+
+
+@app.command("list-projects")
+def list_projects(
+    ctx: typer.Context,
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(50, "--page-size", help="每页数量"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 下软截断上限，默认 5000"),
+    keyword: str = typer.Option("", "--keyword", help="按项目名/标识符过滤（客户端侧子串匹配）"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """列出当前租户下的所有工作空间。
+
+    💡 找 project-id 的首选命令：通过项目名查对应的数字 ID。
+       run-sql / list-tables 等命令的 --project-id 可从这里获取。
+
+    
+    🚀 Examples:
+      # 列出所有空间（--all 合并分页）
+      dw-cli list-projects --all
+
+      # 按名称过滤，只取 ID 和标识符
+      dw-cli list-projects --all --keyword sqyy \
+        --query "PageResult.ProjectList[*].{Id:ProjectId, Name:ProjectIdentifier}"
+
+      # 表格模式人看
+      dw-cli list-projects --all -o table
+
+    
+    📦 Output JSON Structure:
+      - 空间列表: PageResult.ProjectList[] (数组)
+      - 空间ID:   PageResult.ProjectList[*].ProjectId (数字，用于其他命令的 --project-id)
+      - 标识符:   PageResult.ProjectList[*].ProjectIdentifier (如 my_project)
+      - 显示名:   PageResult.ProjectList[*].ProjectName
+      - 描述:     PageResult.ProjectList[*].ProjectDescription
+      - 状态:     PageResult.ProjectList[*].ProjectStatusCode (AVAILABLE 等)
+      - 总数:     PageResult.TotalCount
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    def build_req(pn, _tok):
+        return dw_models.ListProjectsRequest(page_number=pn, page_size=page_size)
+
+    if all_pages:
+        # 私有云 page_number 上限 100，自动加大 page_size 避免超限
+        effective_cap = limit if limit is not None else paging.DEFAULT_SOFT_CAP
+        min_ps = (effective_cap + 99) // 100
+        actual_ps = max(page_size, min_ps)
+        if actual_ps != page_size:
+            output.diag(
+                f"[INFO] --all 自动加大 page_size {page_size} -> {actual_ps}"
+                f"（私有云 page_number 上限 100）"
+            )
+            _orig_build_req = build_req
+            def build_req(pn, _tok):
+                req = _orig_build_req(pn, _tok)
+                req.page_size = actual_ps
+                return req
+
+        def fetch_page(pn, token):
+            resp = dw_client.list_projects_with_options(build_req(pn, token), runtime)
+            return output._to_jsonable(resp)
+
+        merged = paging.fetch_all(
+            fetch_page=fetch_page, page_size=actual_ps,
+            limit=limit, items_path="PageResult.ProjectList",
+            envelope_path="PageResult",
+        )
+        # keyword 客户端侧过滤
+        if keyword:
+            import jmespath
+            items = jmespath.search("PageResult.ProjectList", merged) or []
+            filtered = [
+                p for p in items
+                if keyword.lower() in str(p.get("ProjectIdentifier", "")).lower()
+                or keyword.lower() in str(p.get("ProjectName", "")).lower()
+            ]
+            merged = dict(merged)
+            if "PageResult" in merged and isinstance(merged["PageResult"], dict):
+                merged["PageResult"]["ProjectList"] = filtered
+                merged["PageResult"]["TotalCount"] = len(filtered)
+        output.emit(merged, query=query, output=output_fmt,
+                   default_table_query=_PROJECTS_TABLE_QUERY)
+        return
+
+    request = build_req(page_number, None)
+    try:
+        resp = dw_client.list_projects_with_options(request, runtime)
+        # keyword 客户端侧过滤（单页也支持）
+        if keyword:
+            body = output._to_jsonable(resp)
+            import jmespath
+            items = jmespath.search("PageResult.ProjectList", body) or []
+            filtered = [
+                p for p in items
+                if keyword.lower() in str(p.get("ProjectIdentifier", "")).lower()
+                or keyword.lower() in str(p.get("ProjectName", "")).lower()
+            ]
+            if isinstance(body, dict) and "PageResult" in body:
+                body["PageResult"]["ProjectList"] = filtered
+                body["PageResult"]["TotalCount"] = len(filtered)
+            output.emit(body, query=query, output=output_fmt,
+                        default_table_query=_PROJECTS_TABLE_QUERY)
+        else:
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_PROJECTS_TABLE_QUERY)
+    except Exception as error:
+        errors.fail(error)
 
 
 @app.command("list-project-ids")
