@@ -270,8 +270,10 @@ def get_ddl_job_status(
 @app.command("list-tables")
 def list_tables(
     ctx: typer.Context,
-    odps_project: str = typer.Option(..., "--odps-project",
-        help="MaxCompute 项目名，如 my_project"),
+    project_id: int = typer.Option(None, "--project-id",
+        help="DataWorks 工作空间 ID（与 --odps-project 二选一，传了自动解析项目名）"),
+    odps_project: str = typer.Option(None, "--odps-project",
+        help="MaxCompute 项目名（如 my_project），与 --project-id 二选一"),
     limit: int = typer.Option(100, "--limit", help="返回上限，默认 100 防几万表爆上下文"),
     offset: int = typer.Option(0, "--offset", help="跳过前 N 个，偏移翻页"),
     keyword: str = typer.Option("", "--keyword", help="表名包含子串过滤（客户端侧）"),
@@ -286,7 +288,9 @@ def list_tables(
 
     \b
     🚀 Examples:
-      # 列出表（默认前 100 个）
+      # 列出表（默认前 100 个，用 --project-id）
+      dw-cli list-tables --project-id 123456
+      # 也可直接传项目名
       dw-cli list-tables --odps-project my_project
 
       # 只取表名
@@ -319,6 +323,13 @@ def list_tables(
         effective_cap = 5000
     else:
         effective_cap = limit
+
+    if project_id is not None:
+        auth = auth_params(ctx)
+        odps_project = odps_client.resolve_project_name(project_id, **auth)
+    elif odps_project is None:
+        from dw_cli.core import errors
+        errors.usage_error("必须指定 --project-id 或 --odps-project 之一。")
 
     auth = auth_params(ctx)
     try:

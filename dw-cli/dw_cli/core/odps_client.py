@@ -59,3 +59,39 @@ def build_odps(
         endpoint=ODPS_ENDPOINT,
         tunnel_endpoint=TUNNEL_ENDPOINT,
     )
+
+
+def resolve_project_name(
+    project_id: int,
+    *,
+    profile_name: str | None = None,
+    profile_file: str | None = None,
+) -> str:
+    """通过 DataWorks get_project 接口将数字 project_id 解析为 MaxCompute 项目名。
+
+    PyODPS 直连需要项目名（如 my_project），而非 DataWorks 数字空间 ID。
+    本函数用 get_project API 拿 Data.ProjectIdentifier 作为项目名。
+    """
+    from alibabacloud_dataworks_public20200518 import models as dw_models
+    from dw_cli.core import output as output_mod
+
+    dw_client = client.build_client(
+        profile_name=profile_name, profile_file=profile_file
+    )
+    runtime = client.build_runtime()
+    req = dw_models.GetProjectRequest(project_id=project_id)
+    resp = dw_client.get_project_with_options(req, runtime)
+    body = output_mod._to_jsonable(resp)
+    data = body.get("Data") if isinstance(body, dict) else None
+    project_name = None
+    if isinstance(data, dict):
+        project_name = data.get("ProjectIdentifier") or data.get("ProjectName")
+    if not project_name:
+        raise errors.DwCliError(
+            f"无法解析 project_id={project_id} 的项目名（ProjectIdentifier 为空）",
+            code="ProjectResolveFailed",
+            category=errors.CATEGORY_BUSINESS,
+            recommend="确认 project_id 正确，或直接用 --project 传项目名",
+        )
+    return project_name
+

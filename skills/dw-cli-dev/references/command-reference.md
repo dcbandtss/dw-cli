@@ -158,9 +158,9 @@ dw-cli run-sql --project-id 123456 --sql "DROP TABLE my_table" --confirm
 
 ### get-sql-instance
 ```bash
-dw-cli get-sql-instance --instance-id 200001
+dw-cli get-sql-instance --instance-id 200001 --project-id 123456
 ```
-跟进 run-sql 超时降级后的 instance，取结果集。
+跟进 run-sql 超时降级后的 instance，取结果集。`--project-id` 和 `--project` 二选一。
 
 ## DI 数据集成
 

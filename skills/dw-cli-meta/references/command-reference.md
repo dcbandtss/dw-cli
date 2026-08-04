@@ -97,7 +97,9 @@ dw-cli get-ddl-job-status --task-id <task_id>
 
 ### list-tables（PyODPS 直连）
 ```bash
-# 默认 100 张
+# 默认 100 张（--project-id 自动解析项目名，与其他 CLI 统一）
+dw-cli list-tables --project-id 123456
+# 也可直接传项目名
 dw-cli list-tables --odps-project my_project
 # 翻页
 dw-cli list-tables --odps-project my_project --limit 50 --offset 100

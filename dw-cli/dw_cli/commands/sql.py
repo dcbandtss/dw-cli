@@ -176,8 +176,10 @@ def _finish_and_emit(instance, limit, query, output_fmt, logview) -> None:
 @app.command("run-sql")
 def run_sql(
     ctx: typer.Context,
-    project: str = typer.Option(..., "--project",
-        help="MaxCompute 项目名（如 my_project），与 list-tables --odps-project 同构"),
+    project_id: int = typer.Option(None, "--project-id",
+        help="DataWorks 工作空间 ID（与 --project 二选一，传了自动解析项目名）"),
+    project: str = typer.Option(None, "--project",
+        help="MaxCompute 项目名（如 my_project），与 --project-id 二选一"),
     sql: str = typer.Option(..., "--sql",
         help="SQL 语句；或 file://query.sql 读文件（复用 load_arg）"),
     limit: int = typer.Option(100, "--limit",
@@ -195,15 +197,19 @@ def run_sql(
 
     \b
     🚀 Examples:
-      # 读操作（SELECT）默认放行
+      # 读操作（SELECT）默认放行（用 --project-id）
+      dw-cli run-sql --project-id 123456 \\
+        --sql "select * from my_table limit 3"
+
+      # 也可直接传项目名（--project）
       dw-cli run-sql --project my_project \\
         --sql "select * from my_table limit 3"
 
       # 长脚本走 file://
-      dw-cli run-sql --project my_project --sql file://query.sql
+      dw-cli run-sql --project-id 123456 --sql file://query.sql
 
       # 写操作需 --confirm
-      dw-cli run-sql --project my_project \\
+      dw-cli run-sql --project-id 123456 \\
         --sql "insert into t select * from s" --confirm
 
     \b
@@ -218,6 +224,12 @@ def run_sql(
       - logview 自动替换 h= 的 cloud:80 → cloud-inner（token 才能校验通过）。
       - pyodps 缺失报 MissingDependency/exit 2，不影响其它命令。
     """
+    # --project-id 优先，解析为项目名；否则用 --project
+    if project_id is not None:
+        project = odps_client.resolve_project_name(project_id, **auth_params(ctx))
+    elif project is None:
+        errors.usage_error("必须指定 --project-id 或 --project 之一。")
+
     sql_text = load_arg(sql)
 
     if is_write_sql(sql_text) and not confirm_flag:
@@ -287,8 +299,10 @@ def get_sql_instance(
     ctx: typer.Context,
     instance_id: str = typer.Option(..., "--instance-id",
         help="MaxCompute instance ID（run-sql 超时降级返回的 instance_id）"),
-    project: str = typer.Option(..., "--project",
-        help="MaxCompute 项目名（与 run-sql --project 一致）"),
+    project_id: int = typer.Option(None, "--project-id",
+        help="DataWorks 工作空间 ID（与 --project 二选一，传了自动解析项目名）"),
+    project: str = typer.Option(None, "--project",
+        help="MaxCompute 项目名（与 --project-id 二选一）"),
     limit: int = typer.Option(100, "--limit",
         help="结果行上限（仅 instance 完成且有结果集时生效）"),
     query: Optional[str] = query_option(),
@@ -312,6 +326,11 @@ def get_sql_instance(
     ⚠️ 复用 run-sql 的结果读取逻辑（_read_results）与 logview 替换（fix_logview）。
     """
     auth = auth_params(ctx)
+    if project_id is not None:
+        project = odps_client.resolve_project_name(project_id, **auth)
+    elif project is None:
+        errors.usage_error("必须指定 --project-id 或 --project 之一。")
+
     try:
         o = odps_client.build_odps(project, **auth)
         instance = o.get_instance(instance_id)
