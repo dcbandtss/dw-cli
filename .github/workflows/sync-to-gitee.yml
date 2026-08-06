@@ -16,5 +16,5 @@ jobs:
           src: github/dcbandtss
           dst: gitee/assassinv
           dst_token: ${{ secrets.GITEE_TOKEN }}
-          mappings: "dw-cli:dw-cli"
+          mappings: "dw-cli=>dw-cli"
           force_update: true
