@@ -1,0 +1,20 @@
+﻿name: Sync to Gitee
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror to Gitee
+        uses: Yikun/hub-mirror-action@master
+        with:
+          src: github/dcbandtss
+          dst: gitee/assassinv
+          dst_token: ${{ secrets.GITEE_TOKEN }}
+          mappings: "dw-cli:dw-cli"
+          force_update: true
