@@ -10,11 +10,13 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Mirror to Gitee
-        uses: Yikun/hub-mirror-action@master
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          src: github/dcbandtss
-          dst: gitee/assassinv
-          dst_token: ${{ secrets.GITEE_TOKEN }}
-          mappings: "dw-cli=>dw-cli"
-          force_update: true
+          fetch-depth: 0
+
+      - name: Mirror to Gitee
+        run: |
+          git remote add gitee https://assassinv:${{ secrets.GITEE_TOKEN }}@gitee.com/assassinv/dw-cli.git
+          git push -f gitee --all
+          git push -f gitee --tags
