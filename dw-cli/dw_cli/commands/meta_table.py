@@ -575,7 +575,9 @@ def _call_meta(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
 @app.command("get-meta-table-lineage")
 def get_meta_table_lineage(
     ctx: typer.Context,
-    table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
+    table_guid: str = typer.Option(None, "--table-guid", help=_GUID_HELP + "（与 --table-name 二选一）"),
+    table_name: str = typer.Option(None, "--table-name", help="表名（与 --table-guid 二选一，需配合 --database-name）"),
+    cluster_id: str = typer.Option(None, "--cluster-id", help="集群 ID"),
     database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
     direction: str = typer.Option(..., "--direction", help="血缘方向 UP(上游) / DOWN(下游)"),
     data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
@@ -596,8 +598,11 @@ def get_meta_table_lineage(
       - Data.DataEntityList[*].{TableName, TableGuid, ...}
       - Data.HasNext: 是否有下一页
     """
+    if not table_guid and not table_name:
+        errors.usage_error("必须指定 --table-guid 或 --table-name 之一。")
     _call_meta(ctx, "get_meta_table_lineage", dw_models.GetMetaTableLineageRequest(
-        table_guid=table_guid, database_name=database_name, direction=direction,
+        table_guid=table_guid, table_name=table_name, cluster_id=cluster_id,
+        database_name=database_name, direction=direction,
         data_source_type=data_source_type, page_size=page_size,
         next_primary_key=next_primary_key,
     ), query=query, output_fmt=output_fmt)
@@ -606,8 +611,11 @@ def get_meta_table_lineage(
 @app.command("get-meta-column-lineage")
 def get_meta_column_lineage(
     ctx: typer.Context,
-    column_guid: str = typer.Option(..., "--column-guid",
-                                    help="字段 GUID，格式 odps.project.table.column（必须带 odps. 前缀，否则报 500）"),
+    column_guid: str = typer.Option(None, "--column-guid",
+                                    help="字段 GUID，格式 odps.project.table.column（必须带 odps. 前缀，否则报 500）。与 --table-name + --column-name 二选一"),
+    table_name: str = typer.Option(None, "--table-name", help="表名（与 --column-guid 二选一，需配合 --column-name）"),
+    column_name: str = typer.Option(None, "--column-name", help="字段名（与 --table-name 配合使用）"),
+    cluster_id: str = typer.Option(None, "--cluster-id", help="集群 ID"),
     direction: str = typer.Option(..., "--direction", help="血缘方向 UP(上游) / DOWN(下游)"),
     data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
     database_name: str = typer.Option(None, "--database-name", help=_DB_HELP),
@@ -631,8 +639,11 @@ def get_meta_column_lineage(
     
     注意：column_guid 必须带 odps. 前缀，如 odps.my_project.table.col，否则报 500 InternalError.Meta.Unknown
     """
+    if not column_guid and not (table_name and column_name):
+        errors.usage_error("必须指定 --column-guid，或同时指定 --table-name 和 --column-name。")
     _call_meta(ctx, "get_meta_column_lineage", dw_models.GetMetaColumnLineageRequest(
-        column_guid=column_guid, direction=direction,
+        column_guid=column_guid, table_name=table_name, column_name=column_name,
+        cluster_id=cluster_id, direction=direction,
         data_source_type=data_source_type, database_name=database_name,
         page_size=page_size, page_num=page_num,
     ), query=query, output_fmt=output_fmt)
@@ -671,7 +682,8 @@ def get_meta_table_output(
 @app.command("update-meta-table")
 def update_meta_table(
     ctx: typer.Context,
-    table_guid: str = typer.Option(..., "--table-guid", help=_GUID_HELP),
+    table_guid: str = typer.Option(None, "--table-guid", help=_GUID_HELP + "（与 --table-name 二选一）"),
+    table_name: str = typer.Option(None, "--table-name", help="表名（与 --table-guid 二选一）"),
     caption: str = typer.Option(None, "--caption", help="表中文名/别名"),
     env_type: int = typer.Option(None, "--env-type", help="环境类型"),
     visibility: int = typer.Option(None, "--visibility", help="可见性"),
@@ -695,8 +707,10 @@ def update_meta_table(
     📦 Output JSON Structure:
       - UpdateResult: true（成功）或错误信息
     """
+    if not table_guid and not table_name:
+        errors.usage_error("必须指定 --table-guid 或 --table-name 之一。")
     _call_meta(ctx, "update_meta_table", dw_models.UpdateMetaTableRequest(
-        table_guid=table_guid, caption=caption, env_type=env_type,
+        table_guid=table_guid, table_name=table_name, caption=caption, env_type=env_type,
         visibility=visibility, new_owner_id=new_owner_id, category_id=category_id,
         schema=schema, added_labels=added_labels, removed_labels=removed_labels,
         project_id=project_id,
