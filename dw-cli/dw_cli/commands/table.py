@@ -60,6 +60,8 @@ def create_table(
     endpoint: str = typer.Option("", "--endpoint", help="MaxCompute endpoint"),
     schema: str = typer.Option("", "--schema", help="表 schema 信息"),
     owner_id: str = typer.Option("", "--owner-id", help="所有者 ID"),
+    category_id: int = typer.Option(None, "--category-id", help="表分类 ID"),
+    visibility: int = typer.Option(None, "--visibility", help="表可见性：0=对所有成员不可见, 1=对所有成员可见, 2=仅对工作空间成员可见"),
     wait: bool = typer.Option(False, "--wait", help="等待 DDL 任务完成（轮询 get-ddl-job-status）"),
     timeout: int = typer.Option(300, "--timeout", help="--wait 超时秒数（默认 300）"),
     poll_interval: int = typer.Option(3, "--poll-interval", help="--wait 轮询间隔秒数（默认 3）"),
@@ -157,6 +159,7 @@ def create_table(
         life_cycle=life_cycle, env_type=env_type, is_view=is_view,
         themes=theme_objects, endpoint=endpoint or None,
         schema=schema or None, owner_id=owner_id or None,
+        category_id=category_id, visibility=visibility,
     )
     try:
         resp = dw_client.create_table_with_options(request, runtime)
