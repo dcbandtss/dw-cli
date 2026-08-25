@@ -191,3 +191,61 @@ def update_disync_task(
         file_id=file_id, project_id=project_id, task_type=task_type,
         task_content=task_content, task_param=task_param,
     ), query=query, output_fmt=output_fmt)
+
+
+# ?? DI ?????????v3.18.6?2026-08-25 ????????????????????????????
+
+_TASK_TYPE_HELP = "?????????DI_REALTIME(????) / DI_SOLUTION(????)"
+
+
+@app.command("get-disync-task")
+def get_disync_task(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    file_id: int = typer.Option(..., "--file-id", help="?? ID?????????ID ???????ID?"),
+    task_type: str = typer.Option(..., "--task-type", help=_TASK_TYPE_HELP),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?????????????
+
+    
+    ?? Examples:
+      dw-cli get-disync-task --project-id 32890 --file-id 300006 --task-type DI_REALTIME
+
+    
+    ?? Output JSON Structure:
+      - ??: Data.Status (success/fail)
+      - ??: Data.Message
+      - ??: Data.SolutionDetail (DI_SOLUTION ??)
+    """
+    _call(ctx, "get_disync_task", dw_models.GetDISyncTaskRequest(
+        project_id=project_id, file_id=file_id, task_type=task_type,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("get-disync-instance-info")
+def get_disync_instance_info(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="???? ID"),
+    file_id: int = typer.Option(..., "--file-id", help="?? ID"),
+    task_type: str = typer.Option(..., "--task-type", help=_TASK_TYPE_HELP),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """??????????????????
+
+    
+    ?? Examples:
+      dw-cli get-disync-instance-info --project-id 32890 --file-id 300006 --task-type DI_REALTIME
+
+    
+    ?? Output JSON Structure:
+      - ??: Data.Status
+      - ??: Data.Name
+      - ??: Data.Message
+      - ????: Data.SolutionInfo (DI_SOLUTION ??)
+    """
+    _call(ctx, "get_disync_instance_info", dw_models.GetDISyncInstanceInfoRequest(
+        project_id=project_id, file_id=file_id, task_type=task_type,
+    ), query=query, output_fmt=output_fmt)

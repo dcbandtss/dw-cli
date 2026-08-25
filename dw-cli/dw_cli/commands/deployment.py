@@ -74,3 +74,80 @@ def get_deployment(
         output.emit(resp, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
+
+
+_DEPLOYMENTS_TQ = (
+    "Data.Deployments[*]."
+    "{Id:DeploymentId, Name:Name, Status:Status, Creator:CreatorId, CreateTime:CreateTime}"
+)
+
+
+@app.command("list-deployments")
+def list_deployments(
+    ctx: typer.Context,
+    project_id: int = typer.Option(None, "--project-id", help="???? ID?? --project-identifier ????"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="??????"),
+    page_number: int = typer.Option(1, "--page-number", help="???? 1 ??"),
+    page_size: int = typer.Option(50, "--page-size", help="????"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI ??] ?????????"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all ???????? 5000"),
+    keyword: str = typer.Option(None, "--keyword", help="????????"),
+    status: int = typer.Option(None, "--status", help="?????0=???, 1=??, 2=??"),
+    creator: str = typer.Option(None, "--creator", help="??? ID"),
+    executor: str = typer.Option(None, "--executor", help="??? ID"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """????????
+
+    
+    ?? Examples:
+      # ??????
+      dw-cli list-deployments --project-id 32890 --all
+
+      # ????
+      dw-cli list-deployments --project-id 32890 -o table
+
+    
+    ?? Output JSON Structure:
+      - ?????: Data.Deployments[]
+      - ??: DeploymentId / Name / Status / CreatorId / CreateTime
+      - ??: Data.TotalCount
+    """
+    if project_id is None and not project_identifier:
+        errors.usage_error("???? --project-id ? --project-identifier ???")
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    def build_req(pn):
+        return dw_models.ListDeploymentsRequest(
+            project_id=project_id, project_identifier=project_identifier or None,
+            page_number=pn, page_size=page_size,
+            keyword=keyword, status=status,
+            creator=creator, executor=executor,
+        )
+
+    if all_pages:
+        try:
+            def fetch_page(pn, _tok):
+                resp = dw_client.list_deployments_with_options(build_req(pn), runtime)
+                return output._to_jsonable(resp)
+            merged = paging.fetch_all(
+                fetch_page=fetch_page, page_size=page_size, limit=limit,
+                items_path="Data.Deployments", envelope_path="Data",
+                next_token_path="",
+            )
+            paging.emit_paginated(merged, query=query, output=output_fmt,
+                                  default_table_query=_DEPLOYMENTS_TQ)
+        except Exception:
+            resp = dw_client.list_deployments_with_options(build_req(1), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_DEPLOYMENTS_TQ)
+    else:
+        try:
+            resp = dw_client.list_deployments_with_options(build_req(page_number), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_DEPLOYMENTS_TQ)
+        except Exception as error:
+            errors.fail(error)

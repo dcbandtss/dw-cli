@@ -254,3 +254,27 @@ def set_success_instance(
     _call(ctx, "set_success_instance", dw_models.SetSuccessInstanceRequest(
         instance_id=instance_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
+
+
+@app.command("list-dags")
+def list_dags(
+    ctx: typer.Context,
+    op_seq: int = typer.Option(..., "--op-seq", help="????????OpSeq??? run-cycle-dag-nodes / run-manual-dag-nodes ????"),
+    project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """?? OpSeq ?????????? DAG ???
+
+    
+    ?? Examples:
+      dw-cli list-dags --op-seq 374074487 --project-env PROD
+
+    
+    ?? Output JSON Structure:
+      - DAG??: Data.Dags[] (??)
+      - ??? DagId / Status / Bizdate / Name ?
+    """
+    _call(ctx, "list_dags", dw_models.ListDagsRequest(
+        op_seq=op_seq, project_env=project_env,
+    ), query=query, output_fmt=output_fmt)
