@@ -145,7 +145,8 @@ def get_file(
     ctx: typer.Context,
     project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
     project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
-    file_id: int = typer.Option(..., help="文件 ID"),
+    file_id: int = typer.Option(None, "--file-id", help="文件 ID（与 --node-id 二选一）"),
+    node_id: int = typer.Option(None, "--node-id", help="节点 ID（与 --file-id 二选一）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -189,10 +190,13 @@ def get_file(
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
+    if file_id is None and node_id is None:
+        errors.usage_error("必须指定 --file-id 或 --node-id 之一。")
     request = dw_models.GetFileRequest(
         project_id=project_id,
         project_identifier=project_identifier,
         file_id=file_id,
+        node_id=node_id,
     )
     try:
         resp = dw_client.get_file_with_options(request, runtime)
