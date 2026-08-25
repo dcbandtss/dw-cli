@@ -234,6 +234,9 @@ def create_file(
     content_file: Optional[str] = typer.Option(
         None, "--content-file", help="[已废弃] 请改用 --content file://path。保留仅为兼容旧用法"
     ),
+    apply_schedule_immediately: bool = typer.Option(False, "--apply-schedule-immediately", help="创建后立即应用调度配置"),
+    auto_parsing: bool = typer.Option(False, "--auto-parsing", help="自动解析输入输出"),
+    create_folder_if_not_exists: bool = typer.Option(False, "--create-folder-if-not-exists", help="目录不存在时自动创建"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -302,6 +305,9 @@ def create_file(
         file_description=file_description,
         content=file_content,
         input_list=input_list,
+        apply_schedule_immediately=apply_schedule_immediately,
+        auto_parsing=auto_parsing,
+        create_folder_if_not_exists=create_folder_if_not_exists,
     )
     try:
         resp = dw_client.create_file_with_options(request, runtime)
@@ -1001,6 +1007,9 @@ def create_and_submit_file(
         file_description=file_description,
         content=file_content,
         input_list=input_list,
+        apply_schedule_immediately=apply_schedule_immediately,
+        auto_parsing=auto_parsing,
+        create_folder_if_not_exists=create_folder_if_not_exists,
     )
     try:
         create_resp = dw_client.create_file_with_options(create_request, runtime)
