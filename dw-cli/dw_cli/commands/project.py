@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """project 类命令（spec §9 按资源分文件，对外平铺）。
 
 工作空间（Project）是 DataWorks 的顶层容器，一个租户下可有多个工作空间。
@@ -221,6 +221,237 @@ def list_project_ids(
         user_id=user_id,
     ), query=query, output_fmt=output_fmt)
 
+
+# ── 新增：租户级查询命令（v3.18.6，2026-08-25 封装）────────────────────────
+
+_CALC_ENGINES_TABLE = (
+    "Data.CalcEngines[*]."
+    "{Id:EngineId, Name:Name, Type:CalcEngineType, Env:EnvType, "
+    "Project:BindingProjectName, Default:IsDefault, Region:DwRegion}"
+)
+
+
+@app.command("list-calc-engines")
+def list_calc_engines(
+    ctx: typer.Context,
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    calc_engine_type: str = typer.Option(..., "--calc-engine-type",
+        help="计算引擎类型，如 ODPS / HADOOP / EMR"),
+    env_type: str = typer.Option(None, "--env-type", help="环境类型：PRD(生产) / DEV(开发)"),
+    name: str = typer.Option(None, "--name", help="按引擎名称过滤"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(50, "--page-size", help="每页数量"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 软截断上限，默认 5000"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询工作空间绑定的计算引擎（数据源）列表。
+
+    \b
+    🚀 Examples:
+      # 查 ODPS 引擎
+      dw-cli list-calc-engines --project-id 32890 --calc-engine-type ODPS
+
+      # 表格模式人看
+      dw-cli list-calc-engines --project-id 32890 --calc-engine-type ODPS -o table
+
+    \b
+    📦 Output JSON Structure:
+      - 引擎列表: Data.CalcEngines[] (含 EngineId/Name/CalcEngineType/EnvType/EngineInfo)
+      - 总数: Data.TotalCount
+      - EngineInfo 内含 endpoint/resourceGroupId/projectName 等连接信息
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    def build_req(pn):
+        return dw_models.ListCalcEnginesRequest(
+            project_id=project_id,
+            calc_engine_type=calc_engine_type, env_type=env_type,
+            name=name, page_number=pn, page_size=page_size,
+        )
+
+    if all_pages:
+        try:
+            def fetch_page(pn, _tok):
+                resp = dw_client.list_calc_engines_with_options(build_req(pn), runtime)
+                return output._to_jsonable(resp)
+            merged = paging.fetch_all(
+                fetch_page=fetch_page, page_size=page_size, limit=limit,
+                items_path="Data.CalcEngines", envelope_path="Data",
+                next_token_path="",
+            )
+            paging.emit_paginated(merged, query=query, output=output_fmt,
+                                  default_table_query=_CALC_ENGINES_TABLE)
+        except Exception:
+            resp = dw_client.list_calc_engines_with_options(build_req(1), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_CALC_ENGINES_TABLE)
+    else:
+        try:
+            resp = dw_client.list_calc_engines_with_options(build_req(page_number), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_CALC_ENGINES_TABLE)
+        except Exception as error:
+            errors.fail(error)
+
+
+_PROJECT_MEMBERS_TABLE = (
+    "Data.ProjectMemberList[*]."
+    "{Name:ProjectMemberName, Nick:Nick, Id:ProjectMemberId, "
+    "Type:ProjectMemberType, Roles:ProjectRoleList[*].ProjectRoleName}"
+)
+
+
+@app.command("list-project-members")
+def list_project_members(
+    ctx: typer.Context,
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(10, "--page-size", help="每页数量"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 软截断上限，默认 5000"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询工作空间的成员列表。
+
+    \b
+    🚀 Examples:
+      # 列出所有成员
+      dw-cli list-project-members --project-id 32890 --all
+
+      # 表格模式
+      dw-cli list-project-members --project-id 32890 -o table
+
+    \b
+    📦 Output JSON Structure:
+      - 成员列表: Data.ProjectMemberList[]
+      - 每项: ProjectMemberName / Nick / ProjectMemberId / ProjectMemberType / ProjectRoleList[]
+      - 总数: Data.TotalCount
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    def build_req(pn):
+        return dw_models.ListProjectMembersRequest(
+            project_id=project_id,
+            page_number=pn, page_size=page_size,
+        )
+
+    if all_pages:
+        try:
+            def fetch_page(pn, _tok):
+                resp = dw_client.list_project_members_with_options(build_req(pn), runtime)
+                return output._to_jsonable(resp)
+            merged = paging.fetch_all(
+                fetch_page=fetch_page, page_size=page_size, limit=limit,
+                items_path="Data.ProjectMemberList", envelope_path="Data",
+                next_token_path="",
+            )
+            paging.emit_paginated(merged, query=query, output=output_fmt,
+                                  default_table_query=_PROJECT_MEMBERS_TABLE)
+        except Exception:
+            # --all fallback: single page (member count usually small)
+            resp = dw_client.list_project_members_with_options(build_req(1), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_PROJECT_MEMBERS_TABLE)
+    else:
+        try:
+            resp = dw_client.list_project_members_with_options(build_req(page_number), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_PROJECT_MEMBERS_TABLE)
+        except Exception as error:
+            errors.fail(error)
+
+
+_PROJECT_ROLES_TABLE = (
+    "ProjectRoleList[*]."
+    "{Id:ProjectRoleId, Code:ProjectRoleCode, Name:ProjectRoleName, Type:ProjectRoleType}"
+)
+
+
+@app.command("list-project-roles")
+def list_project_roles(
+    ctx: typer.Context,
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询工作空间的所有角色列表。
+
+    ⚠️ 响应结构特殊：ProjectRoleList 直接在 body 顶层（不在 Data 里），无分页。
+
+    \b
+    🚀 Examples:
+      dw-cli list-project-roles --project-id 32890
+
+    \b
+    📦 Output JSON Structure:
+      - 角色列表: ProjectRoleList[] (在顶层，不在 Data 里！)
+      - 每项: ProjectRoleId / ProjectRoleCode / ProjectRoleName / ProjectRoleType
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+    try:
+        resp = dw_client.list_project_roles_with_options(
+            dw_models.ListProjectRolesRequest(project_id=project_id), runtime)
+        output.emit(resp, query=query, output=output_fmt,
+                    default_table_query=_PROJECT_ROLES_TABLE)
+    except Exception as error:
+        errors.fail(error)
+
+
+_RESOURCE_GROUPS_TABLE = (
+    "Data[*]."
+    "{Id:Id, Name:Name, Type:ResourceGroupType, Mode:Mode, "
+    "Default:IsDefault, Identifier:Identifier, Tenant:TenantId}"
+)
+
+
+@app.command("list-resource-groups")
+def list_resource_groups(
+    ctx: typer.Context,
+    resource_group_type: int = typer.Option(None, "--resource-group-type",
+        help="资源组类型：0=DataWorks, 1=调度, 2=MaxCompute, 3=PAI, 4=数据集成, 7=独享调度, 9=数据服务"),
+    keyword: str = typer.Option(None, "--keyword", help="按名称过滤"),
+    biz_ext_key: str = typer.Option(None, "--biz-ext-key", help="业务扩展键"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询资源组列表（租户级，无需 project_id）。
+
+    \b
+    🚀 Examples:
+      # 查所有资源组
+      dw-cli list-resource-groups
+
+      # 只查数据集成资源组
+      dw-cli list-resource-groups --resource-group-type 4
+
+    \b
+    📦 Output JSON Structure:
+      - 资源组列表: Data[] (Data 直接是数组，无分页字段！)
+      - 每项: Id / Name / ResourceGroupType / Mode / Identifier / IsDefault / TenantId
+      - type 枚举: 0=DataWorks, 1=调度, 2=MaxCompute, 3=PAI, 4=数据集成, 7=独享调度, 9=数据服务
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+    try:
+        resp = dw_client.list_resource_groups_with_options(
+            dw_models.ListResourceGroupsRequest(
+                resource_group_type=resource_group_type,
+                keyword=keyword, biz_ext_key=biz_ext_key,
+            ), runtime)
+        output.emit(resp, query=query, output=output_fmt,
+                    default_table_query=_RESOURCE_GROUPS_TABLE)
+    except Exception as error:
+        errors.fail(error)
 
 # ── 共用小工具 ─────────────────────────────────────────────────────────────
 def _call_project(ctx: typer.Context, api_name: str, request, *, query, output_fmt):
