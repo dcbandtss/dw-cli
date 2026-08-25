@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """meta_table 类命令（spec §9 按资源分文件，对外平铺）。
 
 清单「待封装」meta_table 项（10）：
@@ -554,6 +554,64 @@ def search_meta_tables(
         table_query=_SEARCH_TQ,
     )
 
+
+
+# ── 数据库列表查询（v3.18.6，2026-08-25 新增）──────────────────────────────
+
+_META_DB_TQ = (
+    "DatabaseInfo.DbList[*]."
+    "{Name:Name, Type:Type, Owner:OwnerId, Location:Location, Uuid:Uuid}"
+)
+
+
+@app.command("list-meta-db")
+def list_meta_db(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
+    cluster_id: str = typer.Option("", "--cluster-id", help=_CLUSTER_HELP),
+    page_num: int = typer.Option(1, "--page-num", help="页码，从 1 开始（SDK 字段名 page_num 非 page_number）"),
+    page_size: int = typer.Option(50, "--page-size", help="每页数量"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询数据库列表（按工作空间 + 数据源类型）。
+
+    ⚠️ 响应结构特殊：items 在 DatabaseInfo.DbList（不在 Data 里）。
+    SDK 方法名 list_meta_dbwith_options（db 和 with 间无下划线）。
+    SDK 参数 page_num（非 page_number）。
+
+    \b
+    🚀 Examples:
+      # 查 ODPS 数据库列表
+      dw-cli list-meta-db --project-id 32890 --data-source-type odps
+
+      # 表格模式
+      dw-cli list-meta-db --project-id 32890 -o table
+
+    \b
+    📦 Output JSON Structure:
+      - 数据库列表: DatabaseInfo.DbList[]
+      - 每项: Name / Type / OwnerId / Location / Uuid / CreateTimeStamp / ModifiedTimeStamp
+      - 总数: DatabaseInfo.TotalCount
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    request = dw_models.ListMetaDBRequest(
+        project_id=project_id,
+        data_source_type=data_source_type,
+        cluster_id=cluster_id or None,
+        page_num=page_num,
+        page_size=page_size,
+    )
+    try:
+        resp = dw_client.list_meta_dbwith_options(request, runtime)
+        output.emit(resp, query=query, output=output_fmt,
+                    default_table_query=_META_DB_TQ)
+    except Exception as error:
+        errors.fail(error)
 
 # ── 共用小工具 ─────────────────────────────────────────────────────────────────
 def _call_meta(ctx: typer.Context, api_name: str, request, *, query, output_fmt):
