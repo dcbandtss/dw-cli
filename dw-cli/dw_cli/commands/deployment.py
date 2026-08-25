@@ -26,7 +26,8 @@ app = typer.Typer(help="deployment 类命令")
 def get_deployment(
     ctx: typer.Context,
     deployment_id: int = typer.Option(..., "--deployment-id", help="发布包 ID（DeploymentId）"),
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -58,11 +59,15 @@ def get_deployment(
       - 名称:      Data.Deployment.Name
       - 已发布项:  Data.DeployedItems[]（数组）
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
+
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
     request = dw_models.GetDeploymentRequest(
         deployment_id=deployment_id, project_id=project_id,
+        project_identifier=project_identifier,
     )
     try:
         resp = dw_client.get_deployment_with_options(request, runtime)

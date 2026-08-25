@@ -23,7 +23,8 @@ _FILES_TABLE_QUERY = "Data.Files[*].{Id:FileId, Name:FileName, Type:FileType, Ow
 @app.command("list-files")
 def list_files(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     page_number: int = typer.Option(1, help="页码，从 1 开始"),
     page_size: int = typer.Option(50, help="每页数量"),
     all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
@@ -62,6 +63,9 @@ def list_files(
         正确: [?BusinessId==\`34435\`]   错误: [?BusinessId=='34435']
       - 按文件名过滤也同理，FileName 是字符串用引号: [?FileName=='my_node.sql']
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
+
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -70,6 +74,7 @@ def list_files(
         def fetch_page(page_no, _token):
             req = dw_models.ListFilesRequest(
                 project_id=project_id,
+            project_identifier=project_identifier,
                 page_number=page_no,
                 page_size=page_size,
             )
@@ -91,6 +96,7 @@ def list_files(
 
     request = dw_models.ListFilesRequest(
         project_id=project_id,
+        project_identifier=project_identifier,
         page_number=page_number,
         page_size=page_size,
     )
@@ -107,7 +113,8 @@ def list_files(
 @app.command("get-file")
 def get_file(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     file_id: int = typer.Option(..., help="文件 ID"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
@@ -146,10 +153,17 @@ def get_file(
         再用 `| Out-File -Encoding utf8` 写文件，换行符（0x0A）才完整保留。
       - `2>$null` 屏蔽 stderr 的进度/诊断信息，避免混入文件。
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
+
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
-    request = dw_models.GetFileRequest(project_id=project_id, file_id=file_id)
+    request = dw_models.GetFileRequest(
+        project_id=project_id,
+        project_identifier=project_identifier,
+        file_id=file_id,
+    )
     try:
         resp = dw_client.get_file_with_options(request, runtime)
         output.emit(resp, query=query, output=output_fmt)
@@ -160,7 +174,8 @@ def get_file(
 @app.command("create-file")
 def create_file(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     file_name: str = typer.Option(..., help="文件名，如 123456789.sql"),
     file_type: int = typer.Option(
         ..., help="文件类型（节点编码），常用：10=ODPS SQL, 23=DI 离线同步, 24=ODPS Script, "
@@ -246,6 +261,7 @@ def create_file(
     runtime = client.build_runtime()
     request = dw_models.CreateFileRequest(
         project_id=project_id,
+        project_identifier=project_identifier,
         file_name=file_name,
         file_type=file_type,
         file_folder_path=file_folder_path,
@@ -264,7 +280,8 @@ def create_file(
 def submit_file(
     ctx: typer.Context,
     file_id: int = typer.Option(..., "--file-id", help="文件 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     comment: str = typer.Option("", "--comment", help="提交备注"),
     skip_all_deploy_file_extensions: bool = typer.Option(
         False, "--skip-all-deploy-file-extensions",
@@ -338,8 +355,11 @@ def submit_file(
                          query=query, output_fmt=output_fmt)
         return
 
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_file(ctx, "submit_file", dw_models.SubmitFileRequest(
         file_id=file_id, project_id=project_id, comment=comment or None,
+        project_identifier=project_identifier,
         skip_all_deploy_file_extensions=skip_all_deploy_file_extensions,
     ), query=query, output_fmt=output_fmt)
 
@@ -348,7 +368,8 @@ def submit_file(
 def delete_file(
     ctx: typer.Context,
     file_id: int = typer.Option(..., "--file-id", help="文件 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     confirm_flag: bool = typer.Option(False, "--confirm", help="[高危] 显式确认执行"),
     dry_run: bool = typer.Option(False, "--dry-run", help="仅预览，不真执行"),
     wait: bool = typer.Option(
@@ -416,8 +437,11 @@ def delete_file(
                          query=query, output_fmt=output_fmt)
         return
 
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_file(ctx, "delete_file", dw_models.DeleteFileRequest(
         file_id=file_id, project_id=project_id,
+        project_identifier=project_identifier,
     ), query=query, output_fmt=output_fmt)
 
 
@@ -478,6 +502,7 @@ def _delete_and_wait(
             d_resp = dw_client.get_deployment_with_options(
                 dw_models.GetDeploymentRequest(
                     deployment_id=deployment_id, project_id=project_id,
+            project_identifier=project_identifier,
                 ),
                 runtime,
             )
@@ -575,6 +600,7 @@ def _submit_and_wait(
         resp = dw_client.submit_file_with_options(
             dw_models.SubmitFileRequest(
                 file_id=file_id, project_id=project_id, comment=comment or None,
+            project_identifier=project_identifier,
                 skip_all_deploy_file_extensions=skip_all_deploy_file_extensions,
             ),
             runtime,
@@ -610,6 +636,7 @@ def _submit_and_wait(
             d_resp = dw_client.get_deployment_with_options(
                 dw_models.GetDeploymentRequest(
                     deployment_id=deployment_id, project_id=project_id,
+            project_identifier=project_identifier,
                 ),
                 runtime,
             )
@@ -683,7 +710,8 @@ def _now_monotonic() -> float:
 def update_file(
     ctx: typer.Context,
     file_id: int = typer.Option(..., "--file-id", help="文件 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     # ── 基本属性 ──
     file_name: str = typer.Option("", "--file-name", help="文件名"),
     file_folder_path: str = typer.Option("", "--file-folder-path",
@@ -762,8 +790,11 @@ def update_file(
     input_parameters = load_arg(input_parameters)
     output_parameters = load_arg(output_parameters)
     advanced_settings = load_arg(advanced_settings)
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_file(ctx, "update_file", dw_models.UpdateFileRequest(
         file_id=file_id, project_id=project_id,
+        project_identifier=project_identifier,
         file_name=file_name or None, file_folder_path=file_folder_path or None,
         file_description=file_description or None, owner=owner or None,
         content=content or None,
@@ -790,7 +821,8 @@ def update_file(
 @app.command("create-and-submit-file")
 def create_and_submit_file(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     file_name: str = typer.Option(..., help="文件名，如 123456789.sql"),
     file_type: int = typer.Option(
         ..., help="文件类型（节点编码），常用：10=ODPS SQL, 23=DI 离线同步, 24=ODPS Script, "
@@ -928,6 +960,7 @@ def create_and_submit_file(
     output.diag(f"[step {step_label}] 创建文件 ...")
     create_request = dw_models.CreateFileRequest(
         project_id=project_id,
+        project_identifier=project_identifier,
         file_name=file_name,
         file_type=file_type,
         file_folder_path=file_folder_path,
@@ -966,6 +999,7 @@ def create_and_submit_file(
         output.diag(f"[step {update_step}] 配置调度参数 file_id={file_id} ...")
         update_request = dw_models.UpdateFileRequest(
             file_id=file_id, project_id=project_id,
+            project_identifier=project_identifier,
             scheduler_type=scheduler_type or None,
             cron_express=cron_express or None,
             cycle_type=cycle_type or None,
@@ -999,6 +1033,7 @@ def create_and_submit_file(
     output.diag(f"[step {submit_step}] 提交文件 file_id={file_id} ...")
     submit_request = dw_models.SubmitFileRequest(
         file_id=file_id, project_id=project_id, comment=comment or None,
+        project_identifier=project_identifier,
     )
     try:
         submit_resp = dw_client.submit_file_with_options(submit_request, runtime)
@@ -1045,10 +1080,10 @@ def _call_file(ctx: typer.Context, api_name: str, request, *, query, output_fmt)
 def deploy_file(
     ctx: typer.Context,
     file_id: int = typer.Option(..., "--file-id", help="文件 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     node_id: int = typer.Option(None, "--node-id", help="节点 ID（已提交文件传 node_id，未提交传 file_id）"),
     comment: str = typer.Option("", "--comment", help="发布备注"),
-    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符"),
     confirm_flag: bool = typer.Option(False, "--confirm", help="确认发布（deploy_ 前缀，须显式确认）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
@@ -1073,6 +1108,8 @@ def deploy_file(
                                    dry_run_summary=f"将发布文件 {file_id} 到生产环境")
     if not decision.will_execute:
         return
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_file(ctx, "deploy_file", dw_models.DeployFileRequest(
         file_id=file_id, project_id=project_id, node_id=node_id,
         comment=comment, project_identifier=project_identifier,

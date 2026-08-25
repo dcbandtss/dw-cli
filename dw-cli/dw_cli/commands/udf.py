@@ -39,7 +39,8 @@ app = typer.Typer(help="udf 类命令")
 @app.command("create-udf-file")
 def create_udf_file(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     file_name: str = typer.Option(..., "--file-name", help="函数文件名"),
     class_name: str = typer.Option(..., "--class-name", help="函数定义的类名"),
     function_type: str = typer.Option(..., "--function-type",
@@ -93,8 +94,11 @@ def create_udf_file(
       - 函数文件ID: Data (新建文件的 ID)
       - 成功:       Success: true
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_udf(ctx, "create_udf_file", dw_models.CreateUdfFileRequest(
         project_id=project_id, file_name=file_name, class_name=class_name,
+        project_identifier=project_identifier,
         function_type=function_type, resources=resources,
         file_folder_path=file_folder_path or None,
         cmd_description=cmd_description or None,
@@ -108,7 +112,8 @@ def create_udf_file(
 @app.command("update-udf-file")
 def update_udf_file(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     file_id: str = typer.Option(..., "--file-id",
         help="函数文件 ID（注意是字符串，不是 int！）"),
     class_name: str = typer.Option(..., "--class-name", help="函数定义的类名"),
@@ -142,8 +147,11 @@ def update_udf_file(
     📦 Output JSON Structure:
       - 成功: {Data: true, Success: true}
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_udf(ctx, "update_udf_file", dw_models.UpdateUdfFileRequest(
         project_id=project_id, file_id=file_id, class_name=class_name,
+        project_identifier=project_identifier,
         function_type=function_type, resources=resources,
         file_folder_path=file_folder_path or None,
         cmd_description=cmd_description or None,

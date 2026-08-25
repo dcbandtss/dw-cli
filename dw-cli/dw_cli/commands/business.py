@@ -30,7 +30,8 @@ _BUSINESS_TABLE_QUERY = "Data.Business[*].{Id:BusinessId, Name:BusinessName, Own
 def get_business(
     ctx: typer.Context,
     business_id: int = typer.Option(..., "--business-id", help="业务流程 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -54,15 +55,19 @@ def get_business(
       - 所属空间:   Data.ProjectId
       - 用途类型:   Data.UseType (NORMAL 等)
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_business(ctx, "get_business", dw_models.GetBusinessRequest(
         business_id=business_id, project_id=project_id,
+        project_identifier=project_identifier,
     ), query=query, output_fmt=output_fmt)
 
 
 @app.command("list-business")
 def list_business(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     keyword: str = typer.Option("", "--keyword", help="按名称关键字过滤"),
     page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
     page_size: int = typer.Option(20, "--page-size", help="每页数量"),
@@ -91,6 +96,9 @@ def list_business(
       - 用途类型:     Data.Business[*].UseType
       - 总数:         Data.TotalCount
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
+
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -98,6 +106,7 @@ def list_business(
     def build_req(pn, _tok):
         return dw_models.ListBusinessRequest(
             project_id=project_id, keyword=keyword or None,
+            project_identifier=project_identifier,
             page_number=pn, page_size=page_size,
         )
 
@@ -113,7 +122,8 @@ def list_business(
 @app.command("create-business")
 def create_business(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     business_name: str = typer.Option(..., "--business-name", help="业务流程名称"),
     description: str = typer.Option("", "--description", help="业务流程描述"),
     owner: str = typer.Option("", "--owner", help="负责人（用户 ID），留空则默认当前账号"),
@@ -146,6 +156,7 @@ def create_business(
     """
     _call_business(ctx, "create_business", dw_models.CreateBusinessRequest(
         project_id=project_id, business_name=business_name,
+        project_identifier=project_identifier,
         description=description or None, owner=owner or None,
         use_type=use_type,
     ), query=query, output_fmt=output_fmt)
@@ -155,7 +166,8 @@ def create_business(
 def delete_business(
     ctx: typer.Context,
     business_id: int = typer.Option(..., "--business-id", help="业务流程 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     confirm_flag: bool = typer.Option(False, "--confirm", help="[高危] 显式确认执行"),
     dry_run: bool = typer.Option(False, "--dry-run", help="仅预览，不真执行"),
     query: Optional[str] = query_option(),
@@ -187,8 +199,11 @@ def delete_business(
         return
     if not decision.will_execute:
         return  # dry-run：已往 stderr 输出预览，不执行
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_business(ctx, "delete_business", dw_models.DeleteBusinessRequest(
         business_id=business_id, project_id=project_id,
+        project_identifier=project_identifier,
     ), query=query, output_fmt=output_fmt)
 
 
@@ -209,7 +224,7 @@ def _call_business(ctx: typer.Context, api_name: str, request, *, query, output_
 def update_business(
     ctx: typer.Context,
     business_id: int = typer.Option(..., "--business-id", help="业务流程 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="业务流程 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
     business_name: str = typer.Option(None, "--business-name", help="业务流程名称"),
     description: str = typer.Option(None, "--description", help="描述"),
     owner: str = typer.Option(None, "--owner", help="负责人 ID"),
@@ -239,9 +254,9 @@ def establish_relation_table_to_business(
     ctx: typer.Context,
     business_id: str = typer.Option(..., "--business-id", help="项目空间 ID"),
     folder_id: str = typer.Option(..., "--folder-id", help="目录 ID"),
-    project_id: int = typer.Option(..., "--project-id", help="项目空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     table_guid: str = typer.Option(..., "--table-guid", help="表 GUID，格式 odps.project.table"),
-    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):

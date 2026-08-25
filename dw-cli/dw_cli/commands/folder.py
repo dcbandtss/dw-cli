@@ -27,7 +27,8 @@ _DEFAULT_TABLE_QUERY = "Data.Folders[*].{Id:FolderId, Path:FolderPath, Owner:Own
 @app.command("list-folders")
 def list_folders(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., help="DataWorks 工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     parent_folder_path: str = typer.Option(
         "业务流程/", help="父目录路径，默认业务流程根目录"
     ),
@@ -57,6 +58,9 @@ def list_folders(
       - 目录ID:   Data.Folders[*].FolderId (字符串)
       - 目录路径: Data.Folders[*].FolderPath
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
+
     auth = auth_params(ctx)
     dw_client = client.build_client(**auth)
     runtime = client.build_runtime()
@@ -65,6 +69,7 @@ def list_folders(
         def fetch_page(page_no, _token):
             req = dw_models.ListFoldersRequest(
                 project_id=project_id,
+                project_identifier=project_identifier,
                 parent_folder_path=parent_folder_path,
                 page_number=page_no,
                 page_size=page_size,
@@ -88,6 +93,7 @@ def list_folders(
     # 单页（与旧版行为一致）
     request = dw_models.ListFoldersRequest(
         project_id=project_id,
+        project_identifier=project_identifier,
         parent_folder_path=parent_folder_path,
         page_number=page_number,
         page_size=page_size,
@@ -105,7 +111,8 @@ def list_folders(
 @app.command("get-folder")
 def get_folder(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     folder_id: str = typer.Option("", "--folder-id", help="目录 ID（字符串）"),
     folder_path: str = typer.Option("", "--folder-path", help="目录路径（与 --folder-id 二选一）"),
     query: Optional[str] = query_option(),
@@ -125,10 +132,13 @@ def get_folder(
     📦 Output JSON Structure:
       - 目录ID: Data.FolderId (字符串)
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     if not folder_id and not folder_path:
         errors.usage_error("必须提供 --folder-id 或 --folder-path 之一。")
     _call_folder(ctx, "get_folder", dw_models.GetFolderRequest(
-        project_id=project_id, folder_id=folder_id or None,
+        project_id=project_id, project_identifier=project_identifier,
+        folder_id=folder_id or None,
         folder_path=folder_path or None,
     ), query=query, output_fmt=output_fmt)
 
@@ -136,7 +146,8 @@ def get_folder(
 @app.command("create-folder")
 def create_folder(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     folder_path: str = typer.Option(..., "--folder-path",
         help="新建目录的完整路径，单斜杠，必须带引擎子目录层，如 业务流程/my_workflow/MaxCompute/dwcli_sub"),
     query: Optional[str] = query_option(),
@@ -166,15 +177,19 @@ def create_folder(
     📦 Output JSON Structure:
       - 成功: {Data: true, Success: true}（目录 ID 需用 get-folder 反查）
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     _call_folder(ctx, "create_folder", dw_models.CreateFolderRequest(
-        project_id=project_id, folder_path=folder_path,
+        project_id=project_id, project_identifier=project_identifier,
+        folder_path=folder_path,
     ), query=query, output_fmt=output_fmt)
 
 
 @app.command("delete-folder")
 def delete_folder(
     ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="项目标识符（与 --project-id 二选一）"),
     folder_id: str = typer.Option(..., "--folder-id", help="目录 ID（字符串，用 get-folder 查）"),
     confirm_flag: bool = typer.Option(False, "--confirm", help="[高危] 显式确认执行"),
     dry_run: bool = typer.Option(False, "--dry-run", help="仅预览，不真执行"),
@@ -200,6 +215,8 @@ def delete_folder(
     📦 Output JSON Structure:
       - 成功: {Data: true, Success: true}
     """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
     try:
         decision = confirm.check_write("delete_folder", confirm=confirm_flag, dry_run=dry_run,
                             dry_run_summary=f"删除目录 folder_id={folder_id}, project_id={project_id}")
@@ -209,7 +226,8 @@ def delete_folder(
     if not decision.will_execute:
         return  # dry-run：已往 stderr 输出预览，不执行
     _call_folder(ctx, "delete_folder", dw_models.DeleteFolderRequest(
-        project_id=project_id, folder_id=folder_id,
+        project_id=project_id, project_identifier=project_identifier,
+        folder_id=folder_id,
     ), query=query, output_fmt=output_fmt)
 
 
