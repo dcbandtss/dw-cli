@@ -12,7 +12,7 @@ import typer
 from alibabacloud_dataworks_public20200518 import models as dw_models
 
 from dw_cli.commands import auth_params, output_option, query_option
-from dw_cli.core import client, errors, output
+from dw_cli.core import client, errors, output, paging
 
 app = typer.Typer(help="DAG 运行控制（补数据/手动工作流/DAG查询/实例置成功）", )
 
@@ -278,3 +278,79 @@ def list_dags(
     _call(ctx, "list_dags", dw_models.ListDagsRequest(
         op_seq=op_seq, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
+
+
+# ── 节点类型查询（v3.18.6，2026-08-26 新增）──────────────────────────────
+
+_FILE_TYPE_TQ = "NodeTypeInfoList.NodeTypeInfo[*].{Type:NodeType, Name:NodeTypeName}"
+
+
+@app.command("list-file-type")
+def list_file_type(
+    ctx: typer.Context,
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（与 --project-identifier 二选一）"),
+    project_identifier: str = typer.Option(None, "--project-identifier", help="工作空间名称"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(50, "--page-size", help="每页数量"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 软截断上限，默认 5000"),
+    keyword: str = typer.Option(None, "--keyword", help="按类型名过滤"),
+    locale: str = typer.Option(None, "--locale", help="语言（如 zh_CN）"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询任务节点的类型信息（节点类型 Code + 类型名称）。
+
+    ⚠️ 响应结构特殊：items 在 NodeTypeInfoList.NodeTypeInfo[]（双层嵌套，无 Data 包装）。
+
+    \b
+    🚀 Examples:
+      dw-cli list-file-type --project-id 123456 -o table
+
+      # --all 合并全量
+      dw-cli list-file-type --project-id 123456 --all
+
+    \b
+    📦 Output JSON Structure:
+      - 类型列表: NodeTypeInfoList.NodeTypeInfo[] (双层嵌套！)
+      - 每项: NodeType (数字) / NodeTypeName (如 ODPS SQL)
+      - 总数: NodeTypeInfoList.TotalCount
+    """
+    if project_id is None and not project_identifier:
+        errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
+
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+
+    def build_req(pn):
+        return dw_models.ListFileTypeRequest(
+            project_id=project_id, project_identifier=project_identifier or None,
+            page_number=pn, page_size=page_size,
+            keyword=keyword, locale=locale,
+        )
+
+    if all_pages:
+        try:
+            def fetch_page(pn, _tok):
+                resp = dw_client.list_file_type_with_options(build_req(pn), runtime)
+                return output._to_jsonable(resp)
+            merged = paging.fetch_all(
+                fetch_page=fetch_page, page_size=page_size, limit=limit,
+                items_path="NodeTypeInfoList.NodeTypeInfo",
+                envelope_path="NodeTypeInfoList",
+                next_token_path="",
+            )
+            paging.emit_paginated(merged, query=query, output=output_fmt,
+                                  default_table_query=_FILE_TYPE_TQ)
+        except Exception:
+            resp = dw_client.list_file_type_with_options(build_req(1), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_FILE_TYPE_TQ)
+    else:
+        try:
+            resp = dw_client.list_file_type_with_options(build_req(page_number), runtime)
+            output.emit(resp, query=query, output=output_fmt,
+                        default_table_query=_FILE_TYPE_TQ)
+        except Exception as error:
+            errors.fail(error)
