@@ -46,6 +46,7 @@ from dw_cli.commands import alert as alert_cmds
 from dw_cli.commands import remind as remind_cmds
 from dw_cli.commands import di as di_cmds
 from dw_cli.commands import baseline as baseline_cmds
+from dw_cli.commands import quality as quality_cmds
 from dw_cli.commands import sql as sql_cmds
 from dw_cli.commands import migration as migration_cmds
 
@@ -206,6 +207,7 @@ app.add_typer(alert_cmds.app, name="")
 app.add_typer(remind_cmds.app, name="")
 app.add_typer(di_cmds.app, name="")
 app.add_typer(baseline_cmds.app, name="")
+app.add_typer(quality_cmds.app, name="")
 
 
 def _apply_command_panels() -> None:
