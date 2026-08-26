@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """project 类命令（spec §9 按资源分文件，对外平铺）。
 
 工作空间（Project）是 DataWorks 的顶层容器，一个租户下可有多个工作空间。
@@ -465,3 +465,122 @@ def _call_project(ctx: typer.Context, api_name: str, request, *, query, output_f
         output.emit(resp, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
+
+
+# ── 项目成员管理 CRUD（v3.18.6，2026-08-26 新增）────────────────────────
+
+@app.command("add-project-member-to-role")
+def add_project_member_to_role(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    user_id: str = typer.Option(..., "--user-id", help="用户 ID"),
+    role_code: str = typer.Option(..., "--role-code",
+        help="角色代码（如 role_project_dev / role_project_admin / role_project_pe 等）"),
+    client_token: str = typer.Option(None, "--client-token", help="客户端幂等令牌"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """添加工作空间成员至目标角色。
+
+    💡 可用 list-project-roles 查看所有角色代码。
+
+    \b
+    🚀 Examples:
+      dw-cli add-project-member-to-role --project-id 123456 \\
+        --user-id 5282286069837289385 --role-code role_project_dev
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    _call_project(ctx, "add_project_member_to_role", dw_models.AddProjectMemberToRoleRequest(
+        project_id=project_id, user_id=user_id, role_code=role_code,
+        client_token=client_token,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("create-project-member")
+def create_project_member(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    user_id: str = typer.Option(..., "--user-id", help="用户 ID"),
+    role_code: str = typer.Option(..., "--role-code", help="角色代码"),
+    client_token: str = typer.Option(None, "--client-token", help="客户端幂等令牌"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """添加一个用户至工作空间。
+
+    \b
+    🚀 Examples:
+      dw-cli create-project-member --project-id 123456 \\
+        --user-id 5282286069837289385 --role-code role_project_dev
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    _call_project(ctx, "create_project_member", dw_models.CreateProjectMemberRequest(
+        project_id=project_id, user_id=user_id, role_code=role_code,
+        client_token=client_token,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("delete-project-member")
+def delete_project_member(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    user_id: str = typer.Option(..., "--user-id", help="要移除的用户 ID"),
+    confirm_flag: bool = typer.Option(False, "--confirm", help="高危操作，必须显式确认"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="仅预览"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """从工作空间移除用户（高危）。
+
+    ⚠️ 此操作受集团监控，删除用户会导致通报。务必确认后再执行。
+
+    \b
+    🚀 Examples:
+      dw-cli delete-project-member --project-id 123456 \\
+        --user-id 5282286069837289385 --confirm
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {RequestId:xxx}（无 Data 字段）
+    """
+    from dw_cli.core import confirm
+    decision = confirm.check_write(
+        "delete_project_member", confirm=confirm_flag, dry_run=dry_run,
+        dry_run_summary=f"将删除 user_id={user_id} (project_id={project_id})",
+    )
+    if not decision.will_execute:
+        return
+    _call_project(ctx, "delete_project_member", dw_models.DeleteProjectMemberRequest(
+        project_id=project_id, user_id=user_id,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("remove-project-member-from-role")
+def remove_project_member_from_role(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    user_id: str = typer.Option(..., "--user-id", help="用户 ID"),
+    role_code: str = typer.Option(..., "--role-code", help="角色代码"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """将工作空间内的用户从角色中移除。
+
+    \b
+    🚀 Examples:
+      dw-cli remove-project-member-from-role --project-id 123456 \\
+        --user-id 5282286069837289385 --role-code role_project_dev
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    _call_project(ctx, "remove_project_member_from_role", dw_models.RemoveProjectMemberFromRoleRequest(
+        project_id=project_id, user_id=user_id, role_code=role_code,
+    ), query=query, output_fmt=output_fmt)

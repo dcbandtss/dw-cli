@@ -447,3 +447,111 @@ def _poll_ddl_task(dw_client, runtime, resp, timeout, poll_interval, query, outp
     output.emit(resp_json, query=query, output=output_fmt)
     if status == "failure":
         raise typer.Exit(code=1)
+
+
+# ── 表字段更新+表更新（v3.18.6，2026-08-26 新增）──────────────────────
+
+@app.command("update-table-add-column")
+def update_table_add_column(
+    ctx: typer.Context,
+    table_guid: str = typer.Option(..., "--table-guid",
+        help="表全局唯一标识（如 odps.my_project.my_table）"),
+    column: str = typer.Option(..., "--column",
+        help="字段定义 JSON 数组，如 [{\"column_name\":\"col1\",\"column_type\":\"STRING\",\"comment\":\"test\"}]。可用 file:// 传大 JSON"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """更新 MaxCompute 表的字段信息。
+
+    ⚠️ column 参数是 List[结构化对象]，需传 JSON 数组字符串，raw 命令不支持。
+
+    \b
+    🚀 Examples:
+      dw-cli update-table-add-column --table-guid "odps.my_project.my_table" \\
+        --column '[{"column_name":"col1","column_type":"STRING","comment":"test"}]'
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    import json
+    from dw_cli.core.load_arg import load_arg
+    column_raw = load_arg(column)
+    try:
+        column_list = json.loads(column_raw) if isinstance(column_raw, str) else column_raw
+    except json.JSONDecodeError:
+        errors.usage_error(f"--column 不是有效的 JSON 数组: {column_raw[:100]}")
+
+    columns = []
+    for col in column_list:
+        columns.append(dw_models.UpdateTableAddColumnRequestColumn(
+            column_name=col.get("column_name"),
+            column_name_cn=col.get("column_name_cn"),
+            column_type=col.get("column_type"),
+            comment=col.get("comment"),
+        ))
+
+    _call_table(ctx, "update_table_add_column", dw_models.UpdateTableAddColumnRequest(
+        table_guid=table_guid, column=columns,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("update-table")
+def update_table(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    table_name: str = typer.Option(..., "--table-name", help="表名"),
+    app_guid: str = typer.Option(None, "--app-guid", help="应用 GUID（如 odps.my_project）"),
+    comment: str = typer.Option(None, "--comment", help="表注释"),
+    life_cycle: int = typer.Option(None, "--life-cycle", help="生命周期（天）"),
+    is_view: bool = typer.Option(None, "--is-view", help="是否为视图"),
+    owner_id: str = typer.Option(None, "--owner-id", help="负责人 ID"),
+    category_id: int = typer.Option(None, "--category-id", help="分类 ID"),
+    visibility: int = typer.Option(None, "--visibility", help="可见性"),
+    columns: str = typer.Option(None, "--columns",
+        help="字段定义 JSON 数组（同 update-table-add-column 格式）"),
+    env_type: int = typer.Option(None, "--env-type", help="环境类型（0=开发, 1=生产）"),
+    create_if_not_exists: bool = typer.Option(None, "--create-if-not-exists", help="不存在则创建"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """更新 MaxCompute 表的元数据信息。
+
+    ⚠️ columns 是 List[结构化对象]，需传 JSON 数组。部分字段已废弃（has_part/external_table_type/location）。
+
+    \b
+    🚀 Examples:
+      dw-cli update-table --project-id 123456 --table-name my_table \\
+        --comment "updated comment" --life-cycle 720
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    import json
+    from dw_cli.core.load_arg import load_arg
+
+    column_list = None
+    if columns:
+        cols_raw = load_arg(columns)
+        try:
+            col_data = json.loads(cols_raw) if isinstance(cols_raw, str) else cols_raw
+            column_list = []
+            for col in col_data:
+                column_list.append(dw_models.UpdateTableRequestColumns(
+                    column_name=col.get("column_name"),
+                    column_type=col.get("column_type"),
+                    comment=col.get("comment"),
+                    is_partition_key=col.get("is_partition_key"),
+                ))
+        except json.JSONDecodeError:
+            errors.usage_error(f"--columns 不是有效的 JSON 数组")
+
+    _call_table(ctx, "update_table", dw_models.UpdateTableRequest(
+        project_id=project_id, table_name=table_name,
+        app_guid=app_guid, comment=comment,
+        life_cycle=life_cycle, is_view=is_view,
+        owner_id=owner_id, category_id=category_id,
+        visibility=visibility, columns=column_list,
+        env_type=env_type, create_if_not_exists=create_if_not_exists,
+    ), query=query, output_fmt=output_fmt)

@@ -891,3 +891,40 @@ def get_meta_storage_trend(
         output.emit(result, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
+
+# ── 分类表查询（v3.18.6，2026-08-26 新增）──────────────────────────────
+
+@app.command("get-meta-table-list-by-category")
+def get_meta_table_list_by_category(
+    ctx: typer.Context,
+    category_id: int = typer.Option(..., "--category-id", help="分类 ID"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(50, "--page-size", help="每页数量"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询指定类目下的表。
+
+    \b
+    🚀 Examples:
+      dw-cli get-meta-table-list-by-category --category-id 1
+
+    \b
+    📦 Output JSON Structure:
+      - 表列表: Data.DataEntityList[]
+      - 每项: TableName / TableGuid / ProjectName
+      - 总数: Data.TotalCount
+    """
+    _list_common(
+        dw_client=client.build_client(**auth_params(ctx)),
+        runtime=client.build_runtime(),
+        method="get_meta_table_list_by_category",
+        build_req=lambda pn, tok: dw_models.GetMetaTableListByCategoryRequest(
+            category_id=category_id, page_number=pn, page_size=page_size,
+        ),
+        items_key="DataEntityList",
+        page_number=page_number, page_size=page_size,
+        all_pages=False, limit=None,
+        query=query, output_fmt=output_fmt,
+        table_query="Data.DataEntityList[*].{Name:TableName, Guid:TableGuid, Project:ProjectName}",
+    )
