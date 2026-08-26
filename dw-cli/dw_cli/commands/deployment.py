@@ -151,3 +151,43 @@ def list_deployments(
                         default_table_query=_DEPLOYMENTS_TQ)
         except Exception as error:
             errors.fail(error)
+
+
+@app.command("check-file-deployment")
+def check_file_deployment(
+    ctx: typer.Context,
+    checker_instance_id: str = typer.Option(..., "--checker-instance-id",
+        help="检查器实例 ID"),
+    status: int = typer.Option(..., "--status",
+        help="检查状态（数字枚举，具体值需参考 DataWorks 文档）"),
+    check_detail_url: str = typer.Option(None, "--check-detail-url",
+        help="检查详情 URL（部分字段已废弃，按需传）"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """将待发布文件的检查结果返回至 DataWorks。
+
+    用于文件发布流程中的扩展点检查：外部检查器完成检查后，
+    通过本接口将检查结果（通过/不通过）回传给 DataWorks。
+
+    \b
+    🚀 Examples:
+      dw-cli check-file-deployment --checker-instance-id abc123 --status 1
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+    request = dw_models.CheckFileDeploymentRequest(
+        checker_instance_id=checker_instance_id,
+        status=status,
+        check_detail_url=check_detail_url,
+    )
+    try:
+        resp = dw_client.check_file_deployment_with_options(request, runtime)
+        output.emit(resp, query=query, output=output_fmt)
+    except Exception as error:
+        errors.fail(error)

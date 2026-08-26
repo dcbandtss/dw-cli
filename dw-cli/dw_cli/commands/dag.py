@@ -354,3 +354,72 @@ def list_file_type(
                         default_table_query=_FILE_TYPE_TQ)
         except Exception as error:
             errors.fail(error)
+
+# ── 触发节点运行+冒烟测试（v3.18.6，2026-08-26 新增）────────────────────
+
+@app.command("run-trigger-node")
+def run_trigger_node(
+    ctx: typer.Context,
+    node_id: int = typer.Option(..., "--node-id", help="触发式节点 ID"),
+    biz_date: str = typer.Option(..., "--biz-date",
+        help="业务日期，13 位毫秒级时间戳（如 1787587200000）"),
+    cycle_time: str = typer.Option(..., "--cycle-time",
+        help="调度周期时间，13 位毫秒级时间戳（如 1787673600000）"),
+    app_id: str = typer.Option(None, "--app-id", help="应用 ID（一般留空）"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """运行一个触发式节点。
+
+    ⚠️ biz_date 和 cycle_time 都是 13 位毫秒级时间戳（不是日期字符串）。
+    biz_date 是业务日期（T-1），cycle_time 是调度时间。
+    可用 python -c "import time; print(int(time.time()*1000))" 获取当前时间戳。
+
+    \b
+    🚀 Examples:
+      dw-cli run-trigger-node --node-id 100001 \\
+        --biz-date 1787587200000 --cycle-time 1787673600000
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    _call(ctx, "run_trigger_node", dw_models.RunTriggerNodeRequest(
+        node_id=node_id, biz_date=biz_date, cycle_time=cycle_time,
+        app_id=app_id,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("run-smoke-test")
+def run_smoke_test(
+    ctx: typer.Context,
+    node_id: int = typer.Option(..., "--node-id", help="要冒烟测试的节点 ID"),
+    bizdate: str = typer.Option(..., "--bizdate",
+        help="业务日期，格式 yyyy-MM-dd HH:mm:ss（如 2026-08-25 00:00:00）"),
+    name: str = typer.Option("dwcli_smoke_test", "--name",
+        help="冒烟测试名称"),
+    project_env: str = typer.Option("PROD", "--project-env", help=_PROJ_ENV_HELP),
+    node_params: str = typer.Option(None, "--node-params",
+        help="节点参数，JSON 字符串"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """创建冒烟测试工作流（运行指定节点进行测试）。
+
+    冒烟测试会创建一个临时 DAG 来运行指定节点，用于开发测试。
+    bizdate 格式为 yyyy-MM-dd HH:mm:ss（含时间部分，不能只传日期）。
+
+    \b
+    🚀 Examples:
+      dw-cli run-smoke-test --node-id 100001 \\
+        --bizdate "2026-08-25 00:00:00" --name "test_run"
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+    """
+    bizdate = _check_bizdate(bizdate, "--bizdate")
+    _call(ctx, "run_smoke_test", dw_models.RunSmokeTestRequest(
+        node_id=node_id, bizdate=bizdate, name=name,
+        project_env=project_env, node_params=node_params,
+    ), query=query, output_fmt=output_fmt)

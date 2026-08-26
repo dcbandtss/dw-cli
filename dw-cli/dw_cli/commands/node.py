@@ -362,3 +362,53 @@ def update_node_owner(
     _call_node(ctx, "update_node_owner", dw_models.UpdateNodeOwnerRequest(
         node_id=node_id, user_id=user_id, project_env=project_env,
     ), query=query, output_fmt=output_fmt)
+
+
+# ── 内部节点查询（v3.18.6，2026-08-26 新增）──────────────────────────────
+
+@app.command("list-inner-nodes")
+def list_inner_nodes(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    outer_node_id: int = typer.Option(..., "--outer-node-id",
+        help="外层节点 ID（组合节点/遍历节点/赋值节点等特殊节点的 ID）"),
+    project_env: str = typer.Option("PROD", "--project-env",
+        help="环境：PROD（生产，默认）/ DEV（开发）"),
+    program_type: str = typer.Option(None, "--program-type",
+        help="文件代码类型过滤（如 98=组合节点, 1106=遍历节点, 1100=赋值节点）"),
+    node_name: str = typer.Option(None, "--node-name", help="节点名称过滤"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(50, "--page-size", help="每页数量"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询组合节点/遍历节点/赋值节点等特殊节点的内部子节点列表。
+
+    组合节点（ProgramType=98）是一种容器节点，内部包含多个子节点。
+    本命令查询这些子节点，需要提供外层节点的 ID（OuterNodeId）。
+
+    \b
+    🚀 Examples:
+      dw-cli list-inner-nodes --project-id 123456 --outer-node-id 100001
+
+    \b
+    📦 Output JSON Structure:
+      - 内部节点列表: Data.Nodes[]
+      - 每项: NodeId / NodeName / ProgramType / SchedulerType
+      - 总数: Data.TotalCount
+    """
+    _list_common(
+        dw_client=client.build_client(**auth_params(ctx)),
+        runtime=client.build_runtime(),
+        method="list_inner_nodes",
+        build_req=lambda pn, tok: dw_models.ListInnerNodesRequest(
+            project_id=project_id, outer_node_id=outer_node_id,
+            project_env=project_env, program_type=program_type,
+            node_name=node_name, page_number=pn, page_size=page_size,
+        ),
+        items_key="Nodes",
+        page_number=page_number, page_size=page_size,
+        all_pages=False, limit=None,
+        query=query, output_fmt=output_fmt,
+        table_query="Data.Nodes[*].{Id:NodeId, Name:NodeName, Type:ProgramType, Scheduler:SchedulerType}",
+    )

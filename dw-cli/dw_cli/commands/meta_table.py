@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """meta_table 类命令（spec §9 按资源分文件，对外平铺）。
 
 清单「待封装」meta_table 项（10）：
@@ -799,3 +799,95 @@ def update_meta_table_intro_wiki(
     _call_meta(ctx, "update_meta_table_intro_wiki", dw_models.UpdateMetaTableIntroWikiRequest(
         table_guid=table_guid, content=content,
     ), query=query, output_fmt=output_fmt)
+
+
+# ── 数据库详情+概览+趋势（v3.18.6，2026-08-26 新增）──────────────────────
+
+@app.command("get-meta-dbinfo")
+def get_meta_dbinfo(
+    ctx: typer.Context,
+    database_name: str = typer.Option(..., "--database-name", help=_DB_HELP),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
+    cluster_id: str = typer.Option("", "--cluster-id", help=_CLUSTER_HELP),
+    app_guid: str = typer.Option("", "--app-guid", help="应用 GUID（一般留空）"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """获取引擎实例的基本元数据信息。
+
+    ⚠️ SDK 方法名 get_meta_dbinfo（dbinfo 不拆下划线）。
+
+    \b
+    🚀 Examples:
+      dw-cli get-meta-dbinfo --database-name my_project --data-source-type odps
+
+    \b
+    📦 Output JSON Structure:
+      - 数据库详情: Data.{...}
+    """
+    _call_meta(ctx, "get_meta_dbinfo", dw_models.GetMetaDBInfoRequest(
+        database_name=database_name, data_source_type=data_source_type,
+        cluster_id=cluster_id or None, app_guid=app_guid or None,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("get-meta-metrics")
+def get_meta_metrics(
+    ctx: typer.Context,
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """获取元数据概览（租户级，含项目数/存储量/最大项目等）。
+
+    ⚠️ SDK 无此类，通过 POP 网关 GET 调用。
+
+    \b
+    🚀 Examples:
+      dw-cli get-meta-metrics --data-source-type odps
+
+    \b
+    📦 Output JSON Structure:
+      - 项目总数: Data.TotalProjects
+      - 存储总量: Data.TotalStorage
+      - 最大项目: Data.LargestProjects[]
+    """
+    from dw_cli.core.pop_http import call_pop_api
+    try:
+        result = call_pop_api("GetMetaMetrics", {"DataSourceType": data_source_type}, method="GET")
+        output.emit(result, query=query, output=output_fmt)
+    except Exception as error:
+        errors.fail(error)
+
+
+@app.command("get-meta-storage-trend")
+def get_meta_storage_trend(
+    ctx: typer.Context,
+    project_id: int = typer.Option(None, "--project-id", help="工作空间 ID（可选）"),
+    data_source_type: str = typer.Option("odps", "--data-source-type", help=_DST_HELP),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """获取存储趋势（最近 30 天每日存储量）。
+
+    ⚠️ SDK 无此类，通过 POP 网关 GET 调用。
+
+    \b
+    🚀 Examples:
+      dw-cli get-meta-storage-trend --project-id 123456
+
+    \b
+    📦 Output JSON Structure:
+      - 趋势列表: Data.TableEntityList[]
+      - 每项: Date / Storage (字节)
+      - 总数: Data.TotalCount
+    """
+    from dw_cli.core.pop_http import call_pop_api
+    params = {"DataSourceType": data_source_type}
+    if project_id:
+        params["ProjectId"] = str(project_id)
+    try:
+        result = call_pop_api("GetMetaStorageTrend", params, method="GET")
+        output.emit(result, query=query, output=output_fmt)
+    except Exception as error:
+        errors.fail(error)
