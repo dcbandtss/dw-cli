@@ -31,7 +31,12 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `search-meta-tables` — 搜索表
 - `check-meta-table` / `check-meta-partition` — 表/分区探活
 - `get-meta-table-basic-info` / `-column` / `-full-info` / `-intro-wiki` / `-change-log` / `-partition`
-- `get-meta-dbtable-list` — 数据库表清单
+- `get-meta-dbtable-list`
+- `list-meta-db` -- database list (SDK method list_meta_dbwith_options)
+- `get-meta-dbinfo` -- database detail (app_guid=odps.<project_name> is key)
+- `get-meta-metrics` -- meta overview (raw HTTP GET, project count/storage)
+- `get-meta-storage-trend` -- storage trend (raw HTTP GET, 30 days)
+- `get-meta-table-list-by-category` -- tables by category — 数据库表清单
 
 ### 📁 文件与目录
 - `list-files` / `get-file` / `create-file` / `update-file` / `submit-file` / `delete-file`
@@ -48,6 +53,7 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `list-nodes-by-output` — 按输出名查下游节点
 - `list-node-input-or-output` — 查节点上游/下游
 - `get-business` / `list-business` / `create-business` / `delete-business`
+- `list-inner-nodes` -- query inner nodes of combination nodes (needs outer_node_id)
 
 ### ⚙️ 实例运维
 - `get-instance` / `get-instance-log` / `list-instances` / `list-instance-history`
@@ -66,10 +72,20 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 
 ### 📊 表管理
 - `create-table` / `delete-table` / `get-ddl-job-status`
+- `update-table` -- update table (app_guid needed)
+- `update-table-add-column` -- add columns (JSON array, async TaskInfo)
 - `list-tables` — 列表（**PyODPS 直连**，--limit/--offset/--keyword/--all）
 
 ### 🏢 工作空间
 - `get-project` / `list-project-ids`
+- `list-projects` -- list all workspaces (--all / --keyword)
+- `list-calc-engines` -- query calc engines (--calc-engine-type ODPS)
+- `list-project-members` -- query members (page_size max 10)
+- `list-project-roles` -- query roles
+- `list-resource-groups` -- query resource groups (tenant level)
+- `add-project-member-to-role` / `create-project-member` -- add member
+- `remove-project-member-from-role` -- remove from role
+- `delete-project-member` -- delete member (**high-risk**, needs --confirm)
 
 ### 🔔 告警与主题
 - `list-alert-messages` — 告警消息（begin/end 间隔须 <2 天）
@@ -124,3 +140,14 @@ dw-cli --credentials-file C:\path\credentials.ini -p myprofile doctor
   普通业务流程前缀: 业务流程/my_flow/MaxCompute/子目录
   手动业务流程前缀: 手动业务流程/my_flow/MaxCompute/子目录
   create-business 用 --use-type MANUAL_BIZ 创建手动业务流程（默认 NORMAL）。
+
+
+## v3.18.6 Notes
+
+- Quality module: env_type=odps (lowercase engine type), NOT PROD/DEV
+- get-meta-dbinfo: app_guid=odps.<project_name> is required (else NoCalcEngine)
+- GetMetaMetrics/GetMetaStorageTrend: use GET method via core/pop_http.py
+- run-trigger-node: app_id=project_id, timestamps are 13-digit milliseconds
+- list-dags OpSeq: from get-dag Data.OpSeq, not run-cycle-dag-nodes return value
+- Multi-tenant: --profile sjzlodps / --profile idg_prod
+- Write .py files: use [System.IO.File]::WriteAllText + UTF8Encoding($false) (no BOM)

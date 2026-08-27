@@ -6,7 +6,7 @@ DataWorks 私有云命令行工具，基于阿里云 2020-05-18 SDK + 凭据链�
 
 ## 为何存在
 
-阿里云官方 CLI 要求 2024-05-18 API，私有云服务端拒绝（InvalidVersion），仅 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，封装成 104 个语义化命令 + raw 逃生舱。
+阿里云官方 CLI 要求 2024-05-18 API，私有云服务端拒绝（InvalidVersion），仅 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，封装成 150 个语义化命令 + raw 逃生舱。
 
 ## 安装（开发模式）
 
@@ -100,7 +100,7 @@ dw-cli doctor
 
 ## 命令概览
 
-共 104 个语义化命令 + raw 逃生舱。完整分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Escape Hatch 等面板）。
+共 150 个语义化命令 + raw 逃生舱。完整分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Escape Hatch 等面板）。
 
 每个命令的详细参数与示例：`dw-cli <command> --help`。
 
@@ -126,6 +126,9 @@ dw-cli/
 │   │   ├── migration.py    # 迁移
 │   │   ├── meta_table.py   # 元数据查询
 │   │   ├── raw.py          # raw 逃生舱（透传未封装 API）
+│   │   ├── baseline.py     # 基线监控（v3.18.6 新增）
+│   │   ├── quality.py      # 数据质量（v3.18.6 新增）
+│   │   ├── ide_event.py    # IDE 扩展点事件（v3.18.6 新增）
 │   │   └── ...             # 其他模块
 │   └── core/               # 基础设施层
 │       ├── client.py       # 客户端工厂：凭据链 + 固定版本/region/endpoint
@@ -134,7 +137,8 @@ dw-cli/
 │       ├── confirm.py      # 高危操作门禁（delete_/offline_/stop_ 前缀需 --confirm）
 │       ├── errors.py      # 错误归类 + 退出码分区（0/1/2/3）
 │       ├── load_arg.py     # file:// 参数加载
-│       └── paging.py       # --all 分页合并
+│       ├── paging.py       # --all 分页合并
+│       └── pop_http.py     # POP 网关直接 HTTP（SDK 无 Request 模型的 API）
 ├── tests/                  # 测试
 └── README.md               # 本文件
 ```

@@ -3,3 +3,4 @@ alibabacloud-dataworks-public20200518
 alibabacloud-credentials
 alibabacloud-tea-openapi
 alibabacloud-tea-util
+requests
