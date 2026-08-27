@@ -27,8 +27,11 @@ description: |
 | 风险等级 | 命令 | 规则 |
 |---|---|---|
 | 只读 | list-files, get-file, list-folders, get-folder, list-file-versions, get-file-version, get-file-type-statistic, get-deployment, list-diproject-config, list-ref-disync-tasks, list-node-input-or-output, get-sql-instance | 直接执行 |
+| list-deployments | v3.18.6 new | read-only |
 | 低危 | create-file, update-file, submit-file, deploy-file, create-and-submit-file, create-folder, update-folder, create-udf-file, update-udf-file, create-resource-file, create-disync-task, update-disync-task, update-diproject-config, run-sql(DDL/DML 需 --confirm) | 默认执行，建议先确认参数 |
+| get-ide-event-detail | v3.18.6 IDE event | read-only |
 | ⚠️高危 | delete-file, delete-folder, create-resource-file-upload | 需 `--confirm`，无 `--confirm` 则 exit 2 拒绝 |
+- `get-ide-event-detail` (v3.18.6)
 
 > `delete_` 前缀命令由 confirm.py 自动拦截。run-sql 对 DROP/INSERT/CREATE/ALTER 等写语句需 `--confirm`。
 
@@ -50,6 +53,7 @@ description: |
 | list-file-versions | 列出文件版本 | 只读 |
 | get-file-type-statistic | 文件类型统计 | 只读 |
 | get-deployment | 查询发布状态 | 只读 |
+| list-deployments | v3.18.6 new | read-only |
 
 ### 文件夹
 
@@ -84,6 +88,7 @@ description: |
 | 命令 | 说明 | 风险 |
 |---|---|---|
 | create-resource-file | 创建资源文件（普通版，推荐私有云） | 低危 |
+| get-ide-event-detail | v3.18.6 IDE event | read-only |
 | create-resource-file-upload | 创建资源文件（Advance，⚠️私有云 OSS 不通可能失败） | ⚠️高危 |
 
 ### DI 数据集成
@@ -125,6 +130,7 @@ description: |
 - **submit-file 需真实的已提交上游输出名**：父节点输出名必须是已上线节点的真实输出名，不能编造。
 - **delete-file 已提交文件返回 DeploymentId**：提交后的文件删除走异步流程，需用 get-deployment 轮询。
 - **create-resource-file 用 _with_options 版本**：普通版必须用 `create_resource_file_with_options(request, runtime)` 传 RegionId。
+- `get-ide-event-detail` (v3.18.6)
 - **create-resource-file-upload 私有云可能失败**：Advance 版依赖 OSS 公网上传，私有云隔离环境通常不通。
 - **update-udf-file file_id 是 str**（不是 int，与 delete-file/submit-file 的 int 不同）。
 - **DI 私有云可用子集**：create/update_disync_task + list/update_diproject_config + list_ref_disync_tasks 可用；get_disync_task/list_dijobs 404。

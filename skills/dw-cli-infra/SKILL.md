@@ -120,6 +120,10 @@ dw-cli doctor              # 全链路诊断
 >
 > ⚠️ **project-id 必须是用户有权限的真实空间 ID**。示例中的 `123456` 是占位值，直接照抄会报 `UserNotInProject`。
 > 若不确定空间 ID，先问用户，或用 `get-project --project-identifier <空间标识>` 查询。
+- `list-projects` / `list-calc-engines` / `list-resource-groups` (v3.18.6)
+- `list-project-members` / `list-project-roles` (v3.18.6)
+- `add-project-member-to-role` / `create-project-member` (v3.18.6)
+- `remove-project-member-from-role` / `delete-project-member` (v3.18.6, high-risk)
 
 ## 私有云特性
 

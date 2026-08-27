@@ -27,7 +27,12 @@ description: |
 |---|---|---|
 | 只读 | get-node, get-node-code, get-node-parents, get-node-children, list-nodes, list-nodes-by-output, list-node-input-or-output, get-instance, get-instance-log, list-instances, list-instance-history, list-instance-amount, list-success-instance-amount, top-ten-elapsed-time-instance, top-ten-error-times-instance, get-instance-status-statistic, get-dag, list-manual-dag-instances, list-alert-messages, get-remind, list-reminds, get-topic, get-topic-influence, list-topics | 直接执行 |
 | 低危 | restart-instance, resume-instance, suspend-instance, update-node-run-mode, update-node-owner, run-cycle-dag-nodes, run-manual-dag-nodes, create-remind, update-remind | 默认执行，建议先确认参数 |
+| list-inner-nodes | inner nodes of combination nodes | read-only |
 | ⚠️高危 | offline-node, stop-instance, set-success-instance, delete-remind, create-import-migration, start-migration | 需 `--confirm`，无 `--confirm` 则 exit 2 拒绝 |
+| list-dags | OpSeq DAG | read-only |
+| run-trigger-node | trigger node (app_id=project_id) | low-risk |
+| run-smoke-test | smoke test | low-risk |
+| list-file-type | node type list | read-only |
 
 > `delete_`/`offline_`/`stop_` 前缀命令由 confirm.py 自动拦截。DAG 触发类命令虽为低危，但会真实调度执行，建议先向用户确认节点 ID 与业务日期。
 
@@ -47,6 +52,7 @@ description: |
 | offline-node | 下线节点 | ⚠️高危 |
 | update-node-run-mode | 冻结或解冻节点 | 低危 |
 | update-node-owner | 变更节点负责人 | 低危 |
+| list-inner-nodes | inner nodes of combination nodes | read-only |
 
 ### 实例运维
 
@@ -80,6 +86,10 @@ description: |
 | get-dag | 查询 DAG 执行状态（轮询 DagId） | 只读 |
 | list-manual-dag-instances | 查询手动 DAG 实例列表 | 只读 |
 | set-success-instance | 强制设置实例为成功 | ⚠️高危 |
+| list-dags | OpSeq DAG | read-only |
+| run-trigger-node | trigger node (app_id=project_id) | low-risk |
+| run-smoke-test | smoke test | low-risk |
+| list-file-type | node type list | read-only |
 
 ### 告警
 
