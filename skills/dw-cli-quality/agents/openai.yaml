@@ -1,9 +1,9 @@
 interface:
   brand_color: '#F59E0B'
-  default_prompt: Use $dw-cli-quality to manage DataWorks data quality - create/query/delete entities, rules, followers.
-  display_name: dw-cli data quality
+  default_prompt: 用 $dw-cli-quality 管理 DataWorks 私有云数据质量——创建/查询/删除质量实体、管理质量规则与订阅人。
+  display_name: dw-cli 数据质量
   icon_large: ./assets/large-logo.svg
   icon_small: ./assets/small-400px.png
-  short_description: Manage DataWorks quality entities, rules, followers
+  short_description: 管理 DataWorks 质量实体、规则与订阅人
 policy:
   allow_implicit_invocation: true
