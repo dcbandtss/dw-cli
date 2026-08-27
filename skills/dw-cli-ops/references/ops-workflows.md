@@ -12,7 +12,7 @@
 私有云执行 pyodps 脚本的推荐方式：
 
 1. 在手动业务流程下创建 pyodps 节点文件（见 dev Skill 的 create-and-submit-file）
-2. `run-manual-dag-nodes --project-id <id> --flow-name <flow_name> --include-node-ids <node_id> --biz-date "2026-08-25 00:00:00" --project-env PROD --project-id <pid> --project-name <project_name>` → 触发 DAG
+2. `run-manual-dag-nodes --flow-name <flow_name> --include-node-ids <node_id> --biz-date "2026-08-25 00:00:00" --project-env PROD --project-id <pid> --project-name <project_name>` → 触发 DAG
 3. `get-dag --dag-id <id>` → 轮询直到 SUCCESS/FAILURE
 4. `list-manual-dag-instances --dag-id <id>` → 查看各节点实例详情
 5. `get-instance-log --instance-id <id>` → 查看执行日志

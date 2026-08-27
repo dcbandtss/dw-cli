@@ -80,6 +80,9 @@ description: |
 | get-dag | 查询 DAG 执行状态（轮询 DagId） | 只读 |
 | list-manual-dag-instances | 查询手动 DAG 实例列表 | 只读 |
 | set-success-instance | 强制设置实例为成功 | ⚠️高危 |
+| list-dags | 按补数据序号查 DAG | 只读 |
+| run-trigger-node | 运行触发式节点 | 低危 |
+| run-smoke-test | 冒烟测试 | 低危 |
 
 ### 告警
 

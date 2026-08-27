@@ -50,6 +50,7 @@ description: |
 | list-file-versions | 列出文件版本 | 只读 |
 | get-file-type-statistic | 文件类型统计 | 只读 |
 | get-deployment | 查询发布状态 | 只读 |
+| list-deployments | 发布包列表 | 只读 |
 
 ### 文件夹
 
