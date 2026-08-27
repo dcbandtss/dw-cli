@@ -63,38 +63,3 @@ def get_ide_event_detail(
         project_id=project_id, message_id=message_id,
     ), query=query, output_fmt=output_fmt)
 
-
-@app.command("update-ide-event-result")
-def update_ide_event_result(
-    ctx: typer.Context,
-    message_id: str = typer.Option(..., "--message-id",
-        help="事件消息 ID（来自扩展点事件推送）"),
-    check_result: int = typer.Option(..., "--check-result",
-        help="检查结果（0=失败, 1=成功）"),
-    extension_code: str = typer.Option(None, "--extension-code",
-        help="扩展程序编码"),
-    check_result_tip: str = typer.Option(None, "--check-result-tip",
-        help="检查结果提示信息"),
-    query: Optional[str] = query_option(),
-    output_fmt: str = output_option(),
-):
-    """将扩展程序检查结果回调至 DataWorks。
-
-    扩展程序处理完扩展点事件后，通过本接口将检查结果（通过/不通过）
-    回传给 DataWorks，DataWorks 根据结果决定操作是否继续。
-
-    ⚠️ SDK 方法名 update_ideevent_result（ideevent 不拆下划线）。
-
-    \b
-    🚀 Examples:
-      dw-cli update-ide-event-result --message-id abc123 --check-result 1
-
-    \b
-    📦 Output JSON Structure:
-      - 成功: {Data:true, Success:true}
-    """
-    _call(ctx, "update_ideevent_result", dw_models.UpdateIDEEventResultRequest(
-        message_id=message_id, check_result=check_result,
-        extension_code=extension_code,
-        check_result_tip=check_result_tip,
-    ), query=query, output_fmt=output_fmt)

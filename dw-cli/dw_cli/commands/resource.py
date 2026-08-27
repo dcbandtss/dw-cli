@@ -200,31 +200,3 @@ def create_resource_file_upload(
         output.emit(resp, query=query, output=output_fmt)
     except Exception as error:
         errors.fail(error)
-
-
-@app.command("update-resource-file")
-def update_resource_file(
-    ctx: typer.Context,
-    project_id: int = typer.Option(..., "--project-id", help="workspace ID"),
-    oss_download_link: str = typer.Option(..., "--oss-download-link", help="OSS download link (required)"),
-    file_name: str = typer.Option(None, "--file-name", help="resource file name"),
-    file_type: str = typer.Option(None, "--file-type", help="resource type"),
-    query = None,
-    output_fmt: str = output_option(),
-):
-    """Update resource file via POP HTTP (SDK not available).
-
-    Requires OssDownloadLink (OSS URL of the resource).
-    """
-    from dw_cli.core.pop_http import call_pop_api
-    from dw_cli.core import output as out_mod, errors
-    params = {"ProjectId": str(project_id), "OssDownloadLink": oss_download_link}
-    if file_name:
-        params["FileName"] = file_name
-    if file_type:
-        params["FileType"] = file_type
-    try:
-        result = call_pop_api("UpdateResourceFile", params, method="POST")
-        out_mod.emit(result, query=query, output=output_fmt)
-    except Exception as error:
-        errors.fail(error)
