@@ -189,3 +189,94 @@ def start_migration(
             project_id=project_id,
             migration_id=migration_id,
         ), query=query, output_fmt=output_fmt)
+
+
+# ── 迁移查询（v3.18.6，2026-08-27 新增）──────────────────────────────
+
+_MIGRATIONS_TQ = "Data.Migrations[*].{Id:MigrationId, Name:Name, Status:Status, Type:MigrationType, Owner:Owner, CreateTime:CreateTime}"
+
+
+@app.command("list-migrations")
+def list_migrations(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    migration_type: str = typer.Option(..., "--migration-type",
+        help="迁移类型（如 IMPORT / EXPORT）"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(50, "--page-size", help="每页数量"),
+    owner: str = typer.Option(None, "--owner", help="创建者 ID 过滤"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询迁移任务列表。
+
+    \b
+    🚀 Examples:
+      dw-cli list-migrations --project-id 123456 --migration-type IMPORT
+
+    \b
+    📦 Output JSON Structure:
+      - 迁移列表: Data.Migrations[]
+      - 每项: MigrationId / Name / Status / MigrationType / Owner / CreateTime
+      - 总数: Data.TotalCount
+    """
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+    request = dw_models.ListMigrationsRequest(
+        project_id=project_id, migration_type=migration_type,
+        page_number=page_number, page_size=page_size, owner=owner,
+    )
+    try:
+        resp = dw_client.list_migrations_with_options(request, runtime)
+        output.emit(resp, query=query, output=output_fmt,
+                    default_table_query=_MIGRATIONS_TQ)
+    except Exception as error:
+        errors.fail(error)
+
+
+@app.command("get-migration-process")
+def get_migration_process(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    migration_id: int = typer.Option(..., "--migration-id", help="迁移任务 ID"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """获取迁移任务的进度状态。
+
+    \b
+    🚀 Examples:
+      dw-cli get-migration-process --project-id 123456 --migration-id 100
+
+    \b
+    📦 Output JSON Structure:
+      - 进度列表: Data[] (数组，含各阶段状态)
+      - 每项: Status / Progress / StageName
+    """
+    _call_migration(ctx, "get_migration_process", dw_models.GetMigrationProcessRequest(
+        project_id=project_id, migration_id=migration_id,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("get-migration-summary")
+def get_migration_summary(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id", help="工作空间 ID"),
+    migration_id: int = typer.Option(..., "--migration-id", help="迁移任务 ID"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """获取迁移任务的摘要信息。
+
+    \b
+    🚀 Examples:
+      dw-cli get-migration-summary --project-id 123456 --migration-id 100
+
+    \b
+    📦 Output JSON Structure:
+      - 摘要: Data.{...} (含导入/导出的文件数、表数等)
+    """
+    _call_migration(ctx, "get_migration_summary", dw_models.GetMigrationSummaryRequest(
+        project_id=project_id, migration_id=migration_id,
+    ), query=query, output_fmt=output_fmt)
