@@ -167,7 +167,7 @@ dw-cli get-sql-instance --instance-id 200001 --project-id 123456
 ## DI 数据集成
 
 ### create-disync-task
-\\ash
+```bash
 dw-cli create-disync-task --project-id 123456 --task-name my_di_task \
   --task-type DI_OFFLINE --task-content file://di_content.json
 \task-content 是 DI job JSON（type=job, version=2.0, steps[reader/writer]）。
@@ -177,12 +177,12 @@ dw-cli create-disync-task --project-id 123456 --task-name my_di_task \
 > 完整指南见 [create-file-di-guide.md](create-file-di-guide.md)。
 
 ### update-disync-task
-\\ash
+```bash
 dw-cli update-disync-task --file-id 300001 --project-id 123456 \
   --task-type DI_OFFLINE --task-content file://di_content.json
 \
 ### list-ref-disync-tasks
-\\ash
+```bash
 dw-cli list-ref-disync-tasks --project-id 123456 \
   --datasource-name my_db --task-type DI_OFFLINE --ref-type from
 \

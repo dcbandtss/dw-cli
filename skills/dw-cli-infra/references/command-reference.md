@@ -31,7 +31,7 @@ dw-cli export-data-sources --project-id 123456 --query "Data.DataSources[*].{Id:
 
 ### create-data-source
 ```bash
-dw-cli create-data-source --project-id 123456 --name mydb --type mysql --content file://content.json
+dw-cli create-data-source --project-id 123456 --name mydb --data-source-type mysql --content file://content.json
 ```
 content 是 JSON 字符串，支持 `file://` 加载文件。
 
