@@ -47,6 +47,8 @@ description: |
 | offline-node | 下线节点 | ⚠️高危 |
 | update-node-run-mode | 冻结或解冻节点 | 低危 |
 | update-node-owner | 变更节点负责人 | 低危 |
+| list-inner-nodes | 列出组合节点的内部节点 | 只读 |
+| list-file-type | 列出节点类型 | 只读 |
 
 ### 实例运维
 

@@ -107,16 +107,19 @@ dw-cli doctor              # 全链路诊断
 | list-data-sources | 列出数据源 | 只读 |
 | export-data-sources | 导出数据源（⚠️含凭据明文） | 只读 |
 | get-data-source-meta | 获取数据源元信息 | 只读 |
-| create-data-source, add-project-member-to-role, create-project-member, remove-project-member-from-role | 创建数据源（content 为 JSON 字符串） | 低危 |
+| create-data-source | 创建数据源（content 为 JSON 字符串） | 低危 |
 | update-data-source | 更新数据源 | 低危 |
-| delete-data-source, delete-project-member | 删除数据源 | ⚠️高危 |
+| delete-data-source | 删除数据源 | ⚠️高危 |
 | test-network-connection | 测试数据源连通性（env_type 为 str） | 只读 |
 
 ### 项目空间
 
 | 命令 | 说明 | 风险 |
 |---|---|---|
-| get-project, list-projects, list-calc-engines, list-resource-groups, list-project-members, list-project-roles | 查询项目空间详情（project-id 或 project-identifier） | 只读 |
+| get-project | 查询项目空间详情（project-id 或 project-identifier） | 只读 |
+| list-projects | 列出所有项目空间 | 只读 |
+| list-calc-engines | 列出计算引擎 | 只读 |
+| list-resource-groups | 列出资源组 | 只读 |
 | list-project-ids | 列出用户有权限的项目空间 ID | 只读 |
 
 ### 环境自检
