@@ -392,7 +392,8 @@ def submit_file(
         _submit_and_wait(ctx, file_id, project_id, comment,
                          skip_all_deploy_file_extensions,
                          timeout, poll_interval,
-                         query=query, output_fmt=output_fmt)
+                         query=query, output_fmt=output_fmt,
+                         project_identifier=project_identifier or None)
         return
 
     if project_id is None and not project_identifier:
@@ -617,6 +618,7 @@ def _submit_and_wait(
     ctx: typer.Context, file_id: int, project_id: int, comment: str,
     skip_all_deploy_file_extensions: bool,
     timeout: int, poll_interval: int, *, query: Optional[str], output_fmt: str,
+    project_identifier: str = None,
 ):
     """提交文件 + 自动轮询 get-deployment 到终态（--wait 场景）。
 
