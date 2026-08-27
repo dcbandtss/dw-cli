@@ -26,12 +26,7 @@ description: |
 
 | 风险等级 | 命令 | 规则 |
 |---|---|---|
-| 只读 | check-meta-table, check-meta-partition, get-meta-table-basic-info, get-meta-table-intro-wiki, get-meta-table-column, get-meta-table-full-info, get-meta-table-change-log, get-meta-table-partition, get-meta-dbtable-list, search-meta-tables, get-meta-table-lineage, get-meta-column-lineage, get-meta-table-output, list-tables, get-ddl-job-status | 直接执行 |
-| list-meta-db | v3.18.6 database list | read-only |
-| get-meta-dbinfo | v3.18.6 (app_guid=odps.project) | read-only |
-| get-meta-metrics | v3.18.6 (raw HTTP GET) | read-only |
-| get-meta-storage-trend | v3.18.6 (raw HTTP GET) | read-only |
-| get-meta-table-list-by-category | v3.18.6 | read-only |
+| 只读 | check-meta-table, check-meta-partition, get-meta-table-basic-info, get-meta-table-intro-wiki, get-meta-table-column, get-meta-table-full-info, get-meta-table-change-log, get-meta-table-partition, get-meta-dbtable-list, search-meta-tables, list-meta-db, get-meta-dbinfo, get-meta-metrics, get-meta-storage-trend, get-meta-table-list-by-category, get-meta-table-lineage, get-meta-column-lineage, get-meta-table-output, list-tables, get-ddl-job-status | 直接执行 |
 | 低危 | update-meta-table, update-meta-table-intro-wiki, create-table | 默认执行，建议先确认参数 |
 | ⚠️高危 | delete-table | 需 `--confirm`，无 `--confirm` 则 exit 2 拒绝 |
 
@@ -52,11 +47,6 @@ description: |
 | get-meta-table-change-log | 获取表变更日志 | 只读 |
 | get-meta-table-partition | 获取表分区信息 | 只读 |
 | get-meta-dbtable-list | 获取库表列表 | 只读 |
-| list-meta-db | v3.18.6 database list | read-only |
-| get-meta-dbinfo | v3.18.6 (app_guid=odps.project) | read-only |
-| get-meta-metrics | v3.18.6 (raw HTTP GET) | read-only |
-| get-meta-storage-trend | v3.18.6 (raw HTTP GET) | read-only |
-| get-meta-table-list-by-category | v3.18.6 | read-only |
 | search-meta-tables | 搜索元数据表 | 只读 |
 
 ### 血缘与输出

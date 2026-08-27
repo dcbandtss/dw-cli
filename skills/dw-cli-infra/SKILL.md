@@ -81,9 +81,9 @@ dw-cli doctor              # 全链路诊断
 
 | 风险等级 | 命令 | 规则 |
 |---|---|---|
-| 只读 | list-data-sources, export-data-sources, get-data-source-meta, test-network-connection, get-project, list-project-ids, doctor, check-credentials | 直接执行 |
-| 低危 | create-data-source, update-data-source | 默认执行，建议先确认参数 |
-| ⚠️高危 | delete-data-source | 需 `--confirm`，无 `--confirm` 则 exit 2 拒绝执行 |
+| 只读 | list-data-sources, export-data-sources, get-data-source-meta, test-network-connection, get-project, list-projects, list-calc-engines, list-resource-groups, list-project-members, list-project-roles, list-project-ids, doctor, check-credentials | 直接执行 |
+| 低危 | create-data-source, add-project-member-to-role, create-project-member, remove-project-member-from-role, update-data-source | 默认执行，建议先确认参数 |
+| ⚠️高危 | delete-data-source, delete-project-member | 需 `--confirm`，无 `--confirm` 则 exit 2 拒绝执行 |
 
 > `delete_` 前缀命令由 confirm.py 自动拦截。所有写操作建议先 `--dry-run` 确认。
 
@@ -96,16 +96,16 @@ dw-cli doctor              # 全链路诊断
 | list-data-sources | 列出数据源 | 只读 |
 | export-data-sources | 导出数据源（⚠️含凭据明文） | 只读 |
 | get-data-source-meta | 获取数据源元信息 | 只读 |
-| create-data-source | 创建数据源（content 为 JSON 字符串） | 低危 |
+| create-data-source, add-project-member-to-role, create-project-member, remove-project-member-from-role | 创建数据源（content 为 JSON 字符串） | 低危 |
 | update-data-source | 更新数据源 | 低危 |
-| delete-data-source | 删除数据源 | ⚠️高危 |
+| delete-data-source, delete-project-member | 删除数据源 | ⚠️高危 |
 | test-network-connection | 测试数据源连通性（env_type 为 str） | 只读 |
 
 ### 项目空间
 
 | 命令 | 说明 | 风险 |
 |---|---|---|
-| get-project | 查询项目空间详情（project-id 或 project-identifier） | 只读 |
+| get-project, list-projects, list-calc-engines, list-resource-groups, list-project-members, list-project-roles | 查询项目空间详情（project-id 或 project-identifier） | 只读 |
 | list-project-ids | 列出用户有权限的项目空间 ID | 只读 |
 
 ### 环境自检
@@ -119,11 +119,7 @@ dw-cli doctor              # 全链路诊断
 > 所有命令默认输出 json（机器可读），人看加 `-o table`，复杂参数用 `file://path` 传文件。
 >
 > ⚠️ **project-id 必须是用户有权限的真实空间 ID**。示例中的 `123456` 是占位值，直接照抄会报 `UserNotInProject`。
-> 若不确定空间 ID，先问用户，或用 `get-project --project-identifier <空间标识>` 查询。
-- `list-projects` / `list-calc-engines` / `list-resource-groups` (v3.18.6)
-- `list-project-members` / `list-project-roles` (v3.18.6)
-- `add-project-member-to-role` / `create-project-member` (v3.18.6)
-- `remove-project-member-from-role` / `delete-project-member` (v3.18.6, high-risk)
+> 若不确定空间 ID，先问用户，或用 `get-project, list-projects, list-calc-engines, list-resource-groups, list-project-members, list-project-roles --project-identifier <空间标识>` 查询。
 
 ## 私有云特性
 
