@@ -26,9 +26,9 @@ description: |
 
 | 风险等级 | 命令 | 规则 |
 |---|---|---|
-| 只读 | list-files, get-file, list-folders, get-folder, list-file-versions, get-file-version, get-file-type-statistic, get-deployment, list-deployments, list-diproject-config, get-ide-event-detail, list-migrations, get-migration-process, get-migration-summary, list-ref-disync-tasks, list-node-input-or-output, get-sql-instance | 直接执行 |
-| 低危 | create-file, update-file, submit-file, deploy-file, create-and-submit-file, create-folder, update-folder, create-udf-file, update-udf-file, create-resource-file, create-disync-task, update-disync-task, update-table, update-table-add-column, update-diproject-config, run-sql(DDL/DML 需 --confirm) | 默认执行，建议先确认参数 |
-| ⚠️高危 | delete-file, delete-folder, create-resource-file-upload | 需 `--confirm`，无 `--confirm` 则 exit 2 拒绝 |
+| 只读 | list-files, get-file, list-folders, get-folder, list-file-versions, get-file-version, get-file-type-statistic, get-deployment, list-deployments, list-diproject-config, get-ide-event-detail, list-migrations, get-migration-process, get-migration-summary, list-ref-disync-tasks, list-node-input-or-output, get-sql-instance, get-business, list-business | 直接执行 |
+| 低危 | create-file, update-file, submit-file, deploy-file, create-and-submit-file, create-folder, update-folder, create-udf-file, update-udf-file, create-resource-file, create-disync-task, update-disync-task, update-table, update-table-add-column, update-diproject-config, run-sql(DDL/DML 需 --confirm), create-business, update-business, establish-relation-table-to-business | 默认执行，建议先确认参数 |
+| ⚠️高危 | delete-file, delete-folder, create-resource-file-upload, delete-business | 需 `--confirm`，无 `--confirm` 则 exit 2 拒绝 |
 
 > `delete_` 前缀命令由 confirm.py 自动拦截。run-sql 对 DROP/INSERT/CREATE/ALTER 等写语句需 `--confirm`。
 
@@ -86,6 +86,7 @@ description: |
 |---|---|---|
 | create-resource-file | 创建资源文件（普通版，推荐私有云） | 低危 |
 | create-resource-file-upload | 创建资源文件（Advance，⚠️私有云 OSS 不通可能失败） | ⚠️高危 |
+| get-ide-event-detail | 查询 IDE 扩展点事件详情 | 只读 |
 
 ### DI 数据集成
 
@@ -100,6 +101,13 @@ description: |
 > 💡 **创建 DI 节点优先用 create-file**（--file-type 23）：生成图形化节点，便于在 DataWorks 页面检查。
 > 不支持图形化的数据源仍用 create-disync-task。完整指南见 [references/create-file-di-guide.md](references/create-file-di-guide.md)。
 
+### 表管理（v3.18.6）
+
+| 命令 | 说明 | 风险 |
+|---|---|---|
+| update-table | 更新表属性（app_guid 需传） | 低危 |
+| update-table-add-column | 添加字段（JSON 数组参数，异步返回 TaskInfo） | 低危 |
+
 ### 节点 IO
 
 | 命令 | 说明 | 风险 |
@@ -112,6 +120,14 @@ description: |
 |---|---|---|
 | run-sql | 执行 MaxCompute SQL（SELECT 默认 100 行，DDL/DML 需 --confirm） | 低危(DDL/DML 高危) |
 | get-sql-instance | 跟进 run-sql instance 状态 + 取结果 | 只读 |
+
+### 迁移查询（v3.18.6）
+
+| 命令 | 说明 | 风险 |
+|---|---|---|
+| list-migrations | 迁移任务列表 | 只读 |
+| get-migration-process | 迁移进度 | 只读 |
+| get-migration-summary | 迁移摘要 | 只读 |
 
 > ⬆️ **每个命令的详细参数、示例与输出结构请运行 `dw-cli <command> --help` 查看。**
 > 所有命令默认输出 json（机器可读），人看加 `-o table`，复杂参数用 `file://path` 传文件。

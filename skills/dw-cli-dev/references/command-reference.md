@@ -170,7 +170,9 @@ dw-cli get-sql-instance --instance-id 200001 --project-id 123456
 ```bash
 dw-cli create-disync-task --project-id 123456 --task-name my_di_task \
   --task-type DI_OFFLINE --task-content file://di_content.json
-```task-content 是 DI job JSON（type=job, version=2.0, steps[reader/writer]）。
+```
+
+task-content 是 DI job JSON（type=job, version=2.0, steps[reader/writer]）。
 
 > 💡 **优先用 create-file 创建 DI 节点**（--file-type 23）：生成图形化节点，便于在 DataWorks 页面检查。
 > 不支持图形化的数据源仍用 create-disync-task。

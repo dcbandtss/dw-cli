@@ -89,6 +89,17 @@ dw-cli doctor              # 全链路诊断
 
 ## 命令清单
 
+### 项目成员管理（v3.18.6）
+
+| 命令 | 说明 | 风险 |
+|---|---|---|
+| list-project-members | 列出成员（page_size 上限 10） | 只读 |
+| list-project-roles | 列出角色 | 只读 |
+| add-project-member-to-role | 添加成员到角色 | 低危 |
+| create-project-member | 添加用户到空间 | 低危 |
+| remove-project-member-from-role | 从角色移除成员 | 低危 |
+| delete-project-member | 删除成员（⚠️项目所有者不能删） | ⚠️高危 |
+
 ### 数据源管理
 
 | 命令 | 说明 | 风险 |
