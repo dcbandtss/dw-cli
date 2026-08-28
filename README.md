@@ -6,10 +6,10 @@
 [![License](https://img.shields.io/badge/License-Apache--2.0-green?style=flat-square)](./LICENSE)
 [![DataWorks SDK](https://img.shields.io/badge/DataWorks%20SDK-2020--05--18-orange?style=flat-square)](https://help.aliyun.com/zh/dataworks/developer-reference/api-dataworks-public-2020-05-18-overview)
 
-dw-cli 把 DataWorks 2020-05-18 SDK 的 104 个 API 封装成一套语义化命令行工具，覆盖节点调度、实例运维、文件开发、元数据、数据源、SQL 执行等。专为私有云环境优化（RegionId 注入、凭据链、logview 替换），既可人类直接使用，也可作为 AI Agent 的工具层。
+dw-cli 把 DataWorks 2020-05-18 SDK 的 149 个 API 封装成一套语义化命令行工具，覆盖节点调度、实例运维、文件开发、元数据、数据源、SQL 执行等。专为私有云环境优化（RegionId 注入、凭据链、logview 替换），既可人类直接使用，也可作为 AI Agent 的工具层。
 
-- **104 个语义化命令** + raw 逃生舱（透传未封装 API）
-- **4 个 Codex/Agent Skill** 覆盖运维/开发/元数据/基础设施
+- **149 个语义化命令** + raw 逃生舱（透传未封装 API）
+- **5 个 Codex/Agent Skill** 覆盖运维/开发/元数据/基础设施/数据质量
 - **私有云适配**：固定 endpoint、凭据链复用、logview 地址替换、PyODPS 直连 MaxCompute
 - **安全门禁**：高危操作（delete_/offline_/stop_）需 `--confirm`，SQL 写语句需 `--confirm`
 
@@ -150,7 +150,7 @@ dw-cli 的命令设计为「agent 可读」：默认输出 JSON，`--query` 裁�
 **方式一：从 GitHub 安装**
 
 ```bash
-# 一键安装全部 4 个 skill
+# 一键安装全部 5 个 skill
 npx skills add dcbandtss/dw-cli
 
 # 或只装需要的
@@ -158,12 +158,13 @@ npx skills add dcbandtss/dw-cli@dw-cli-infra
 npx skills add dcbandtss/dw-cli@dw-cli-ops
 npx skills add dcbandtss/dw-cli@dw-cli-dev
 npx skills add dcbandtss/dw-cli@dw-cli-meta
+npx skills add dcbandtss/dw-cli@dw-cli-quality
 ```
 
 **方式二：国内用户从 Gitee 安装**
 
 ```bash
-# 一键安装全部 4 个 skill
+# 一键安装全部 5 个 skill
 npx skills add https://gitee.com/assassinv/dw-cli.git
 
 # 或只装需要的（用 --skill 指定）
@@ -171,6 +172,7 @@ npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-infra
 npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-ops
 npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-dev
 npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-meta
+npx skills add https://gitee.com/assassinv/dw-cli.git --skill dw-cli-quality
 ```
 
 > 两种方式安装的 skill 内容完全一致，Gitee 与 GitHub 保持镜像同步。
@@ -196,6 +198,7 @@ cd ~/.codex/skills/dw-cli-infra && git pull   # 每个 skill 目录各自 pull
 | **dw-cli-ops** | 节点调度、实例运维、任务重跑、DAG 运行控制、告警规则、迁移 | "帮我查今天有没有失败的任务实例" / "重跑这个失败的节点" / "查告警规则" | [SKILL.md](skills/dw-cli-ops/SKILL.md) · [运维工作流](skills/dw-cli-ops/references/ops-workflows.md) |
 | **dw-cli-dev** | 创建节点文件、配置调度依赖、提交上线、管理 UDF/资源/DI、执行 SQL | "帮我建一个 SQL 节点并上线" / "配一下调度周期" / "执行这段 SQL" | [SKILL.md](skills/dw-cli-dev/SKILL.md) · [节点类型](skills/dw-cli-dev/references/node-types.md) · [调度指南](skills/dw-cli-dev/references/scheduling-guide.md) |
 | **dw-cli-meta** | 元数据查询（表/字段/分区/血缘）、建表删表、表列表（PyODPS 直连） | "查这张表的字段信息" / "建一张表" / "列出空间里有哪些表" | [SKILL.md](skills/dw-cli-meta/SKILL.md) · [GUID 与 PyODPS](skills/dw-cli-meta/references/guid-and-pyodps.md) |
+| **dw-cli-quality** | 数据质量监控：质量实体（表+分区表达式）、质量规则（CRUD）、订阅人管理 | "帮我查这张表的质量规则" / "创建质量实体" / "添加质量订阅人" | [SKILL.md](skills/dw-cli-quality/SKILL.md) |
 
 ### 工作原理
 
@@ -211,7 +214,7 @@ Agent 在内部自动处理所有 `dw-cli` 命令——你只需用自然语言�
 
 ## 命令概览
 
-完整命令分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Escape Hatch 等面板）。
+完整命令分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Quality / Baseline / Escape Hatch 等面板）。
 
 每个命令的详细参数与示例运行 `dw-cli <command> --help`。各 skill 的完整命令参考：
 
@@ -221,6 +224,7 @@ Agent 在内部自动处理所有 `dw-cli` 命令——你只需用自然语言�
 | ops | [command-reference](skills/dw-cli-ops/references/command-reference.md) |
 | dev | [command-reference](skills/dw-cli-dev/references/command-reference.md) |
 | meta | [command-reference](skills/dw-cli-meta/references/command-reference.md) |
+| quality | [SKILL.md](skills/dw-cli-quality/SKILL.md) |
 
 常用命令速查：
 
