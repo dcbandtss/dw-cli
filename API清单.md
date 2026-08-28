@@ -415,8 +415,6 @@
 | `get_permission_apply_order_detail` |  | 剔除 | 安全中心 security |
 | `get_security_token` |  | 剔除 | 标签/杂项 entity-tags |
 | `get_sensitive_data` |  | 剔除 | 数据保护伞 dsp |
-| `list_baseline_configs` |  | 剔除 | 基线 baseline |
-| `list_baseline_statuses` |  | 剔除 | 基线 baseline |
 | `list_baselines` |  | 剔除 | 基线 baseline |
 | `list_cluster_configs` | 列出集群在某个工作空间下分模块的配置信息，目前支持列出 SPARK 参数。 | 剔除 | 剔除 |
 | `list_clusters` | 列出注册到 DataWorks 的集群信息，目前支持 EMR 集群、CDH 集群。 | 剔除 | 剔除 |
@@ -435,8 +433,6 @@
 | `list_measure_data` | 该接口用于查询用户所在租户下最近30天电话告警、短信告警计量数据。 | 剔除 | 剔除 |
 | `list_meta_collection_entities` | 该接口用于查询集合中的实体。 | 剔除 | 剔除 |
 | `list_meta_collections` | 查询集合信息。 集合的概念包括数据地图页面上的专辑、专辑中的子类目等。 通过本接口可以指定集合类型查询集合信息。 | 剔除 | 剔除 |
-| `list_meta_dbwith_options` | _(官方网页未单独列出)_ | 剔除 | 剔除 |
-| `list_nodes_by_baseline` |  | 剔除 | 基线 baseline |
 | `list_permission_apply_orders` |  | 剔除 | 安全中心 security |
 | `list_program_type_count` |  | 剔除 | 标签/杂项 entity-tags |
 | `list_quality_results_by_entity` |  | 剔除 | 数据质量（私有云 500 不可用） |
