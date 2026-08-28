@@ -45,6 +45,8 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `create-udf-file` / `update-udf-file`
 - `create-resource-file` / `create-resource-file-upload`
 - `get-deployment` — 查询发布状态（异步发布轮询）
+- `list-deployments` — 查询发布包列表
+- `get-ide-event-detail` — 查询扩展点事件数据快照
 
 ### 🧩 节点调度
 - `get-node` / `get-node-code` / `get-node-parents` / `get-node-children` / `list-nodes`
@@ -54,6 +56,7 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `list-node-input-or-output` — 查节点上游/下游
 - `get-business` / `list-business` / `create-business` / `delete-business`
 - `list-inner-nodes` -- query inner nodes of combination nodes (needs outer_node_id)
+- `list-file-type` — 查询节点类型信息（Code + 名称）
 
 ### ⚙️ 实例运维
 - `get-instance` / `get-instance-log` / `list-instances` / `list-instance-history`
@@ -69,12 +72,28 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `get-dag` — 查 DAG 详情
 - `list-manual-dag-instances` — 查手动 DAG 实例
 - `set-success-instance` — 失败实例置成功
+- `list-dags` — 按 OpSeq 查补数据 DAG（OpSeq 从 get-dag Data.OpSeq 获取）
+- `run-trigger-node` — 运行触发式节点（app_id=project_id，13 位毫秒时间戳）
+- `run-smoke-test` — 冒烟测试
 
 ### 📊 表管理
 - `create-table` / `delete-table` / `get-ddl-job-status`
 - `update-table` -- update table (app_guid needed)
 - `update-table-add-column` -- add columns (JSON array, async TaskInfo)
 - `list-tables` — 列表（**PyODPS 直连**，--limit/--offset/--keyword/--all）
+
+### 🔧 DI 数据集成
+- `list-diproject-config` / `update-diproject-config` — DI 全局配置
+- `list-ref-disync-tasks` — 查询 DI 同步任务引用
+- `create-disync-task` / `update-disync-task` — 创建/更新 DI 同步任务
+- `get-disync-task` — 获取 DI 任务详情（task_type 区分：DI_REALTIME / DI_SOLUTION）
+- `get-disync-instance-info` — 获取 DI 实例运行状态
+
+### 📦 迁移
+- `list-migrations` — 查询迁移任务列表
+- `get-migration-process` — 获取迁移进度状态
+- `get-migration-summary` — 获取迁移摘要信息
+- `create-import-migration` / `start-migration` — 创建/启动导入迁移（⚠️私有云不可用）
 
 ### 🏢 工作空间
 - `get-project` / `list-project-ids`
@@ -91,6 +110,17 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `list-alert-messages` — 告警消息（begin/end 间隔须 <2 天）
 - `list-reminds` — 自定义监控规则
 - `list-topics` — 运行异常主题
+
+### 📊 基线监控（v3.18.6）
+- `list-baseline-configs` / `get-baseline-config` — 基线配置查询
+- `get-baseline-status` / `list-baseline-statuses` — 基线状态查询
+- `get-baseline-key-path` — 基线关键路径
+- `list-nodes-by-baseline` — 基线上的节点列表
+
+### 🔍 数据质量（v3.18.6）
+- `get-quality-entity` / `create-quality-entity` / `delete-quality-entity` — 质量实体 CRUD（env_type=odps，entity_level=1）
+- `list-quality-rules` / `get-quality-rule` / `create-quality-rule` / `update-quality-rule` / `delete-quality-rule` — 质量规则 CRUD
+- `get-quality-follower` / `create-quality-follower` / `update-quality-follower` / `delete-quality-follower` — 订阅人 CRUD
 
 ### 🚀 逃生舱
 - `raw <ActionName> --key value` — 透传任意 2020-05-18 API（kebab-case 参数）。
