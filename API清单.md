@@ -3,6 +3,7 @@
 > 双重身份：① 裁剪确认单（哪些操作纳入）② 开发记录（raw 透传 / 语义封装 / 已建）。
 > 数据来源：反射 `alibabacloud-dataworks-public20200518` SDK Client（309 个规范操作）。
 > 每个接口只出现一次。私有云探活由 `scripts/probe_raw.py` 真调，结果存 `docs/raw-probe-result.json`。
+> **更新时间：2026-08-28**（v3.18.6 兼容性验证与新接口开发完成后）
 
 ## 状态枚举
 
@@ -14,9 +15,9 @@
 | 剔除 | 按裁剪原则不纳入 |
 | 废弃·不建议 | SDK 标 Deprecated |
 
-**私有云探活图例**：✅可用　⚠️接口通需调参　❌未实现(404)　🔒需权限　❓未定　—不适用/未探
+**私有云探活图例**：✅可用 ⚠️接口通需调参 ❌未实现(404) 🔒需权限 ❓未定 —不适用/未探
 
-## 一、已封装 CLI 命令（101 个，按模块分）
+## 一、已封装 CLI 命令（149 个，按模块分）
 
 > 命令名与 SDK 方法一一对应（kebab-case ↔ snake_case）。场景封装命令单独标出。
 
@@ -87,7 +88,7 @@
 | `create-udf-file` | 创建函数类型文件 | `create_udf_file` | 已封装 |
 | `update-udf-file` | 更新函数文件信息 | `update_udf_file` | 已封装 |
 
-### node 节点调度（8）
+### node 节点调度（10）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -96,9 +97,11 @@
 | `get-node-parents` | 获取节点上游列表 | `get_node_parents` | 已封装 |
 | `get-node-children` | 获取节点下游列表 | `get_node_children` | 已封装 |
 | `list-nodes` | 获取节点列表 | `list_nodes` | 已封装 |
-| `offline-node` | 下线节点（⚠️私有云 404） | `offline_node` | 已封装 |
+| `offline-node` | 下线节点（⚠️私有云 v3.18.6 已修复为 401，需权限） | `offline_node` | 已封装 |
 | `update-node-run-mode` | 冻结/解冻节点 | `update_node_run_mode` | 已封装 |
 | `update-node-owner` | 修改节点责任人 | `update_node_owner` | 已封装 |
+| `list-inner-nodes` | 查询组合节点/遍历节点/赋值节点等特殊节点的内部节点 | `list_inner_nodes` | 已封装 |
+| `list-file-type` | 查询任务节点的类型信息（节点类型 Code + 类型名称） | `list_file_type` | 已封装 |
 
 ### instance 实例运维（8）
 
@@ -113,7 +116,7 @@
 | `stop-instance` | 终止实例（⚠️高危须 --confirm） | `stop_instance` | 已封装 |
 | `suspend-instance` | 暂停实例 | `suspend_instance` | 已封装 |
 
-### meta_table 表元数据（15）
+### meta_table 表元数据（20）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -132,8 +135,13 @@
 | `get-meta-table-output` | 查询表的产出任务 | `get_meta_table_output` | 已封装 |
 | `update-meta-table` | 更新表元数据 | `update_meta_table` | 已封装 |
 | `update-meta-table-intro-wiki` | 更新表说明wiki | `update_meta_table_intro_wiki` | 已封装 |
+| `list-meta-db` | 查询数据库列表（按工作空间 + 数据源类型） | `list_meta_dbwith_options` | 已封装 |
+| `get-meta-dbinfo` | 获取引擎实例的基本元数据信息（app_guid=odps.<project_name> 是关键参数） | `get_meta_dbinfo` | 已封装 |
+| `get-meta-metrics` | 获取元数据概览（租户级，含项目数/存储量等） | `GetMetaMetrics` (POP HTTP GET) | 已封装 |
+| `get-meta-storage-trend` | 获取存储趋势（最近 30 天每日存储量） | `GetMetaStorageTrend` (POP HTTP GET) | 已封装 |
+| `get-meta-table-list-by-category` | 查询指定类目下的表 | `get_meta_table_list_by_category` | 已封装 |
 
-### table 表管理（4）
+### table 表管理（6）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -141,20 +149,31 @@
 | `delete-table` | 删除 MaxCompute 表（异步，须 --confirm） | `delete_table` | 已封装 |
 | `get-ddl-job-status` | 获取表操作任务状态 | `get_ddljob_status` | 已封装 |
 | `list-tables` | 列出表（⚠️SDK私有云404，改走 PyODPS 直连） | `list_tables` | 已封装(PyODPS) |
+| `update-table` | 更新 MaxCompute 表的元数据信息（app_guid 必需） | `update_table` | 已封装 |
+| `update-table-add-column` | 更新 MaxCompute 表的字段信息（JSON 数组，异步 TaskInfo） | `update_table_add_column` | 已封装 |
 
-### project 工作空间（2）
+### project 工作空间（11）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
 | `get-project` | 查询工作空间详情 | `get_project` | 已封装 |
 | `list-project-ids` | 查询工作空间 ID 列表 | `list_project_ids` | 已封装 |
+| `list-projects` | 列出当前租户下的所有工作空间 | `list_projects` | 已封装 |
+| `list-calc-engines` | 查询工作空间绑定的计算引擎（数据源） | `list_calc_engines` | 已封装 |
+| `list-resource-groups` | 查询资源组列表（租户级，无需 project_id） | `list_resource_groups` | 已封装 |
+| `list-project-members` | 查询工作空间的成员列表（page_size 上限 10） | `list_project_members` | 已封装 |
+| `list-project-roles` | 查询工作空间的所有角色列表 | `list_project_roles` | 已封装 |
+| `add-project-member-to-role` | 添加工作空间成员至目标角色 | `add_project_member_to_role` | 已封装 |
+| `create-project-member` | 添加一个用户至工作空间 | `create_project_member` | 已封装 |
+| `remove-project-member-from-role` | 将工作空间内的用户从角色中移除 | `remove_project_member_from_role` | 已封装 |
+| `delete-project-member` | 从工作空间移除用户（⚠️高危，项目所有者不能删） | `delete_project_member` | 已封装 |
 
-### deployment 发布包（1）
+### deployment 发布包（2）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
 | `get-deployment` | 获取发布包详情（用于轮询异步操作状态） | `get_deployment` | 已封装 |
-
+| `list-deployments` | 查询发布包列表 | `list_deployments` | 已封装 |
 
 ### 运维统计 instance_stat（5 命令）
 
@@ -163,10 +182,10 @@
 | `list-success-instance-amount` | 查询成功实例状态分布趋势 | `list_success_instance_amount` | 已封装 |
 | `top-ten-elapsed-time-instance` | 查询耗时最长的 Top 10 实例 | `top_ten_elapsed_time_instance` | 已封装 |
 | `top-ten-error-times-instance` | 查询报错次数最多的 Top 10 实例 | `top_ten_error_times_instance` | 已封装 |
-| `get-instance-status-statistic` | 查询实例状态数量统计 | `get_instance_status_statistic` | 已封装 |
-| `list-instance-amount` | 查询指定时间段的实例数量统计 | `list_instance_amount` | 已封装 |
+| `get-instance-status-statistic` | 获取实例状态统计信息 | `get_instance_status_statistic` | 已封装 |
+| `list-instance-amount` | 查询工作空间内指定时间段的实例数量统计 | `list_instance_amount` | 已封装 |
 
-### DAG 运行控制 dag（5 命令）
+### DAG 运行控制 dag（8 命令）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -174,7 +193,10 @@
 | `run-manual-dag-nodes` | 运行手动业务流程节点 | `run_manual_dag_nodes` | 已封装 |
 | `get-dag` | 查询 DAG 详情 | `get_dag` | 已封装 |
 | `list-manual-dag-instances` | 查询手动 DAG 的实例列表 | `list_manual_dag_instances` | 已封装 |
-| `set-success-instance` | 将实例标记为成功（须 FAILURE/CHECKING） | `set_success_instance` | 已封装 |
+| `set-success-instance` | 将实例标记为成功（仅 FAILURE/CHECKING） | `set_success_instance` | 已封装 |
+| `list-dags` | 按 OpSeq（补数据序号）获取单次补数据的所有 DAG 详情 | `list_dags` | 已封装 |
+| `run-trigger-node` | 运行一个触发式节点（app_id=project_id，13 位毫秒时间戳） | `run_trigger_node` | 已封装 |
+| `run-smoke-test` | 创建冒烟测试工作流（运行指定节点进行小规模测试） | `run_smoke_test` | 已封装 |
 
 ### 节点 IO node_io（2 命令）
 
@@ -210,7 +232,7 @@
 | `get-topic-influence` | 查询主题影响的下游基线 | `get_topic_influence` | 已封装 |
 | `list-topics` | 查询运行异常主题列表 | `list_topics` | 已封装 |
 
-### di 数据集成（5 命令）
+### di 数据集成（7 命令）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -219,24 +241,75 @@
 | `list-ref-disync-tasks` | 查询数据源关联的DI同步任务 | `list_ref_disync_tasks` | 已封装 |
 | `create-disync-task` | 创建DI同步任务 | `create_disync_task` | 已封装 |
 | `update-disync-task` | 更新DI同步任务 | `update_disync_task` | 已封装 |
+| `get-disync-task` | 获取数据集成实时同步任务和同步解决方案的详情（task_type 区分） | `get_disync_task` | 已封装 |
+| `get-disync-instance-info` | 获取实时同步任务和同步解决方案任务的运行状态 | `get_disync_instance_info` | 已封装 |
 
-## 二、raw 透传可用接口（2 个，私有云可用但用户无需求暂不封装）
+### baseline 基线监控（6 命令，v3.18.6 新增）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `list-baseline-configs` | 查询基线配置列表 | `list_baseline_configs` | 已封装 |
+| `get-baseline-config` | 查询基线配置详情 | `get_baseline_config` | 已封装 |
+| `get-baseline-status` | 查询基线状态详情 | `get_baseline_status` | 已封装 |
+| `list-baseline-statuses` | 查询基线状态列表 | `list_baseline_statuses` | 已封装 |
+| `get-baseline-key-path` | 查询基线关键路径 | `get_baseline_key_path` | 已封装 |
+| `list-nodes-by-baseline` | 查询基线上的节点列表 | `list_nodes_by_baseline` | 已封装 |
+
+### quality 数据质量（12 命令，v3.18.6 新增）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `get-quality-entity` | 查询质量实体（表+分区表达式） | `get_quality_entity` | 已封装 |
+| `create-quality-entity` | 创建质量实体（表的分区监控配置） | `create_quality_entity` | 已封装 |
+| `delete-quality-entity` | 删除质量实体（⚠️高危） | `delete_quality_entity` | 已封装 |
+| `get-quality-follower` | 查询质量实体的订阅人列表 | `get_quality_follower` | 已封装 |
+| `create-quality-follower` | 添加质量订阅人 | `create_quality_follower` | 已封装 |
+| `update-quality-follower` | 更新质量订阅人 | `update_quality_follower` | 已封装 |
+| `delete-quality-follower` | 删除质量订阅人（⚠️高危） | `delete_quality_follower` | 已封装 |
+| `list-quality-rules` | 查询质量规则列表 | `list_quality_rules` | 已封装 |
+| `get-quality-rule` | 获取质量规则详情 | `get_quality_rule` | 已封装 |
+| `create-quality-rule` | 创建质量规则 | `create_quality_rule` | 已封装 |
+| `update-quality-rule` | 更新质量规则 | `update_quality_rule` | 已封装 |
+| `delete-quality-rule` | 删除质量规则（⚠️高危） | `delete_quality_rule` | 已封装 |
+
+### ide_event IDE 扩展点（1 命令，v3.18.6 新增）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `get-ide-event-detail` | 查询触发扩展点事件时的数据快照 | `get_ideevent_detail` | 已封装 |
+
+### migration 迁移（5 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `create-import-migration` | 创建导入迁移任务（⚠️私有云不可用：普通版无 MigrationId，advance 版 OSS 不通） | `create_import_migration` | 已封装 |
+| `start-migration` | 启动执行导入迁移任务（⚠️私有云不可用） | `start_migration` | 已封装 |
+| `list-migrations` | 查询迁移任务列表 | `list_migrations` | 已封装 |
+| `get-migration-process` | 获取迁移任务的进度状态 | `get_migration_process` | 已封装 |
+| `get-migration-summary` | 获取迁移任务的摘要信息 | `get_migration_summary` | 已封装 |
+
+### sql 直连执行（2 命令）
+
+| CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
+|---|---|---|---|
+| `run-sql` | 直连 MaxCompute 执行 SQL（PyODPS，私有云可用） | `—` | 已建(自有) |
+| `get-sql-instance` | 跟进 MaxCompute instance 状态 + 取结果（run-sql 超时降级闭环） | `—` | 已建(自有) |
+
+## 二、raw 透传可用但未封装接口（2 个）
 
 > 私有云探活 ✅ 或 ⚠️（接口在，给正确参数可用）。用户确认无此需求，暂不封装（raw 透传仍可用）。
 
 | SDK 方法 | 描述 | 私有云探活 | 备注 |
 |---|---|---|---|
 | `check_file_deployment` | 文件发布检查结果回填（Checker 回调接口）。 | ⚠️ | 用户无此需求跳过；checker_instance_id 依赖自定义扩展程序机制，CLI 无法独立获取 |
-| `get_meta_table_list_by_category` | 查询指定数据类目下的表。 | ⚠️ | 用户无此需求跳过（私有云未启用数据分类功能） |
 | `import_data_sources` | 批量导入数据源到工作空间。 | ⚠️ | 用户无此需求跳过 |
 
-## 三、raw 透传不可用接口（42 个）
+## 三、raw 透传不可用接口（29 个）
 
 > 私有云探活 ❌（服务端 InvalidAction.NotFound，未部署）或未探。raw 透传也透不通。
 
 | SDK 方法 | 描述 | 私有云探活 | 备注 |
 |---|---|---|---|
-| `run_trigger_node` | 调用RunTriggerNode运行一个触发式节点。 | ⚠️ | 接口通，需调参(MissingNodeId) |
 | `add_meta_collection_entity` | 该接口用于添加实体到集合中。 | ❌ | 私有云未实现(404) |
 | `callback_extension` |  | — |  |
 | `create_dialarm_rule` | 创建数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
@@ -252,23 +325,12 @@
 | `get_alert_message` | 调用GetAlertMessage接口，通过获取的AlertId查询报警信息。 | ❌ | 私有云未实现(404) |
 | `get_dialarm_rule` | 查询数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
 | `get_dijob` | 查看数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
-| `get_disync_instance_info` | 获取实时同步任务和同步解决方案任务的运行状态。 | ❌ | 私有云未实现(404) |
-| `get_disync_task` | 获取数据集成实时同步任务和同步解决方案的详情。 | ❌ | 私有云未实现(404) |
-| `get_migration_summary` | 调用GetMigrationSummary，获取导入导出任务的信息。 | ❌ | 私有云未实现(404) |
 | `get_option_value_for_project` |  | — |  |
-| `list_dags` | 根据OpSeq（补数据唯一标识）获取单次补数据的所有Dag详情。 | ❌ | 私有云未实现(404) |
-| `list_deployments` | 查询发布包列表信息。该功能与DataWorks控制台任务发布页面的发布包列表功能对应。 | ❌ | 私有云未实现(404) |
 | `list_dialarm_rules` | 查询数据集成新版任务告警规则列表，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
 | `list_dijobs` | 查询数据集成新版任务列表，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
-| `list_file_type` | 查询任务节点的类型信息，包括类型Code和类型名称。 | ❌ | 私有云未实现(404) |
-| `list_inner_nodes` | 调用ListInnerNodes获取内部节点详情，例如查询组合节点、循环节点等节点类型的内部节点，不支持PAI节点的内部节点查询。 | ❌ | 私有云未实现(404) |
 | `list_lineage` | 查询实体的上下游血缘关系。 | ❌ | 私有云未实现(404) |
-| `list_meta_db` | 该接口用于查询数据库列表。 | ❌ | 私有云未实现(404) |
-| `list_migrations` | 获取导入导出迁移任务列表。 | ❌ | 私有云未实现(404) |
-| `list_projects` | 该接口用于查询用户所在租户下的DataWorks工作空间列表。 | — | 已封装(doctor探活) |
 | `query_disync_task_config_process_result` | 查询异步任务结果。 | ❌ | 私有云未实现(404) |
 | `register_lineage_relation` | 注册实体关系，支持用户注册自定义的实体关系。 | ❌ | 私有云未实现(404) |
-| `run_smoke_test` | 创建冒烟测试工作流。 | ❌ | 私有云未实现(404) |
 | `start_dijob` | 启动数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
 | `start_disync_instance` | 调用StartDISyncInstance接口，启动实时同步任务和解决方案同步任务。 | ❌ | 私有云未实现(404) |
 | `stop_dijob` | 停止数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
@@ -276,17 +338,14 @@
 | `terminate_disync_instance` | 下线数据集成实时同步任务。 | ❌ | 私有云未实现(404) |
 | `update_dialarm_rule` | 更新数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
 | `update_dijob` | 更新数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
-| `create_import_migration` | 创建导入迁移任务（导出包导入到目标空间）。 | ⚠️ | 私有云不可用：普通版无 MigrationId 返回，advance 版依赖 OSS 公网不通 |
-| `start_migration` | 启动执行导入迁移任务。 | ⚠️ | 私有云不可用：依赖 create_import_migration 返回的 MigrationId（拿不到） |
 
-## 四、剔除 / 废弃·不建议（176 个）
+## 四、剔除 / 废弃·不建议（128 个）
 
-> 不纳入 CLI。剔除原因：无此接口 / DI未部署 / 私有云404 / 非本场景 等。
+> 不纳入 CLI。剔除原因：无此接口 / DI未部署 / 私有云404 / 非本场景 / 服务端 500 不可用 等。
 
 | SDK 方法 | 描述 | 状态 | 原因 |
 |---|---|---|---|
 | `abolish_data_service_api` |  | 剔除 | 数据服务 data_service |
-| `add_project_member_to_role` |  | 剔除 | 安全中心 security |
 | `add_recognize_rule` |  | 剔除 | 数据保护伞 dsp |
 | `add_to_meta_category` |  | 剔除 | 数据建模 modeling |
 | `approve_permission_apply_order` |  | 剔除 | 安全中心 security |
@@ -301,11 +360,7 @@
 | `create_meta_collection` | 创建集合对象。 | 剔除 | 剔除 |
 | `create_permission_apply_order` |  | 剔除 | 安全中心 security |
 | `create_project` | 该接口用于创建一个DataWorks工作空间。 | 剔除 | 剔除 |
-| `create_project_member` |  | 剔除 | 安全中心 security |
-| `create_quality_entity` |  | 剔除 | 数据质量 quality |
-| `create_quality_follower` |  | 剔除 | 数据质量 quality |
-| `create_quality_relative_node` |  | 剔除 | 数据质量 quality |
-| `create_quality_rule` |  | 剔除 | 数据质量 quality |
+| `create_quality_relative_node` |  | 剔除 | 数据质量（私有云 500 不可用） |
 | `create_table_level` |  | 剔除 | 数据建模 modeling |
 | `create_table_theme` |  | 剔除 | 数据建模 modeling |
 | `delete_baseline` |  | 剔除 | 基线 baseline |
@@ -315,11 +370,7 @@
 | `delete_meta_category` |  | 剔除 | 数据建模 modeling |
 | `delete_meta_collection` | 删除集合。 | 剔除 | 剔除 |
 | `delete_meta_collection_entity` | 该接口用于删除集合中的实体。 | 剔除 | 剔除 |
-| `delete_project_member` |  | 剔除 | 安全中心 security |
-| `delete_quality_entity` |  | 剔除 | 数据质量 quality |
-| `delete_quality_follower` |  | 剔除 | 数据质量 quality |
-| `delete_quality_relative_node` |  | 剔除 | 数据质量 quality |
-| `delete_quality_rule` |  | 剔除 | 数据质量 quality |
+| `delete_quality_relative_node` |  | 剔除 | 数据质量（私有云 500 不可用） |
 | `delete_recognize_rule` |  | 剔除 | 数据保护伞 dsp |
 | `delete_table_level` |  | 剔除 | 数据建模 modeling |
 | `delete_table_theme` |  | 剔除 | 数据建模 modeling |
@@ -347,9 +398,6 @@
 | `edit_recognize_rule` |  | 剔除 | 数据保护伞 dsp |
 | `get_access_denied_detail` |  | 剔除 | 标签/杂项 entity-tags |
 | `get_baseline` |  | 剔除 | 基线 baseline |
-| `get_baseline_config` |  | 剔除 | 基线 baseline |
-| `get_baseline_key_path` |  | 剔除 | 基线 baseline |
-| `get_baseline_status` |  | 剔除 | 基线 baseline |
 | `get_data_service_api` |  | 剔除 | 数据服务 data_service |
 | `get_data_service_api_test` |  | 剔除 | 数据服务 data_service |
 | `get_data_service_application` |  | 剔除 | 数据服务 data_service |
@@ -357,26 +405,19 @@
 | `get_data_service_group` |  | 剔除 | 数据服务 data_service |
 | `get_data_service_published_api` |  | 剔除 | 数据服务 data_service |
 | `get_extension` |  | 剔除 | 开放平台 openplatform |
-| `get_ideevent_detail` |  | 剔除 | 开放平台 openplatform |
 | `get_meta_category` |  | 剔除 | 数据建模 modeling |
 | `get_meta_collection_detail` | 该接口用于查询集合的详细信息。 | 剔除 | 剔除 |
-| `get_meta_dbinfo` | 该接口用于获取引擎实例的基本元数据信息。 | 剔除 | 剔除 |
 | `get_meta_table_producing_tasks` | _(官方网页未单独列出)_ | 剔除 | 剔除 |
 | `get_meta_table_theme_level` |  | 剔除 | 数据建模 modeling |
-| `get_migration_process` | 调用GetMigrationProcess获取导入导出任务的进度状态。 | 剔除 | 剔除 |
 | `get_node_on_baseline` |  | 剔除 | 基线 baseline |
 | `get_op_risk_data` |  | 剔除 | 安全中心 security |
 | `get_op_sensitive_data` |  | 剔除 | 数据保护伞 dsp |
 | `get_permission_apply_order_detail` |  | 剔除 | 安全中心 security |
-| `get_quality_entity` |  | 剔除 | 数据质量 quality |
-| `get_quality_follower` |  | 剔除 | 数据质量 quality |
-| `get_quality_rule` |  | 剔除 | 数据质量 quality |
 | `get_security_token` |  | 剔除 | 标签/杂项 entity-tags |
 | `get_sensitive_data` |  | 剔除 | 数据保护伞 dsp |
 | `list_baseline_configs` |  | 剔除 | 基线 baseline |
 | `list_baseline_statuses` |  | 剔除 | 基线 baseline |
 | `list_baselines` |  | 剔除 | 基线 baseline |
-| `list_calc_engines` | 该接口用于查询指定DataWorks工作空间的数据开发中绑定的数据源列表。 | 剔除 | 剔除 |
 | `list_cluster_configs` | 列出集群在某个工作空间下分模块的配置信息，目前支持列出 SPARK 参数。 | 剔除 | 剔除 |
 | `list_clusters` | 列出注册到 DataWorks 的集群信息，目前支持 EMR 集群、CDH 集群。 | 剔除 | 剔除 |
 | `list_data_service_api_authorities` |  | 剔除 | 数据服务 data_service |
@@ -398,12 +439,8 @@
 | `list_nodes_by_baseline` |  | 剔除 | 基线 baseline |
 | `list_permission_apply_orders` |  | 剔除 | 安全中心 security |
 | `list_program_type_count` |  | 剔除 | 标签/杂项 entity-tags |
-| `list_project_members` |  | 剔除 | 安全中心 security |
-| `list_project_roles` |  | 剔除 | 安全中心 security |
-| `list_quality_results_by_entity` |  | 剔除 | 数据质量 quality |
-| `list_quality_results_by_rule` |  | 剔除 | 数据质量 quality |
-| `list_quality_rules` |  | 剔除 | 数据质量 quality |
-| `list_resource_groups` | 该接口用于查看指定类型的资源组列表。 | 剔除 | 剔除 |
+| `list_quality_results_by_entity` |  | 剔除 | 数据质量（私有云 500 不可用） |
+| `list_quality_results_by_rule` |  | 剔除 | 数据质量（私有云 500 不可用） |
 | `list_shift_personnels` | 获取值班表的值班人员列表。 | 剔除 | 剔除 |
 | `list_shift_schedules` | 获取运维中心值班表列表。 | 剔除 | 剔除 |
 | `list_table_level` |  | 剔除 | 数据建模 modeling |
@@ -419,7 +456,6 @@
 | `query_sens_level` |  | 剔除 | 数据保护伞 dsp |
 | `query_sens_node_info` |  | 剔除 | 数据保护伞 dsp |
 | `remove_entity_tags` |  | 剔除 | 标签/杂项 entity-tags |
-| `remove_project_member_from_role` |  | 剔除 | 安全中心 security |
 | `revoke_column_permission` |  | 剔除 | 安全中心 security |
 | `revoke_table_permission` |  | 剔除 | 安全中心 security |
 | `save_data_service_api_test_result` |  | 剔除 | 数据服务 data_service |
@@ -431,12 +467,9 @@
 | `update_baseline` |  | 剔除 | 基线 baseline |
 | `update_cluster_configs` | 更新集群在某个工作空间下分模块的配置信息，目前支持更新 SPARK 参数。 | 剔除 | 剔除 |
 | `update_data_service_api` |  | 剔除 | 数据服务 data_service |
-| `update_ideevent_result` |  | 剔除 | 开放平台 openplatform |
+| `update_ideevent_result` |  | 剔除 | 开放平台（需扩展点 message_id） |
 | `update_meta_category` |  | 剔除 | 数据建模 modeling |
 | `update_meta_collection` | 该接口用于更新集合对象的名称和注释。 | 剔除 | 剔除 |
-| `update_quality_follower` |  | 剔除 | 数据质量 quality |
-| `update_quality_rule` |  | 剔除 | 数据质量 quality |
-| `update_table_level` |  | 剔除 | 数据建模 modeling |
 | `update_table_model_info` |  | 剔除 | 数据建模 modeling |
 | `update_table_theme` |  | 剔除 | 数据建模 modeling |
 | `update_workbench_event_result` |  | 剔除 | 开放平台 openplatform |
@@ -459,5 +492,3 @@
 | `search_nodes_by_output` | 调用SearchNodesByOutput，根据输出精确查询节点。 | 废弃·不建议 | SDK已废弃 |
 | `set_data_source_share` | 分享目标数据源至指定DataWorks工作空间或指定用户。 | 废弃·不建议 | SDK已废弃 |
 | `update_connection` | 调用UpdateConnection更新一个数据源。 | 废弃·不建议 | SDK已废弃 |
-| `update_table` | 调用UpdateTable更新MaxCompute表。 | 废弃·不建议 | SDK已废弃 |
-| `update_table_add_column` | 更新MaxCompute表的字段信息。 | 废弃·不建议 | SDK已废弃 |

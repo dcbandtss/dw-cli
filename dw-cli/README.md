@@ -1,12 +1,12 @@
 # dw-cli
 
-DataWorks 私有云命令行工具，基于阿里云 2020-05-18 SDK + 凭据链鉴权。
+DataWorks 私有云命令行工具，基于阿里云 2020-05-18 SDK + 凭据链鉴权 + RegionId 注入。
 
 本目录为 CLI 源码包。面向用户的安装与使用文档见仓库根目录 [README.md](../README.md)。
 
 ## 为何存在
 
-阿里云官方 CLI 要求 2024-05-18 API，私有云服务端拒绝（InvalidVersion），仅 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，封装成 150 个语义化命令 + raw 逃生舱。
+阿里云官方 CLI 要求 2024-05-18 API，私有云服务端拒绝（InvalidVersion），仅 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，封装成 149 个语义化命令 + raw 逃生舱。
 
 ## 安装（开发模式）
 
@@ -100,7 +100,7 @@ dw-cli doctor
 
 ## 命令概览
 
-共 150 个语义化命令 + raw 逃生舱。完整分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Escape Hatch 等面板）。
+共 149 个语义化命令 + raw 逃生舱。完整分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Quality / Baseline / Escape Hatch 等面板）。
 
 每个命令的详细参数与示例：`dw-cli <command> --help`。
 
@@ -118,13 +118,14 @@ dw-cli/
 │   │   ├── file.py         # 文件开发（create/update/submit/delete）
 │   │   ├── instance.py     # 实例运维
 │   │   ├── sql.py          # SQL 执行（run-sql + logview 替换）
-│   │   ├── table.py        # 表管理（create/delete/list，list 走 PyODPS 直连）
+│   │   ├── table.py        # 表管理（create/delete/list/update，list 走 PyODPS 直连）
 │   │   ├── data_source.py  # 数据源管理
 │   │   ├── di.py           # 数据集成
 │   │   ├── dag.py          # DAG 运行控制
 │   │   ├── remind.py       # 告警规则
 │   │   ├── migration.py    # 迁移
 │   │   ├── meta_table.py   # 元数据查询
+│   │   ├── project.py      # 工作空间 + 项目成员管理
 │   │   ├── raw.py          # raw 逃生舱（透传未封装 API）
 │   │   ├── baseline.py     # 基线监控（v3.18.6 新增）
 │   │   ├── quality.py      # 数据质量（v3.18.6 新增）
@@ -135,7 +136,7 @@ dw-cli/
 │       ├── odps_client.py  # PyODPS 连接（list-tables / run-sql 复用）
 │       ├── output.py       # 三层输出（json/table/text）+ Tea envelope 解包
 │       ├── confirm.py      # 高危操作门禁（delete_/offline_/stop_ 前缀需 --confirm）
-│       ├── errors.py      # 错误归类 + 退出码分区（0/1/2/3）
+│       ├── errors.py       # 错误归类 + 退出码分区（0/1/2/3）
 │       ├── load_arg.py     # file:// 参数加载
 │       ├── paging.py       # --all 分页合并
 │       └── pop_http.py     # POP 网关直接 HTTP（SDK 无 Request 模型的 API）
