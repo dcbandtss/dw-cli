@@ -90,3 +90,5 @@ description: |
 > 每个命令的详细参数与示例请运行 `dw-cli <command> --help` 查看。
 > 所有命令默认输出 json（机器可读），人看加 `-o table`。
 > ⚠️ env_type=odps 是易错点，务必传小写引擎类型。
+
+> 完整命令参数见 [references/command-reference.md](references/command-reference.md)

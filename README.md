@@ -224,7 +224,7 @@ Agent 在内部自动处理所有 `dw-cli` 命令——你只需用自然语言�
 | ops | [command-reference](skills/dw-cli-ops/references/command-reference.md) |
 | dev | [command-reference](skills/dw-cli-dev/references/command-reference.md) |
 | meta | [command-reference](skills/dw-cli-meta/references/command-reference.md) |
-| quality | [SKILL.md](skills/dw-cli-quality/SKILL.md) |
+| quality | [command-reference](skills/dw-cli-quality/references/command-reference.md) |
 
 常用命令速查：
 
