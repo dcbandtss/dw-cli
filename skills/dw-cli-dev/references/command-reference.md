@@ -188,6 +188,131 @@ dw-cli update-disync-task --file-id 300001 --project-id 123456 \
 dw-cli list-ref-disync-tasks --project-id 123456 \
   --datasource-name my_db --task-type DI_OFFLINE --ref-type from
 ```
+
+---
+
+## v3.18.6 新增命令
+
+### list-deployments
+
+查询发布包列表。
+
+```bash
+dw-cli list-deployments --project-id 123456 --all
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 否 | INT | 工作空间 ID（与 --project-identifier 二选一） |
+| --project-identifier | 否 | TEXT | 项目标识符 |
+| --page-number | 否 | INT | 页码，从 1 开始 |
+| --page-size | 否 | INT | 每页数量，默认 50 |
+| --all | 否 | FLAG | 自动翻页合并所有页 |
+| --keyword | 否 | TEXT | 按名称过滤 |
+| --status | 否 | INT | 发布状态：0=进行中, 1=成功, 2=失败 |
+| --creator | 否 | TEXT | 创建者 ID |
+| --executor | 否 | TEXT | 执行者 ID |
+
+**输出**：`Data.Deployments[]`，每项含 `DeploymentId` / `Name` / `Status` / `CreatorId` / `CreateTime`。`Data.TotalCount`。
+
+### get-disync-task
+
+获取数据集成实时同步任务和同步解决方案的详情。
+
+**注意**：`task-type` 区分 `DI_REALTIME`（实时同步）和 `DI_SOLUTION`（解决方案）。file-id 可通过 `get-file` 或 `list-files` 获取。
+
+```bash
+dw-cli get-disync-task --project-id 123456 --file-id <file_id> --task-type DI_REALTIME
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --file-id | 是 | INT | 文件 ID（通过 get-file 或 list-files 获取） |
+| --task-type | 是 | TEXT | DI_REALTIME（实时同步）/ DI_SOLUTION（解决方案） |
+
+**输出**：`Data.Status`（success/fail）、`Data.Message`、`Data.SolutionDetail`（DI_SOLUTION 时有）。
+
+### get-disync-instance-info
+
+获取实时同步任务和同步解决方案任务的运行状态。
+
+**注意**：无运行实例时返回 NPE 是正常行为。
+
+```bash
+dw-cli get-disync-instance-info --project-id 123456 --file-id <file_id> --task-type DI_REALTIME
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --file-id | 是 | INT | 文件 ID |
+| --task-type | 是 | TEXT | DI_REALTIME / DI_SOLUTION |
+
+**输出**：`Data.Status`、`Data.Name`、`Data.Message`、`Data.SolutionInfo`（DI_SOLUTION 时有）。
+
+### update-table
+
+更新 MaxCompute 表的元数据信息。
+
+**注意**：`app-guid` 是关键参数（格式 `odps.<project_name>`）。不传 `--columns` 可能导致列顺序冲突。部分字段已废弃（has_part/external_table_type/location）。
+
+```bash
+dw-cli update-table --project-id 123456 --table-name my_table --comment "updated comment" --life-cycle 720
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --table-name | 是 | TEXT | 表名 |
+| --app-guid | 否 | TEXT | 应用 GUID（如 odps.my_project） |
+| --comment | 否 | TEXT | 表注释 |
+| --life-cycle | 否 | INT | 生命周期（天） |
+| --is-view | 否 | FLAG | 是否为视图 |
+| --owner-id | 否 | TEXT | 负责人 ID |
+| --category-id | 否 | INT | 分类 ID |
+| --visibility | 否 | INT | 可见性 |
+| --columns | 否 | TEXT | 字段定义 JSON 数组（同 update-table-add-column 格式） |
+| --env-type | 否 | INT | 环境类型（0=开发, 1=生产） |
+| --create-if-not-exists | 否 | FLAG | 不存在则创建 |
+
+**输出**：`{Data: true, Success: true}`。
+
+### update-table-add-column
+
+更新 MaxCompute 表的字段信息。
+
+**注意**：`column` 参数是 JSON 数组字符串，需传 `[{"column_name":"col1","column_type":"STRING","comment":"test"}]` 格式。大 JSON 用 `file://` 加载。异步操作，返回 TaskInfo。
+
+```bash
+dw-cli update-table-add-column --table-guid "odps.my_project.my_table"   --column '[{"column_name":"col1","column_type":"STRING","comment":"test"}]'
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --table-guid | 是 | TEXT | 表全局唯一标识（如 odps.my_project.my_table） |
+| --column | 是 | TEXT | 字段定义 JSON 数组，支持 file:// 传大 JSON |
+
+**输出**：`{Data: true, Success: true}`。
+
+### get-ide-event-detail
+
+查询触发扩展点事件时的数据快照。
+
+**注意**：SDK 方法名 `get_ideevent_detail`（ideevent 不拆下划线）。`message-id` 来自扩展点事件推送。
+
+```bash
+dw-cli get-ide-event-detail --project-id 123456 --message-id <message_id>
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --message-id | 是 | TEXT | 事件消息 ID（来自扩展点事件推送） |
+
+**输出**：`Data.{...}`，含事件类型、文件信息、操作人等。
+
+
 ## 常见错误排错
 
 ### Invalid.Tenant.UserNotInProject

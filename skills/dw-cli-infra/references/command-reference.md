@@ -92,6 +92,150 @@ dw-cli doctor
 dw-cli check-credentials
 ```
 输出凭据来源、类型、脱敏前缀、是否 STS。绝不输出完整 AK/SK。
+---
+
+## v3.18.6 新增命令
+
+### list-calc-engines
+
+查询工作空间绑定的计算引擎（数据源）列表。
+
+```bash
+dw-cli list-calc-engines --project-id 123456 --calc-engine-type ODPS
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 否 | INT | 工作空间 ID（与 --project-identifier 二选一） |
+| --calc-engine-type | 是 | TEXT | 计算引擎类型，如 ODPS / HADOOP / EMR |
+| --env-type | 否 | TEXT | 环境类型：PRD(生产) / DEV(开发) |
+| --name | 否 | TEXT | 按引擎名称过滤 |
+| --page-number | 否 | INT | 页码，从 1 开始 |
+| --page-size | 否 | INT | 每页数量，默认 50 |
+| --all | 否 | FLAG | 自动翻页合并所有页 |
+
+**输出**：`Data.CalcEngines[]`，每项含 `EngineId` / `Name` / `CalcEngineType` / `EnvType` / `EngineInfo`（内含 endpoint/resourceGroupId/projectName 等连接信息）。`Data.TotalCount`。
+
+### list-project-members
+
+查询工作空间的成员列表。
+
+**注意**：page_size 上限 10（不是 50），超限报 InvalidPageSize。
+
+```bash
+dw-cli list-project-members --project-id 123456 --all
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 否 | INT | 工作空间 ID（与 --project-identifier 二选一） |
+| --page-number | 否 | INT | 页码，从 1 开始 |
+| --page-size | 否 | INT | 每页数量，默认 10，上限 10 |
+| --all | 否 | FLAG | 自动翻页合并所有页 |
+
+**输出**：`Data.ProjectMemberList[]`，每项含 `ProjectMemberName` / `Nick` / `ProjectMemberId` / `ProjectMemberType` / `ProjectRoleList[]`。`Data.TotalCount`。
+
+### list-project-roles
+
+查询工作空间的所有角色列表。
+
+**注意**：响应结构特殊，`ProjectRoleList` 直接在 body 顶层（不在 Data 里），无分页。
+
+```bash
+dw-cli list-project-roles --project-id 123456
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 否 | INT | 工作空间 ID（与 --project-identifier 二选一） |
+
+**输出**：`ProjectRoleList[]`（在顶层，不在 Data 里！），每项含 `ProjectRoleId` / `ProjectRoleCode` / `ProjectRoleName` / `ProjectRoleType`。
+
+### list-resource-groups
+
+查询资源组列表（租户级，无需 project_id）。
+
+**注意**：`Data` 直接是数组，无分页字段。
+
+```bash
+dw-cli list-resource-groups
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --resource-group-type | 否 | INT | 资源组类型：0=DataWorks, 1=调度, 2=MaxCompute, 3=PAI, 4=数据集成, 7=独享调度, 9=数据服务 |
+| --keyword | 否 | TEXT | 按名称过滤 |
+
+**输出**：`Data[]`（Data 直接是数组，无分页字段！），每项含 `Id` / `Name` / `ResourceGroupType` / `Mode` / `Identifier` / `IsDefault` / `TenantId`。
+
+### add-project-member-to-role
+
+添加工作空间成员至目标角色。可用 `list-project-roles` 查看所有角色代码。
+
+```bash
+dw-cli add-project-member-to-role --project-id 123456 --user-id <user_id> --role-code role_project_dev
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --user-id | 是 | TEXT | 用户 ID |
+| --role-code | 是 | TEXT | 角色代码（如 role_project_dev / role_project_admin / role_project_pe） |
+| --client-token | 否 | TEXT | 客户端幂等令牌 |
+
+**输出**：`{Data: true, Success: true}`。
+
+### create-project-member
+
+添加一个用户至工作空间。
+
+```bash
+dw-cli create-project-member --project-id 123456 --user-id <user_id> --role-code role_project_dev
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --user-id | 是 | TEXT | 用户 ID |
+| --role-code | 是 | TEXT | 角色代码 |
+| --client-token | 否 | TEXT | 客户端幂等令牌 |
+
+**输出**：`{Data: true, Success: true}`。
+
+### remove-project-member-from-role
+
+将工作空间内的用户从角色中移除。
+
+```bash
+dw-cli remove-project-member-from-role --project-id 123456 --user-id <user_id> --role-code role_project_dev
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --user-id | 是 | TEXT | 用户 ID |
+| --role-code | 是 | TEXT | 角色代码 |
+
+**输出**：`{Data: true, Success: true}`。
+
+### delete-project-member
+
+从工作空间移除用户。**高危操作，需 --confirm。**
+
+**注意**：项目所有者（Type=1）不能删除，RAM 用户（Type=5）可以。此操作受集团监控，删除用户会导致通报，务必确认后再执行。
+
+```bash
+dw-cli delete-project-member --project-id 123456 --user-id <user_id> --confirm
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --user-id | 是 | TEXT | 要移除的用户 ID |
+| --confirm | 是 | FLAG | 高危操作，必须显式确认 |
+| --dry-run | 否 | FLAG | 仅预览 |
+
+**输出**：`{RequestId: xxx}`（无 Data 字段）。
 ## 常见错误排错
 
 ### Invalid.Tenant.UserNotInProject

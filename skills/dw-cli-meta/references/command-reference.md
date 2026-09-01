@@ -118,6 +118,84 @@ dw-cli list-tables --odps-project my_project --all
 ## 常见错误排错
 
 ### GuidFormat(400) / guid 格式错误
+---
+
+## v3.18.6 新增命令
+
+### list-meta-db
+
+查询数据库列表（按工作空间 + 数据源类型）。
+
+**注意**：响应结构特殊，items 在 `DatabaseInfo.DbList`（不在 Data 里）。SDK 参数是 `page_num`（非 page_number）。
+
+```bash
+dw-cli list-meta-db --project-id 123456 --data-source-type odps
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 是 | INT | 工作空间 ID |
+| --data-source-type | 否 | TEXT | 数据源类型，默认 odps（MaxCompute） |
+| --page-num | 否 | INT | 页码，从 1 开始（SDK 字段名 page_num 非 page_number） |
+| --page-size | 否 | INT | 每页数量，默认 50 |
+
+**输出**：`DatabaseInfo.DbList[]`，每项含 `Name` / `Type` / `OwnerId` / `Location` / `Uuid` / `CreateTimeStamp` / `ModifiedTimeStamp`。`DatabaseInfo.TotalCount`。
+
+### get-meta-dbinfo
+
+获取引擎实例的基本元数据信息。
+
+**注意**：SDK 方法名 `get_meta_dbinfo`（dbinfo 不拆下划线）。`app-guid` 格式必须是 `odps.<project_name>`（如 `odps.my_project`），ODPS 必填，否则报 NoCalcEngine。
+
+```bash
+dw-cli get-meta-dbinfo --database-name my_project --data-source-type odps --app-guid odps.my_project
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --database-name | 是 | TEXT | 库名 / 项目空间名（odps 即项目标识） |
+| --data-source-type | 否 | TEXT | 数据源类型，默认 odps |
+| --cluster-id | 否 | TEXT | 集群 ID（MaxCompute 一般留空） |
+| --app-guid | 是 | TEXT | 应用 GUID，格式 `odps.<project_name>`，ODPS 必填 |
+
+**输出**：`Data.{...}` 含数据库详情。
+
+### get-meta-metrics
+
+获取元数据概览（租户级，含项目数/存储量/最大项目等）。
+
+**注意**：SDK 无此类，通过 POP 网关 GET 调用。
+
+```bash
+dw-cli get-meta-metrics --data-source-type odps
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --data-source-type | 否 | TEXT | 数据源类型，默认 odps |
+
+**输出**：`Data.TotalProjects`（项目总数）、`Data.TotalStorage`（存储总量）、`Data.LargestProjects[]`（最大项目列表）。
+
+### get-meta-storage-trend
+
+获取存储趋势（最近 30 天每日存储量）。
+
+**注意**：SDK 无此类，通过 POP 网关 GET 调用。
+
+```bash
+dw-cli get-meta-storage-trend --project-id 123456
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 否 | INT | 工作空间 ID（可选） |
+| --data-source-type | 否 | TEXT | 数据源类型，默认 odps |
+
+**输出**：`Data.TableEntityList[]`，每项含 `Date` / `Storage`（字节）。`Data.TotalCount`。
+
+## 常见错误排错
+
+### GuidFormat(400) / guid 格式错误
 guid 必须带 `odps.` 前缀：`odps.<project>.<table>`。column_guid：`odps.<project>.<table>.<column>`。
 
 ### list-tables 404 / InvalidAction.NotFound
