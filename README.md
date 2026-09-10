@@ -6,9 +6,9 @@
 [![License](https://img.shields.io/badge/License-Apache--2.0-green?style=flat-square)](./LICENSE)
 [![DataWorks SDK](https://img.shields.io/badge/DataWorks%20SDK-2020--05--18-orange?style=flat-square)](https://help.aliyun.com/zh/dataworks/developer-reference/api-dataworks-public-2020-05-18-overview)
 
-dw-cli 把 DataWorks 2020-05-18 SDK 的 149 个 API 封装成一套语义化命令行工具，覆盖节点调度、实例运维、文件开发、元数据、数据源、SQL 执行等。专为私有云环境优化（RegionId 注入、凭据链、logview 替换），既可人类直接使用，也可作为 AI Agent 的工具层。
+dw-cli 把 DataWorks 2020-05-18 SDK 的 150 个 API 封装成一套语义化命令行工具，覆盖节点调度、实例运维、文件开发、元数据、数据源、SQL 执行等。专为私有云环境优化（RegionId 注入、凭据链、logview 替换），既可人类直接使用，也可作为 AI Agent 的工具层。
 
-- **149 个语义化命令** + raw 逃生舱（透传未封装 API）
+- **150 个语义化命令** + raw 逃生舱（透传未封装 API）
 - **5 个 Codex/Agent Skill** 覆盖运维/开发/元数据/基础设施/数据质量
 - **私有云适配**：固定 endpoint、凭据链复用、logview 地址替换、PyODPS 直连 MaxCompute
 - **安全门禁**：高危操作（delete_/offline_/stop_）需 `--confirm`，SQL 写语句需 `--confirm`

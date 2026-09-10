@@ -379,6 +379,105 @@ def list_tables(
                 default_table_query=_TABLES_TABLE_QUERY)
 
 
+
+@app.command("get-table-schema")
+def get_table_schema(
+    ctx: typer.Context,
+    project_id: int = typer.Option(None, "--project-id",
+        help="DataWorks 工作空间 ID（与 --odps-project 二选一，传了自动解析项目名）"),
+    odps_project: str = typer.Option(None, "--odps-project",
+        help="MaxCompute 项目名（如 my_project），与 --project-id 二选一"),
+    table_name: str = typer.Option(..., "--table-name", help="表名"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """获取 MaxCompute 表结构（PyODPS 直连，私有云可用）。
+
+    直接通过 PyODPS 获取表的 schema（列名/类型/注释 + 分区列），不需要 TableGuid，
+    比 get-meta-table-column 更快更直接（走 ODPS 引擎而非 DataWorks 元数据 API）。
+
+    \b
+    🚀 Examples:
+      # 用项目名
+      dw-cli get-table-schema --odps-project my_project --table-name my_table
+
+      # 用项目空间 ID
+      dw-cli get-table-schema --project-id 123456 --table-name my_table
+
+      # 只取列信息
+      dw-cli get-table-schema --odps-project my_project --table-name my_table \
+        -q "Data.Columns"
+
+      # 表格模式人看
+      dw-cli get-table-schema --odps-project my_project --table-name my_table -o table
+
+    \b
+    📦 Output JSON Structure:
+      - 表名:       Data.TableName
+      - 项目名:     Data.ProjectName
+      - 表注释:     Data.Comment
+      - 所有者:     Data.Owner
+      - 生命周期:   Data.Lifecycle
+      - 表大小:     Data.Size (字节)
+      - 创建时间:   Data.CreationTime
+      - 是否视图:   Data.IsVirtualView
+      - 列列表:     Data.Columns[] (每项含 Name/Type/Comment)
+      - 分区列:     Data.Partitions[] (每项含 Name/Type/Comment)
+    """
+    if project_id is not None:
+        auth = auth_params(ctx)
+        odps_project = odps_client.resolve_project_name(project_id, **auth)
+    elif odps_project is None:
+        errors.usage_error("必须指定 --project-id 或 --odps-project 之一。")
+
+    auth = auth_params(ctx)
+    try:
+        o = odps_client.build_odps(odps_project, **auth)
+    except Exception as error:
+        errors.fail(error)
+        return
+
+    try:
+        t = o.get_table(table_name)
+    except Exception as error:
+        errors.fail(error)
+        return
+
+    schema = t.schema
+    columns = []
+    for col in schema.columns:
+        columns.append({
+            "Name": col.name,
+            "Type": str(col.type),
+            "Comment": col.comment or "",
+        })
+
+    partitions = []
+    if hasattr(schema, "partitions") and schema.partitions:
+        for part in schema.partitions:
+            partitions.append({
+                "Name": part.name,
+                "Type": str(part.type),
+                "Comment": part.comment or "",
+            })
+
+    result = {
+        "Data": {
+            "TableName": t.name,
+            "ProjectName": odps_project,
+            "Comment": t.comment or "",
+            "Owner": t.owner or "",
+            "Lifecycle": t.lifecycle if hasattr(t, "lifecycle") else None,
+            "Size": t.size if hasattr(t, "size") else None,
+            "CreationTime": str(t.creation_time) if hasattr(t, "creation_time") and t.creation_time else None,
+            "IsVirtualView": t.is_virtual_view if hasattr(t, "is_virtual_view") else False,
+            "Columns": columns,
+            "Partitions": partitions,
+        }
+    }
+    output.emit(result, query=query, output=output_fmt)
+
+
 # ── 共用小工具 ─────────────────────────────────────────────────────────────
 def _call_table(ctx: typer.Context, api_name: str, request, *, query, output_fmt):
     """单对象/单动作 table 命令的统一调用出口。"""

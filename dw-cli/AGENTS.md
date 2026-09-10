@@ -81,6 +81,7 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `update-table` -- update table (app_guid needed)
 - `update-table-add-column` -- add columns (JSON array, async TaskInfo)
 - `list-tables` — 列表（**PyODPS 直连**，--limit/--offset/--keyword/--all）
+- `get-table-schema` — 获取表结构（**PyODPS 直连**，列名/类型/注释/分区，不需要 TableGuid）
 
 ### 🔧 DI 数据集成
 - `list-diproject-config` / `update-diproject-config` — DI 全局配置

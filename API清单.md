@@ -141,7 +141,7 @@
 | `get-meta-storage-trend` | 获取存储趋势（最近 30 天每日存储量） | `GetMetaStorageTrend` (POP HTTP GET) | 已封装 |
 | `get-meta-table-list-by-category` | 查询指定类目下的表 | `get_meta_table_list_by_category` | 已封装 |
 
-### table 表管理（6）
+### table 表管理（7）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -149,6 +149,7 @@
 | `delete-table` | 删除 MaxCompute 表（异步，须 --confirm） | `delete_table` | 已封装 |
 | `get-ddl-job-status` | 获取表操作任务状态 | `get_ddljob_status` | 已封装 |
 | `list-tables` | 列出表（⚠️SDK私有云404，改走 PyODPS 直连） | `list_tables` | 已封装(PyODPS) |
+| `get-table-schema` | 获取表结构（列名/类型/注释/分区，PyODPS 直连） | `—` | 已建(自有) |
 | `update-table` | 更新 MaxCompute 表的元数据信息（app_guid 必需） | `update_table` | 已封装 |
 | `update-table-add-column` | 更新 MaxCompute 表的字段信息（JSON 数组，异步 TaskInfo） | `update_table_add_column` | 已封装 |
 

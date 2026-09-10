@@ -6,7 +6,7 @@ DataWorks 私有云命令行工具，基于阿里云 2020-05-18 SDK + 凭据链�
 
 ## 为何存在
 
-阿里云官方 CLI 要求 2024-05-18 API，私有云服务端拒绝（InvalidVersion），仅 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，封装成 149 个语义化命令 + raw 逃生舱。
+阿里云官方 CLI 要求 2024-05-18 API，私有云服务端拒绝（InvalidVersion），仅 2020-05-18 版可用。本 CLI 把已验证可行的调用模式固化下来，封装成 150 个语义化命令 + raw 逃生舱。
 
 ## 安装（开发模式）
 
@@ -100,7 +100,7 @@ dw-cli doctor
 
 ## 命令概览
 
-共 149 个语义化命令 + raw 逃生舱。完整分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Quality / Baseline / Escape Hatch 等面板）。
+共 150 个语义化命令 + raw 逃生舱。完整分组运行 `dw-cli --help` 查看（Diagnostics / Meta / File&Folder / Node / Instance / Table / Project / DAG / Alert / SQL / DI / Migration / Quality / Baseline / Escape Hatch 等面板）。
 
 每个命令的详细参数与示例：`dw-cli <command> --help`。
 

@@ -120,6 +120,24 @@ dw-cli list-tables --odps-project my_project --all
 ### GuidFormat(400) / guid 格式错误
 ---
 
+### get-table-schema
+
+获取 MaxCompute 表结构（PyODPS 直连，私有云可用）。
+
+直接通过 PyODPS 获取表的 schema（列名/类型/注释 + 分区列），不需要 TableGuid，比 get-meta-table-column 更快更直接。
+
+```bash
+dw-cli get-table-schema --odps-project my_project --table-name my_table
+```
+
+| 参数 | 必填 | 类型 | 说明 |
+|------|------|------|------|
+| --project-id | 否 | INT | 工作空间 ID（与 --odps-project 二选一） |
+| --odps-project | 否 | TEXT | MaxCompute 项目名 |
+| --table-name | 是 | TEXT | 表名 |
+
+**输出**：`Data.TableName` / `Data.Comment` / `Data.Owner` / `Data.Lifecycle` / `Data.Columns[]`（每项含 `Name`/`Type`/`Comment`）/ `Data.Partitions[]`。
+
 ## v3.18.6 新增命令
 
 ### list-meta-db
