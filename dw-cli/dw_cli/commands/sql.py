@@ -86,13 +86,17 @@ def _read_results(instance, limit: int):
     rows = []
     truncated = False
     total = 0
-    for row in reader:
-        total += 1
-        if len(rows) >= limit:
-            truncated = True
-            continue
-        vals = list(row.values) if hasattr(row, "values") else list(row)
-        rows.append(vals)
+    try:
+        for row in reader:
+            total += 1
+            if len(rows) >= limit:
+                truncated = True
+                continue
+            vals = list(row.values) if hasattr(row, "values") else list(row)
+            rows.append(vals)
+    except (TypeError, StopIteration):
+        # Script mode or no result set: reader may yield None
+        pass
 
     if not columns and not rows:
         return None
@@ -190,6 +194,8 @@ def run_sql(
         help="提交后立即返回 instance_id + logview（强制异步）"),
     confirm_flag: bool = typer.Option(False, "--confirm",
         help="写操作（DROP/INSERT/CREATE/...）必须显式确认"),
+    hints: list[str] = typer.Option([], "--hint",
+        help="ODPS session 级参数，格式 key=value，可重复。如 --hint odps.sql.type.system.odps2=true --hint odps.sql.submit.mode=script"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -248,8 +254,19 @@ def run_sql(
         errors.fail(error)
         return
 
+    # Parse --hint key=value pairs into dict
+    hint_dict = {}
+    for h in hints:
+        if "=" not in h:
+            errors.usage_error(f"--hint 格式错误，需 key=value: {h}")
+        k, v = h.split("=", 1)
+        hint_dict[k.strip()] = v.strip()
+
     try:
-        instance = o.execute_sql(sql_text)
+        if hint_dict:
+            instance = o.execute_sql(sql_text, hints=hint_dict)
+        else:
+            instance = o.execute_sql(sql_text)
     except Exception as error:
         errors.fail(error)
         return
