@@ -147,6 +147,8 @@ description: |
 - **DI 私有云可用子集**：create/update_disync_task + list/update_diproject_config + list_ref_disync_tasks 可用；get_disync_task/list_dijobs 404。
 - **run-sql logview 需地址替换**：`odps.cloud.zj.gov.cn:80/api` -> `odps.cloud-inner.zj.gov.cn/api`，不替换报 bearer-token malformed。
 - **run-sql 软超时降级**：180 秒未完成则输出 instance_id + logview，exit 0，可用 get-sql-instance 跟进。
+- **CycleType 私有云限制**：不支持 HOUR/MINUTE，分钟级和小时级调度用 `NOT_DAY` + Cron 表达式（如 `00 */30 00-23 * * ?` 每 30 分钟）。详见 [references/scheduling-guide.md](references/scheduling-guide.md)。
+- **不确定参数值时参照已有节点**：用 `get-file` 查看已配好目标配置的节点，从 `Data.NodeConfiguration` 中获取真实有效的参数值作为参照，比查 API 文档更可靠。
 
 > 完整命令参数见 [references/command-reference.md](references/command-reference.md)
 > 节点类型编码表见 [references/node-types.md](references/node-types.md)

@@ -32,6 +32,8 @@
 | 周 | 1-7 或 SUN-SAT | , - * ? L # |
 
 > 周用 `?` 表示不限制，日和周不能同时用 `*`，一个用 `*` 另一个必须用 `?`。
+>
+> NOT_DAY 类型下 Cron 的小时段建议写 `00-23` 而不是 `*`（参照已有节点用的 `00-23` 格式）。
 
 常见 Cron 示例：
 
@@ -40,19 +42,26 @@
 | `00 30 02 * * ?` | 每天 02:30:00 |
 | `00 00 00 * * ?` | 每天 00:00:00 |
 | `00 00 */2 * * ?` | 每 2 小时 |
+| `00 */30 00-23 * * ?` | 每 30 分钟（NOT_DAY） |
+| `00 */15 00-23 * * ?` | 每 15 分钟（NOT_DAY） |
+| `00 00 */2 00-23 * * ?` | 每 2 小时（NOT_DAY 写法） |
 | `00 00 08 ? * MON` | 每周一 08:00 |
 | `00 00 00 1 * ?` | 每月 1 号 00:00 |
 | `00 00 00 1 1 ?` | 每年 1 月 1 号 |
 
 ## 调度周期类型（CycleType）
 
-| 值 | 含义 | Cron 要求 |
-|---|---|---|
+| 值 | 含义 | Cron 要求 | 备注 |
+|---|---|---|---|
 | DAY | 按天调度 | Cron 指定每天某时刻 |
-| HOUR | 按小时调度 | Cron 含小时通配 |
+| HOUR | 按小时调度 | Cron 含小时通配 | **私有云不支持** |
 | MONTH | 按月调度 | Cron 指定日期 |
-| MINUTE | 按分钟调度 | Cron 含分钟通配 |
+| MINUTE | 按分钟调度 | Cron 含分钟通配 | **私有云不支持** |
+| NOT_DAY | 分钟/小时级调度 | Cron 控制频率，小时段写 `00-23` | **私有云可用** |
 | NOT_REPEAT | 不重复（仅手动触发） | 可不配 Cron |
+
+> 私有云不支持 HOUR / MINUTE 周期类型，分钟级和小时级调度统一使用 `NOT_DAY`，配合 Cron 表达式控制具体频率。
+> 示例：`00 */30 00-23 * * ?` 为每 30 分钟一次，`00 00 */2 00-23 * * ?` 为每 2 小时一次。
 
 ## 调度模式（SchedulerType）
 
@@ -123,3 +132,15 @@ dw-cli update-file --file-id 300001 --project-id 123456 \
 ```
 
 > 注意：--para-value 里的 `$bizdate` 在 bash/powershell 需转义（`\$bizdate`），或用 file:// 传。
+
+## 不确定参数值时的排查方法
+
+当不确定某个调度参数的合法值时，用 `get-file` 查看一个已配好目标配置的节点，从 `NodeConfiguration` 中获取真实有效的参数值作为参照：
+
+```bash
+# 查看已有节点的调度配置
+dw-cli get-file --file-id <已配好的节点ID> --project-id <空间ID> \
+  -q "Data.NodeConfiguration.{CycleType:CycleType, CronExpress:CronExpress, SchedulerType:SchedulerType, ParaValue:ParaValue}"
+```
+
+这比查阅 API 文档更可靠，因为私有云支持的枚举值和公有云可能有差异。

@@ -35,6 +35,7 @@ def list_files(
     need_content: bool = typer.Option(False, "--need-content", help="返回文件内容（默认不返回，节省流量）"),
     need_absolute_folder_path: bool = typer.Option(False, "--need-absolute-folder-path", help="返回绝对目录路径"),
     file_id_in: str = typer.Option(None, "--file-id-in", help="按文件 ID 列表过滤（逗号分隔）"),
+    business_id: int = typer.Option(None, "--business-id", help="按业务流程 ID 过滤（客户端过滤，避免 JMESPath 反引号转义问题）"),
     page_number: int = typer.Option(1, help="页码，从 1 开始"),
     page_size: int = typer.Option(50, help="每页数量"),
     all_pages: bool = typer.Option(False, "--all", help="自动翻页合并所有页"),
@@ -108,6 +109,12 @@ def list_files(
             items_path="Data.Files",
             envelope_path="Data",
         )
+        if business_id is not None:
+            files = merged.get("Data", {}).get("Files", []) if isinstance(merged, dict) else []
+            if isinstance(files, list):
+                files = [f for f in files if f.get("BusinessId") == business_id]
+                if isinstance(merged, dict) and "Data" in merged:
+                    merged["Data"]["Files"] = files
         paging.emit_paginated(
             merged, query=query, output=output_fmt,
             default_table_query=_FILES_TABLE_QUERY,
@@ -132,10 +139,20 @@ def list_files(
     )
     try:
         resp = dw_client.list_files_with_options(request, runtime)
-        output.emit(
-            resp, query=query, output=output_fmt,
-            default_table_query=_FILES_TABLE_QUERY,
-        )
+        if business_id is not None:
+            data = output._to_jsonable(resp)
+            files = data.get("Data", {}).get("Files", []) if isinstance(data, dict) else []
+            if isinstance(files, list):
+                files = [f for f in files if f.get("BusinessId") == business_id]
+                if isinstance(data, dict) and "Data" in data:
+                    data["Data"]["Files"] = files
+            output.emit(data, query=query, output=output_fmt,
+                        default_table_query=_FILES_TABLE_QUERY)
+        else:
+            output.emit(
+                resp, query=query, output=output_fmt,
+                default_table_query=_FILES_TABLE_QUERY,
+            )
     except Exception as error:
         errors.fail(error)
 
@@ -764,7 +781,7 @@ def update_file(
         help="文件代码正文。大代码用 file://path 传文件，如 --content file://code.sql"),
     # ── 调度配置 ──
     cron_express: str = typer.Option("", "--cron-express", help="Cron 表达式，如 '00 30 00 * * ?'"),
-    cycle_type: str = typer.Option("", "--cycle-type", help="调度周期类型，如 DAY/HOUR/MONTH"),
+    cycle_type: str = typer.Option("", "--cycle-type", help="调度周期类型: DAY(天)/NOT_DAY(分钟小时级)/NOT_REPEAT(不重复)/MONTH(月)。私有云不支持 HOUR/MINUTE，分钟级和小时级用 NOT_DAY"),
     scheduler_type: str = typer.Option("", "--scheduler-type", help="调度模式：NORMAL=正常调度, MANUAL=手动任务（不被日常调度）, PAUSE=暂停, SKIP=空跑（被日常调度但启动时直接置为成功）"),
     resource_group_identifier: str = typer.Option("", "--resource-group-identifier", help="资源组标识"),
     connection_name: str = typer.Option("", "--connection-name", help="数据源连接名"),
@@ -895,7 +912,7 @@ def create_and_submit_file(
     cron_express: str = typer.Option("", "--cron-express",
         help="Cron 表达式，如 '00 30 00 * * ?'"),
     cycle_type: str = typer.Option("", "--cycle-type",
-        help="调度周期类型，如 DAY/HOUR/MONTH"),
+        help="调度周期类型: DAY(天)/NOT_DAY(分钟小时级)/NOT_REPEAT(不重复)/MONTH(月)。私有云不支持 HOUR/MINUTE，分钟级和小时级用 NOT_DAY"),
     para_value: str = typer.Option("", "--para-value",
         help="调度参数，如 'dt=$bizdate'"),
     output_list: str = typer.Option("", "--output-list",
