@@ -62,6 +62,12 @@
 
 > 私有云不支持 HOUR / MINUTE 周期类型，分钟级和小时级调度统一使用 `NOT_DAY`，配合 Cron 表达式控制具体频率。
 > 示例：`00 */30 00-23 * * ?` 为每 30 分钟一次，`00 00 */2 00-23 * * ?` 为每 2 小时一次。
+>
+> **update-file 修改 Cron 时的注意事项：**
+> - 只传 `--cron-express` 不传 `--cycle-type` 时，CLI 会自动推导（含 `*/` 的推导为 `NOT_DAY`，其他推导为 `DAY`）
+> - 传 `MINUTE` 或 `HOUR` 会被 CLI 本地拦截，直接报错不执行
+> - 建议批量修改前先用 `--dry-run` 预览将修改的字段和推导的 CycleType
+> - 修改后 CLI 会自动回读 `get-file` 验证 CycleType 和 CronExpress 是否正确写入
 
 ## 调度模式（SchedulerType）
 

@@ -109,10 +109,13 @@ def list_files(
             items_path="Data.Files",
             envelope_path="Data",
         )
-        if business_id is not None:
+        if business_id is not None or exact_file_name is not None:
             files = merged.get("Data", {}).get("Files", []) if isinstance(merged, dict) else []
             if isinstance(files, list):
-                files = [f for f in files if f.get("BusinessId") == business_id]
+                if business_id is not None:
+                    files = [f for f in files if f.get("BusinessId") == business_id]
+                if exact_file_name is not None:
+                    files = [f for f in files if f.get("FileName") == exact_file_name]
                 if isinstance(merged, dict) and "Data" in merged:
                     merged["Data"]["Files"] = files
         paging.emit_paginated(
@@ -139,11 +142,14 @@ def list_files(
     )
     try:
         resp = dw_client.list_files_with_options(request, runtime)
-        if business_id is not None:
+        if business_id is not None or exact_file_name is not None:
             data = output._to_jsonable(resp)
             files = data.get("Data", {}).get("Files", []) if isinstance(data, dict) else []
             if isinstance(files, list):
-                files = [f for f in files if f.get("BusinessId") == business_id]
+                if business_id is not None:
+                    files = [f for f in files if f.get("BusinessId") == business_id]
+                if exact_file_name is not None:
+                    files = [f for f in files if f.get("FileName") == exact_file_name]
                 if isinstance(data, dict) and "Data" in data:
                     data["Data"]["Files"] = files
             output.emit(data, query=query, output=output_fmt,
@@ -758,6 +764,27 @@ def _submit_and_wait(
         ))
 
 
+def _derive_cycle_type(cron_express: str) -> str:
+    """从 Cron 表达式推导私有云可用的 CycleType。
+
+    规则：
+    - 分钟或时段含 */  → NOT_DAY（分钟级/小时级通配）
+    - 分钟含逗号或范围 → NOT_DAY
+    - 其他             → DAY
+    """
+    if not cron_express:
+        return ""
+    parts = cron_express.strip().split()
+    if len(parts) != 6:
+        return ""
+    minute, hour = parts[1], parts[2]
+    if "*/" in minute or "*/" in hour:
+        return "NOT_DAY"
+    if "," in minute or "-" in minute:
+        return "NOT_DAY"
+    return "DAY"
+
+
 def _now_monotonic() -> float:
     """单调时钟当前秒数（用于轮询超时判定，不受系统时钟回拨影响）。"""
     import time
@@ -809,6 +836,8 @@ def update_file(
     apply_schedule_immediately: bool = typer.Option(False, "--apply-schedule-immediately", help="是否立即应用调度"),
     ignore_parent_skip_running_property: bool = typer.Option(
         False, "--ignore-parent-skip-running-property", help="是否忽略父节点跳过运行属性"),
+    dry_run: bool = typer.Option(False, "--dry-run",
+        help="仅预览，不真执行。输出将修改的字段 + 推导的 CycleType"),
     query: Optional[str] = query_option(),
     output_fmt: str = output_option(),
 ):
@@ -837,13 +866,31 @@ def update_file(
         --resource-group-identifier "Serverless_res_group_xxx" \\
         --para-value "dt=$bizdate"
 
+      # 分钟级调度（必须传 --cycle-type NOT_DAY）
+      dw-cli update-file --file-id 300003 --project-id 123456 \\
+        --cron-express "00 */15 00-23 * * ?" --cycle-type NOT_DAY
+
+      # 只传 cron-express 时 CLI 自动推导 CycleType（分钟级推导为 NOT_DAY）
+      dw-cli update-file --file-id 300003 --project-id 123456 \\
+        --cron-express "00 */15 00-23 * * ?"
+
+      # --dry-run 预览将修改的字段（不真执行）
+      dw-cli update-file --file-id 300003 --project-id 123456 \\
+        --cron-express "00 */15 00-23 * * ?" --dry-run
+
       # 设调度模式（NORMAL=正常, PAUSE=暂停, SKIP=空跑, MANUAL=手动）
       dw-cli update-file --file-id 300003 --project-id 123456 \\
         --scheduler-type "PAUSE"
 
     \b
+    ⚠️ 分钟级调度：修改 Cron 为分钟级时必须传 --cycle-type NOT_DAY。
+       只传 --cron-express 时 CLI 会自动推导（含 */ 的推导为 NOT_DAY）。
+
+    \b
     📦 Output JSON Structure:
       - 成功: {Data: true, Success: true}
+      - --dry-run: {dry_run: true, changes: {...}, derived_cycle_type: "NOT_DAY"}
+      - 成功后回读: 额外返回 file_id, cron_express, cycle_type 供验证
     """
     content = load_arg(content)
     input_parameters = load_arg(input_parameters)
@@ -851,6 +898,52 @@ def update_file(
     advanced_settings = load_arg(advanced_settings)
     if project_id is None and not project_identifier:
         errors.usage_error("必须指定 --project-id 或 --project-identifier 之一。")
+
+    # ── CycleType 本地校验 + 自动推导 ──
+    derived = ""
+    if cycle_type:
+        if cycle_type in ("MINUTE", "HOUR"):
+            errors.usage_error(
+                "私有云不支持 MINUTE/HOUR；分钟级和小时级请使用 --cycle-type NOT_DAY"
+            )
+    elif cron_express:
+        derived = _derive_cycle_type(cron_express)
+        if derived:
+            cycle_type = derived
+        else:
+            errors.usage_error(
+                "无法从 Cron 表达式自动推导 CycleType，请显式传 --cycle-type（DAY / NOT_DAY / NOT_REPEAT / MONTH）"
+            )
+
+    # ── --dry-run 预览 ──
+    if dry_run:
+        changes = {}
+        if cron_express:
+            changes["cron_express"] = cron_express
+        if cycle_type:
+            changes["cycle_type"] = cycle_type
+            if derived:
+                changes["cycle_type_source"] = "auto_derived"
+        if scheduler_type:
+            changes["scheduler_type"] = scheduler_type
+        if resource_group_identifier:
+            changes["resource_group_identifier"] = resource_group_identifier
+        if para_value:
+            changes["para_value"] = para_value
+        if content:
+            changes["content"] = "(updated)"
+        if input_list:
+            changes["input_list"] = input_list
+        if output_list:
+            changes["output_list"] = output_list
+        output.emit({
+            "dry_run": True,
+            "file_id": file_id,
+            "changes": changes,
+            "derived_cycle_type": derived or cycle_type or None,
+        }, query=query, output=output_fmt)
+        return
+
     _call_file(ctx, "update_file", dw_models.UpdateFileRequest(
         file_id=file_id, project_id=project_id,
         project_identifier=project_identifier,
@@ -875,6 +968,27 @@ def update_file(
         apply_schedule_immediately=apply_schedule_immediately or None,
         ignore_parent_skip_running_property=ignore_parent_skip_running_property or None,
     ), query=query, output_fmt=output_fmt)
+
+    # ── 成功后回读关键字段 ──
+    try:
+        auth = auth_params(ctx)
+        dw_client = client.build_client(**auth)
+        runtime = client.build_runtime()
+        file_resp = dw_client.get_file_with_options(
+            dw_models.GetFileRequest(
+                project_id=project_id,
+                file_id=file_id,
+                project_identifier=project_identifier,
+            ), runtime,
+        )
+        file_data = output._to_jsonable(file_resp)
+        node_config = file_data.get("Data", {}).get("NodeConfiguration", {})
+        output.diag(
+            f"[INFO] 更新后验证: CycleType={node_config.get('CycleType', '?')}, "
+            f"CronExpress={node_config.get('CronExpress', '?')}"
+        )
+    except Exception:
+        pass  # 回读失败不影响主流程
 
 
 @app.command("create-and-submit-file")
