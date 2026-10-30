@@ -122,6 +122,7 @@ dw-cli 是私有云 DataWorks 的命令行工具，基于 alibabacloud-dataworks
 - `get-quality-entity` / `create-quality-entity` / `delete-quality-entity` — 质量实体 CRUD（env_type=odps，entity_level=1）
 - `list-quality-rules` / `get-quality-rule` / `create-quality-rule` / `update-quality-rule` / `delete-quality-rule` — 质量规则 CRUD
 - `get-quality-follower` / `create-quality-follower` / `update-quality-follower` / `delete-quality-follower` — 订阅人 CRUD
+- `list-quality-results-by-entity` / `list-quality-results-by-rule` — 质量检查历史查询（start/end-date 必填，跨度≤7天；CheckResult: 2=不通过, -2=执行异常）
 
 ### 🚀 逃生舱
 - `raw <ActionName> --key value` — 透传任意 2020-05-18 API（kebab-case 参数）。

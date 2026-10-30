@@ -13,8 +13,11 @@
   - predict_type 必填（Create/Update QualityRule），值=0
   - ListQualityRules 响应在 Data.Rules[]（不是 QualityRuleList）
 
+ListQualityResultsByEntity / ListQualityResultsByRule（检查结果查询，2026-10-30 新增命令）：
+  - StartDate/EndDate 必填，缺参服务端直接 500（易误判为接口不可用）
+  - 查询跨度建议 7 天内（30 天实测报 parameter is incorrect）
+
 跳过的接口（私有云 500 不可用）：
-  - ListQualityResultsByEntity / ListQualityResultsByRule（500 null）
   - CreateQualityRelativeNode / DeleteQualityRelativeNode（500 dqc property failed）
 """
 from __future__ import annotations
@@ -352,6 +355,7 @@ def create_quality_rule(
     property: str = typer.Option(..., "--property", help="属性名（如 table_count）"),
     checker: int = typer.Option(..., "--checker", help="校验器 ID（如 6）"),
     block_type: int = typer.Option(1, "--block-type", help="阻断类型（1=阻断, 0=不阻断）"),
+    rule_type: int = typer.Option(0, "--rule-type", help="规则类型：0=系统模板规则, 1=自定义SQL规则, 4=自定义模板规则"),
     predict_type: int = typer.Option(0, "--predict-type", help="预测类型（0=表/分区关联，必填）"),
     expect_value: str = typer.Option(None, "--expect-value", help="期望值（如 100）"),
     operator: str = typer.Option(None, "--operator", help="比较运算符（如 >）"),
@@ -364,7 +368,7 @@ def create_quality_rule(
 ):
     """创建质量规则。
 
-    ⚠️ predict_type=0 必填（官网未说明）。block_type=1 表示阻断调度。
+    ⚠️ 私有云必填：rule_type=0（默认已带）、predict_type=0。block_type=1 表示阻断调度。
 
     \b
     🚀 Examples:
@@ -377,7 +381,7 @@ def create_quality_rule(
     _call(ctx, "create_quality_rule", dw_models.CreateQualityRuleRequest(
         project_name=project_name, entity_id=entity_id, rule_name=rule_name,
         template_id=template_id, method_name=method_name, property=property,
-        checker=checker, block_type=block_type, predict_type=predict_type,
+        checker=checker, block_type=block_type, rule_type=rule_type, predict_type=predict_type,
         expect_value=expect_value, operator=operator, trend=trend,
         warning_threshold=warning_threshold, critical_threshold=critical_threshold,
         comment=comment or None,
@@ -395,6 +399,7 @@ def update_quality_rule(
     property: str = typer.Option(..., "--property", help="属性名"),
     checker: int = typer.Option(..., "--checker", help="校验器 ID"),
     block_type: int = typer.Option(1, "--block-type", help="阻断类型"),
+    rule_type: int = typer.Option(0, "--rule-type", help="规则类型：0=系统模板规则, 1=自定义SQL规则, 4=自定义模板规则"),
     predict_type: int = typer.Option(0, "--predict-type", help="预测类型（必填，0）"),
     expect_value: str = typer.Option(None, "--expect-value", help="期望值"),
     operator: str = typer.Option(None, "--operator", help="比较运算符"),
@@ -418,7 +423,7 @@ def update_quality_rule(
     _call(ctx, "update_quality_rule", dw_models.UpdateQualityRuleRequest(
         project_name=project_name, id=rule_id, rule_name=rule_name,
         template_id=template_id, method_name=method_name, property=property,
-        checker=checker, block_type=block_type, predict_type=predict_type,
+        checker=checker, block_type=block_type, rule_type=rule_type, predict_type=predict_type,
         expect_value=expect_value, operator=operator, trend=trend,
         comment=comment or None,
     ), query=query, output_fmt=output_fmt)
@@ -454,3 +459,137 @@ def delete_quality_rule(
     _call(ctx, "delete_quality_rule", dw_models.DeleteQualityRuleRequest(
         project_name=project_name, rule_id=rule_id,
     ), query=query, output_fmt=output_fmt)
+_RESULTS_TQ = ("Data.RuleChecks[*].{Id:Id,Rule:RuleName,Result:CheckResultStatus,"
+               "Sample:SampleValue[0].Value,Expect:ExpectValue,Cost:TimeCost,Trigger:ExternalId}")
+
+
+def _validate_date_range(start_date: str, end_date: str):
+    from datetime import datetime
+    fmt = "%Y-%m-%d %H:%M:%S"
+    try:
+        s = datetime.strptime(start_date, fmt)
+        e = datetime.strptime(end_date, fmt)
+    except ValueError:
+        errors.usage_error("时间格式必须为 yyyy-MM-dd HH:mm:ss（如 2026-10-24 00:00:00）")
+    if s >= e:
+        errors.usage_error("--start-date 必须早于 --end-date")
+    if (e - s).days > 7:
+        errors.usage_error("查询跨度不能超过 7 天（实测 30 天报 parameter is incorrect）")
+
+
+@app.command("list-quality-results-by-entity")
+def list_quality_results_by_entity(
+    ctx: typer.Context,
+    project_name: str = typer.Option(..., "--project-name", help=_PN_HELP),
+    entity_id: int = typer.Option(..., "--entity-id", help="质量实体 ID（分区表达式 ID）"),
+    start_date: str = typer.Option(..., "--start-date", help="开始时间（本地时间），格式 yyyy-MM-dd HH:mm:ss"),
+    end_date: str = typer.Option(..., "--end-date", help="结束时间（本地时间），格式 yyyy-MM-dd HH:mm:ss"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(10, "--page-size", help="每页数量"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 软截断上限，默认 5000"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询质量实体的检查历史（实体下全部规则）。
+
+    ⚠️ start-date/end-date 必填且跨度不能超过 7 天；缺参服务端直接回 500。
+
+    \b
+    🚀 Examples:
+      dw-cli list-quality-results-by-entity --project-name my_project --entity-id 12345 \
+        --start-date "2026-10-24 00:00:00" --end-date "2026-10-30 23:59:59" -o table
+
+    \b
+    📦 Output JSON Structure:
+      - 检查列表: Data.RuleChecks[] (数组)
+      - 检查ID:   Data.RuleChecks[*].Id
+      - 规则名:   Data.RuleChecks[*].RuleName
+      - 结果:     Data.RuleChecks[*].CheckResult (2=不通过, -2=执行异常采样为空)
+      - 实际值:   Data.RuleChecks[*].SampleValue[0].Value
+      - 期望值:   Data.RuleChecks[*].ExpectValue
+      - 自定义SQL: Data.RuleChecks[*].WhereCondition
+      - 触发方式: Data.RuleChecks[*].ExternalId (triggerByManual=手动触发)
+      - 耗时:     Data.RuleChecks[*].TimeCost
+      - 总数:     Data.TotalCount
+    """
+    _validate_date_range(start_date, end_date)
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+    def build_req(pn):
+        return dw_models.ListQualityResultsByEntityRequest(
+            project_name=project_name, entity_id=entity_id, start_date=start_date,
+            end_date=end_date, page_number=pn, page_size=page_size)
+    if all_pages:
+        try:
+            def fetch_page(pn, _tok):
+                resp = dw_client.list_quality_results_by_entity_with_options(build_req(pn), runtime)
+                return output._to_jsonable(resp)
+            merged = paging.fetch_all(fetch_page=fetch_page, page_size=page_size, limit=limit,
+                items_path="Data.RuleChecks", envelope_path="Data", next_token_path="")
+            paging.emit_paginated(merged, query=query, output=output_fmt, default_table_query=_RESULTS_TQ)
+        except Exception:
+            resp = dw_client.list_quality_results_by_entity_with_options(build_req(1), runtime)
+            output.emit(resp, query=query, output=output_fmt, default_table_query=_RESULTS_TQ)
+    else:
+        try:
+            resp = dw_client.list_quality_results_by_entity_with_options(build_req(page_number), runtime)
+            output.emit(resp, query=query, output=output_fmt, default_table_query=_RESULTS_TQ)
+        except Exception as e:
+            errors.fail(e)
+
+
+@app.command("list-quality-results-by-rule")
+def list_quality_results_by_rule(
+    ctx: typer.Context,
+    project_name: str = typer.Option(..., "--project-name", help=_PN_HELP),
+    rule_id: int = typer.Option(..., "--rule-id", help="质量规则 ID"),
+    start_date: str = typer.Option(..., "--start-date", help="开始时间（本地时间），格式 yyyy-MM-dd HH:mm:ss"),
+    end_date: str = typer.Option(..., "--end-date", help="结束时间（本地时间），格式 yyyy-MM-dd HH:mm:ss"),
+    page_number: int = typer.Option(1, "--page-number", help="页码，从 1 开始"),
+    page_size: int = typer.Option(10, "--page-size", help="每页数量"),
+    all_pages: bool = typer.Option(False, "--all", help="[AI 推荐] 自动翻页合并所有页"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="--all 软截断上限，默认 5000"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """查询单条质量规则的检查历史。
+
+    ⚠️ start-date/end-date 必填且跨度不能超过 7 天；缺参服务端直接回 500。
+
+    \b
+    🚀 Examples:
+      dw-cli list-quality-results-by-rule --project-name my_project --rule-id 200001 \
+        --start-date "2026-10-24 00:00:00" --end-date "2026-10-30 23:59:59" -o table
+
+    \b
+    📦 Output JSON Structure:
+      - 检查列表: Data.RuleChecks[] (数组，字段同 list-quality-results-by-entity)
+      - 总数:     Data.TotalCount
+    """
+    _validate_date_range(start_date, end_date)
+    auth = auth_params(ctx)
+    dw_client = client.build_client(**auth)
+    runtime = client.build_runtime()
+    def build_req(pn):
+        return dw_models.ListQualityResultsByRuleRequest(
+            project_name=project_name, rule_id=rule_id, start_date=start_date,
+            end_date=end_date, page_number=pn, page_size=page_size)
+    if all_pages:
+        try:
+            def fetch_page(pn, _tok):
+                resp = dw_client.list_quality_results_by_rule_with_options(build_req(pn), runtime)
+                return output._to_jsonable(resp)
+            merged = paging.fetch_all(fetch_page=fetch_page, page_size=page_size, limit=limit,
+                items_path="Data.RuleChecks", envelope_path="Data", next_token_path="")
+            paging.emit_paginated(merged, query=query, output=output_fmt, default_table_query=_RESULTS_TQ)
+        except Exception:
+            resp = dw_client.list_quality_results_by_rule_with_options(build_req(1), runtime)
+            output.emit(resp, query=query, output=output_fmt, default_table_query=_RESULTS_TQ)
+    else:
+        try:
+            resp = dw_client.list_quality_results_by_rule_with_options(build_req(page_number), runtime)
+            output.emit(resp, query=query, output=output_fmt, default_table_query=_RESULTS_TQ)
+        except Exception as e:
+            errors.fail(e)

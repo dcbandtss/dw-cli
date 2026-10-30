@@ -59,6 +59,8 @@ description: |
 | create-quality-rule | 创建规则 | 低危 |
 | update-quality-rule | 更新规则 | 低危 |
 | delete-quality-rule | 删除规则 | ⚠️高危 |
+| list-quality-results-by-entity | 实体的检查历史（全部规则） | 只读 |
+| list-quality-results-by-rule | 单条规则的检查历史 | 只读 |
 
 ## v3.18.6 关键参数
 
@@ -66,12 +68,15 @@ description: |
 - **entity_level=1**：官网标废弃但私有云必填。
 - **alarm_mode=1**：必须为 1，不能是 0（0 返回 InvalidAlarmMode）。
 - **predict_type=0**：create/update quality-rule 必填。
+- **rule_type**（规则类型）：0=系统模板规则, 1=自定义SQL规则, 4=自定义模板规则。create/update quality-rule 必填（不传报 MissingRuleType），CLI 默认 0。
 - **list-quality-rules 响应在 Data.Rules[]**（不是 QualityRuleList）。
 
 ## 私有云限制
 
-- **ListQualityResultsByEntity / ListQualityResultsByRule**：500 null（服务端缺陷，未实现）
 - **CreateQualityRelativeNode / DeleteQualityRelativeNode**：500 dqc property failed
+- **ListQualityResultsByEntity / ListQualityResultsByRule**：已封装为 list-quality-results-by-entity/rule。
+  两个坑——StartDate/EndDate 必填（缺参服务端直接 500 而非 400，曾误判为接口不可用）；查询跨度约 7 天内。
+  CheckResult：2=检查不通过（触发告警），-2=检查执行异常（SampleValue 为空）。
 
 ## CRUD 完整链路
 

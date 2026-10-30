@@ -187,13 +187,12 @@ dw-cli delete-quality-follower --project-name my_project --follower-id 200001 --
 
 ### create-quality-rule
 
-创建质量规则。
+创建质量规则。私有云必填：`--rule-type`（默认已带 0）、`--predict-type 0`。
 
 ```bash
-dw-cli create-quality-rule --project-name my_project --entity-id 100001 \
-  --rule-name "数据量大于100" --method-id 8 --template-id 45 \
-  --operator ">" --expect-value "100" --property "table_count" \
-  --on-duty "<user_id>"
+dw-cli create-quality-rule --project-name my_project --entity-id 12345 \
+  --rule-name "数据量大于100" --template-id 45 --method-name table_count \
+  --property table_count --checker 6 --expect-value 100 --operator ">" --trend ">"
 ```
 
 | 参数 | 类型 | 必填 | 默认 | 说明 |
@@ -201,45 +200,54 @@ dw-cli create-quality-rule --project-name my_project --entity-id 100001 \
 | --project-name | TEXT | 是 | - | 项目空间标识名 |
 | --entity-id | INT | 是 | - | 质量实体 ID |
 | --rule-name | TEXT | 是 | - | 规则名称 |
-| --method-id | INT | 是 | - | 检查方法 ID（如 8=table_count） |
-| --template-id | INT | 否 | - | 模板 ID（从 DataWorks 控制台或官网查） |
-| --operator | TEXT | 否 | - | 比较运算符（>、<、= 等） |
-| --expect-value | TEXT | 否 | - | 期望值（如 100） |
-| --property | TEXT | 否 | - | 检查属性（如 table_count） |
-| --predict-type | INT | 否 | 0 | 预测类型，0=固定阈值 |
-| --block-type | INT | 否 | - | 阻断类型（1=强阻断） |
-| --open-switch | BOOL | 否 | - | 是否开启规则 |
-| --on-duty | TEXT | 否 | - | 负责人用户 ID |
+| --template-id | INT | 是 | - | 模板 ID（如 45=表行数固定值, 27=表行数波动率, 44=表行数上周期差值） |
+| --method-name | TEXT | 是 | - | 方法名（如 table_count） |
+| --property | TEXT | 是 | - | 属性名（如 table_count） |
+| --checker | INT | 是 | - | 校验器 ID（6=固定值比较, 3=波动率, 7=差值） |
+| --rule-type | INT | 否 | 0 | 规则类型：0=系统模板规则, 1=自定义SQL规则, 4=自定义模板规则 |
+| --predict-type | INT | 否 | 0 | 预测类型（0=表/分区关联，私有云必填） |
+| --block-type | INT | 否 | 1 | 阻断类型（1=阻断调度, 0=不阻断） |
+| --expect-value | TEXT | 否 | - | 期望值（固定值模板用，如 100） |
+| --operator | TEXT | 否 | - | 比较运算符（>、>= 等） |
+| --trend | TEXT | 否 | - | 趋势（固定值用 >，波动率用 abs，差值用 >=） |
+| --warning-threshold | TEXT | 否 | - | 告警阈值（波动率模板用，单位 %） |
+| --critical-threshold | TEXT | 否 | - | 严重阈值（波动率模板用，单位 %） |
+| --comment | TEXT | 否 | - | 规则描述 |
 | -q, --query | TEXT | 否 | - | JMESPath 表达式 |
 | -o, --output | TEXT | 否 | json | 输出格式 |
 
-输出结构：`Data`（RuleId，int）。
+输出结构：`Data`（新规则 ID，字符串）。
 
 ### update-quality-rule
 
-更新质量规则。
+更新质量规则。SDK 字段名是 `id`（不是 rule_id）。参数同 create，`--rule-id` 替换 `--entity-id`。
 
 ```bash
-dw-cli update-quality-rule --project-name my_project --rule-id 200001 \
-  --expect-value "200"
+dw-cli update-quality-rule --project-name my_project --rule-id 100002 \
+  --rule-name "数据量大于200" --template-id 45 --method-name table_count \
+  --property table_count --checker 6 --expect-value 200 --operator ">" --trend ">"
 ```
 
 | 参数 | 类型 | 必填 | 默认 | 说明 |
 |------|------|------|------|------|
 | --project-name | TEXT | 是 | - | 项目空间标识名 |
 | --rule-id | INT | 是 | - | 质量规则 ID |
-| --rule-name | TEXT | 否 | - | 规则名称 |
-| --method-id | INT | 否 | - | 检查方法 ID |
-| --template-id | INT | 否 | - | 模板 ID |
-| --operator | TEXT | 否 | - | 比较运算符 |
+| --rule-name | TEXT | 是 | - | 规则名称 |
+| --template-id | INT | 是 | - | 模板 ID |
+| --method-name | TEXT | 是 | - | 方法名 |
+| --property | TEXT | 是 | - | 属性名 |
+| --checker | INT | 是 | - | 校验器 ID |
+| --rule-type | INT | 否 | 0 | 规则类型：0=系统模板规则, 1=自定义SQL规则, 4=自定义模板规则 |
+| --predict-type | INT | 否 | 0 | 预测类型（必填，0） |
+| --block-type | INT | 否 | 1 | 阻断类型 |
 | --expect-value | TEXT | 否 | - | 期望值 |
-| --property | TEXT | 否 | - | 检查属性 |
-| --predict-type | INT | 否 | - | 预测类型 |
-| --block-type | INT | 否 | - | 阻断类型 |
-| --open-switch | BOOL | 否 | - | 是否开启规则 |
-| --on-duty | TEXT | 否 | - | 负责人用户 ID |
+| --operator | TEXT | 否 | - | 比较运算符 |
+| --trend | TEXT | 否 | - | 趋势 |
+| --comment | TEXT | 否 | - | 规则描述 |
 | -q, --query | TEXT | 否 | - | JMESPath 表达式 |
 | -o, --output | TEXT | 否 | json | 输出格式 |
+
+输出结构：`{Data: true, Success: true}`。
 
 ### delete-quality-rule
 
@@ -257,16 +265,47 @@ dw-cli delete-quality-rule --project-name my_project --rule-id 200001 --confirm
 | -q, --query | TEXT | 否 | - | JMESPath 表达式 |
 | -o, --output | TEXT | 否 | json | 输出格式 |
 
-## 私有云不可用接口（4 个）
+## 私有云不可用接口（2 个）
 
-以下接口私有云服务端返回 500，已从 CLI 中排除：
+- **CreateQualityRelativeNode / DeleteQualityRelativeNode**：500 dqc property failed（质量规则关联调度节点，未实现）
 
-| API | 错误 | 原因 |
-|-----|------|------|
-| ListQualityResultsByEntity | 500 null | 服务端未实现 |
-| ListQualityResultsByRule | 500 null | 同上 |
-| CreateQualityRelativeNode | 500 dqc property failed | 需节点预配置 DQC 属性 |
-| DeleteQualityRelativeNode | 500 同上 | 同上 |
+## 检查结果查询
+
+### list-quality-results-by-entity
+
+查询质量实体的检查历史（实体下全部规则）。⚠️ start-date/end-date 必填，跨度不能超过 7 天。
+
+```bash
+dw-cli list-quality-results-by-entity --project-name my_project --entity-id 12345 \
+  --start-date "2026-10-24 00:00:00" --end-date "2026-10-30 23:59:59" -o table
+```
+
+| 参数 | 类型 | 必填 | 默认 | 说明 |
+|------|------|------|------|------|
+| --project-name | TEXT | 是 | - | 项目空间标识名 |
+| --entity-id | INT | 是 | - | 质量实体 ID |
+| --start-date | TEXT | 是 | - | 开始时间（本地时间），yyyy-MM-dd HH:mm:ss |
+| --end-date | TEXT | 是 | - | 结束时间（本地时间），yyyy-MM-dd HH:mm:ss |
+| --page-number | INT | 否 | 1 | 页码 |
+| --page-size | INT | 否 | 10 | 每页数量 |
+| --all | - | 否 | - | 自动翻页合并 |
+| -q, --query | TEXT | 否 | - | JMESPath 表达式 |
+| -o, --output | TEXT | 否 | json | 输出格式 |
+
+输出结构：`Data.RuleChecks[]`，`Data.TotalCount`。关键字段：
+`CheckResult`（2=不通过, -2=执行异常采样为空）、`SampleValue[0].Value`（实际值）、
+`ExpectValue`（期望值）、`WhereCondition`（自定义 SQL 原文）、`ExternalId`（triggerByManual=手动触发）、
+`TimeCost`、`BizDate`（业务日期）。
+
+### list-quality-results-by-rule
+
+查询单条质量规则的检查历史。参数同 by-entity，`--entity-id` 换成 `--rule-id`。
+
+```bash
+dw-cli list-quality-results-by-rule --project-name my_project --rule-id 200001 \
+  --start-date "2026-10-24 00:00:00" --end-date "2026-10-30 23:59:59" -o table
+```
+
 
 ## 典型工作流
 

@@ -256,7 +256,7 @@
 | `get-baseline-key-path` | 查询基线关键路径 | `get_baseline_key_path` | 已封装 |
 | `list-nodes-by-baseline` | 查询基线上的节点列表 | `list_nodes_by_baseline` | 已封装 |
 
-### quality 数据质量（12 命令，v3.18.6 新增）
+### quality 数据质量（14 命令，v3.18.6 新增）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -272,6 +272,8 @@
 | `create-quality-rule` | 创建质量规则 | `create_quality_rule` | 已封装 |
 | `update-quality-rule` | 更新质量规则 | `update_quality_rule` | 已封装 |
 | `delete-quality-rule` | 删除质量规则（⚠️高危） | `delete_quality_rule` | 已封装 |
+| `list-quality-results-by-entity` | 质量实体检查历史（start/end-date 必填，跨度≤7天） | `list_quality_results_by_entity` | 已封装（2026-10-30 修正误判） |
+| `list-quality-results-by-rule` | 单条规则检查历史 | `list_quality_results_by_rule` | 已封装（2026-10-30 修正误判） |
 
 ### ide_event IDE 扩展点（1 命令，v3.18.6 新增）
 
@@ -436,8 +438,8 @@
 | `list_meta_collections` | 查询集合信息。 集合的概念包括数据地图页面上的专辑、专辑中的子类目等。 通过本接口可以指定集合类型查询集合信息。 | 剔除 | 剔除 |
 | `list_permission_apply_orders` |  | 剔除 | 安全中心 security |
 | `list_program_type_count` |  | 剔除 | 标签/杂项 entity-tags |
-| `list_quality_results_by_entity` |  | 剔除 | 数据质量（私有云 500 不可用） |
-| `list_quality_results_by_rule` |  | 剔除 | 数据质量（私有云 500 不可用） |
+| `list_quality_results_by_entity` |  | 已封装 | 数据质量（2026-10-30 修正：缺时间参时服务端 500，非不可用） |
+| `list_quality_results_by_rule` |  | 已封装 | 数据质量（2026-10-30 修正：缺时间参时服务端 500，非不可用） |
 | `list_shift_personnels` | 获取值班表的值班人员列表。 | 剔除 | 剔除 |
 | `list_shift_schedules` | 获取运维中心值班表列表。 | 剔除 | 剔除 |
 | `list_table_level` |  | 剔除 | 数据建模 modeling |
