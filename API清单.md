@@ -256,7 +256,7 @@
 | `get-baseline-key-path` | 查询基线关键路径 | `get_baseline_key_path` | 已封装 |
 | `list-nodes-by-baseline` | 查询基线上的节点列表 | `list_nodes_by_baseline` | 已封装 |
 
-### quality 数据质量（14 命令，v3.18.6 新增）
+### quality 数据质量（16 命令，v3.18.6 新增）
 
 | CLI 命令 | 描述 | 底层 SDK 方法 | 状态 |
 |---|---|---|---|
@@ -274,6 +274,8 @@
 | `delete-quality-rule` | 删除质量规则（⚠️高危） | `delete_quality_rule` | 已封装 |
 | `list-quality-results-by-entity` | 质量实体检查历史（start/end-date 必填，跨度≤7天） | `list_quality_results_by_entity` | 已封装（2026-10-30 修正误判） |
 | `list-quality-results-by-rule` | 单条规则检查历史 | `list_quality_results_by_rule` | 已封装（2026-10-30 修正误判） |
+| `create-quality-relative-node` | 质量实体关联调度节点（仅 6 位数新空间可用） | `create_quality_relative_node` | 已封装（2026-11-04） |
+| `delete-quality-relative-node` | 解除质量实体与节点关联（⚠️高危，仅 6 位数新空间） | `delete_quality_relative_node` | 已封装（2026-11-04） |
 
 ### ide_event IDE 扩展点（1 命令，v3.18.6 新增）
 
@@ -342,7 +344,7 @@
 | `update_dialarm_rule` | 更新数据集成新版任务告警规则，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
 | `update_dijob` | 更新数据集成新版任务，当前支持的任务类型包括：MySQL到Hologres整库实时解决方案。 | ❌ | 私有云未实现(404) |
 
-## 四、剔除 / 废弃·不建议（128 个）
+## 四、剔除 / 废弃·不建议（126 个）
 
 > 不纳入 CLI。剔除原因：无此接口 / DI未部署 / 私有云404 / 非本场景 / 服务端 500 不可用 等。
 
@@ -363,7 +365,6 @@
 | `create_meta_collection` | 创建集合对象。 | 剔除 | 剔除 |
 | `create_permission_apply_order` |  | 剔除 | 安全中心 security |
 | `create_project` | 该接口用于创建一个DataWorks工作空间。 | 剔除 | 剔除 |
-| `create_quality_relative_node` |  | 剔除 | 数据质量（私有云 500 不可用） |
 | `create_table_level` |  | 剔除 | 数据建模 modeling |
 | `create_table_theme` |  | 剔除 | 数据建模 modeling |
 | `delete_baseline` |  | 剔除 | 基线 baseline |
@@ -373,7 +374,6 @@
 | `delete_meta_category` |  | 剔除 | 数据建模 modeling |
 | `delete_meta_collection` | 删除集合。 | 剔除 | 剔除 |
 | `delete_meta_collection_entity` | 该接口用于删除集合中的实体。 | 剔除 | 剔除 |
-| `delete_quality_relative_node` |  | 剔除 | 数据质量（私有云 500 不可用） |
 | `delete_recognize_rule` |  | 剔除 | 数据保护伞 dsp |
 | `delete_table_level` |  | 剔除 | 数据建模 modeling |
 | `delete_table_theme` |  | 剔除 | 数据建模 modeling |

@@ -159,3 +159,9 @@ def usage_error(message: str, *, code: str = "UsageError") -> None:
         code=code, message=message, category=CATEGORY_USAGE
     )
     raise typer.Exit(code=code_num)
+
+
+def warn(message: str, *, code: str = "Warning") -> None:
+    """非阻断警告：单行 JSON 打到 stderr，stdout 的结构化结果不受影响。"""
+    payload = {"warning": True, "code": code, "message": message}
+    typer.echo(json.dumps(payload, ensure_ascii=False), err=True)

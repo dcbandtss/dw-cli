@@ -265,9 +265,51 @@ dw-cli delete-quality-rule --project-name my_project --rule-id 200001 --confirm
 | -q, --query | TEXT | 否 | - | JMESPath 表达式 |
 | -o, --output | TEXT | 否 | json | 输出格式 |
 
-## 私有云不可用接口（2 个）
+## 节点关联（强规则阻断调度）
 
-- **CreateQualityRelativeNode / DeleteQualityRelativeNode**：500 dqc property failed（质量规则关联调度节点，未实现）
+⚠️ **只支持 6 位数 project-id 的新空间**。5 位数 project-id 是老空间，服务端固定返回
+500 `add/delete dqc property of node failed!`，与参数无关（2026-10-30 实测：6 位 116687、116500
+成功；5 位 32890、32889、71304 全部失败）。CLI 对 5 位 id 会在 stderr 打 `LegacyProject` 警告后放行。
+
+关联的作用：规则是强规则（`block_type=1`）且检查不通过时，阻塞被关联节点及其下游。
+
+### create-quality-relative-node
+
+```bash
+# 同空间关联（target-node-project-* 省略时自动取 project-*）
+dw-cli create-quality-relative-node --project-id 123456 --project-name my_project \
+  --table-name my_table --match-expression "dt=$[yyyymmdd]" --node-id 100001
+
+# 跨空间关联
+dw-cli create-quality-relative-node --project-id 123456 --project-name my_project \
+  --table-name my_table --match-expression "dt=$[yyyymmdd]" --node-id 100001 \
+  --target-node-project-id 123457 --target-node-project-name other_project
+```
+
+| 参数 | 类型 | 必填 | 默认 | 说明 |
+|------|------|------|------|------|
+| --project-id | INT | 是 | - | 质量实体所在空间 ID（必须 6 位数新空间） |
+| --project-name | TEXT | 是 | - | 质量实体所在空间名（引擎名） |
+| --table-name | TEXT | 是 | - | 表名（需已有质量实体） |
+| --match-expression | TEXT | 是 | - | 分区表达式，须与实体上的**逐字一致** |
+| --node-id | INT | 是 | - | 要关联的调度节点 ID |
+| --env-type | TEXT | 否 | odps | 引擎类型（小写） |
+| --target-node-project-id | INT | 否 | 同 project-id | 节点所在空间 ID |
+| --target-node-project-name | TEXT | 否 | 同 project-name | 节点所在空间名 |
+| -q, --query | TEXT | 否 | - | JMESPath 表达式 |
+| -o, --output | TEXT | 否 | json | 输出格式 |
+
+输出结构：`{Data: true, Success: true}`。
+验证方式：`get-quality-entity` 返回 `HasRelativeNode=true`，`RelativeNode` 含该 nodeId。
+
+### delete-quality-relative-node
+
+解除关联（高危，需 `--confirm`；可先 `--dry-run` 预览）。参数同 create。
+
+```bash
+dw-cli delete-quality-relative-node --project-id 123456 --project-name my_project \
+  --table-name my_table --match-expression "dt=$[yyyymmdd]" --node-id 100001 --confirm
+```
 
 ## 检查结果查询
 

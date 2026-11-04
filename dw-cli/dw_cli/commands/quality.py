@@ -17,8 +17,9 @@ ListQualityResultsByEntity / ListQualityResultsByRule（检查结果查询，202
   - StartDate/EndDate 必填，缺参服务端直接 500（易误判为接口不可用）
   - 查询跨度建议 7 天内（30 天实测报 parameter is incorrect）
 
-跳过的接口（私有云 500 不可用）：
-  - CreateQualityRelativeNode / DeleteQualityRelativeNode（500 dqc property failed）
+QualityRelativeNode（质量规则关联调度节点，2026-11-04 新增命令）：
+  - 只有 6 位数的新空间可用；5 位数老空间服务端固定回 500 "dqc property of node failed"
+  - 2026-10-30 实测：116687/116500 成功，32890/32889/71304 全部失败
 """
 from __future__ import annotations
 
@@ -34,7 +35,7 @@ app = typer.Typer(help="quality 类命令：数据质量（Entity/Rule/Follower�
 
 _PN_HELP = "工作空间标识名（如 my_project）。质量模块用 project_name 而非 project_id"
 _ET_HELP = "数据源引擎类型（小写），默认 odps（MaxCompute）。注意：不是 PROD/DEV"
-_ME_HELP = "分区匹配表达式，如 dt=$[yyyymmdd] 或 dt=$[yyyymmddhh24]"
+_ME_HELP = r"分区匹配表达式，如 dt=$\[yyyymmdd] 或 dt=$\[yyyymmddhh24]"
 _TBL_HELP = "表名（需与质量实体注册的表名一致）"
 _EL_HELP = "实体层级（1=表级）。官网标废弃但私有云必填"
 
@@ -593,3 +594,132 @@ def list_quality_results_by_rule(
             output.emit(resp, query=query, output=output_fmt, default_table_query=_RESULTS_TQ)
         except Exception as e:
             errors.fail(e)
+
+
+_LEGACY_PROJECT_RULE = (
+    "QualityRelativeNode 只有 6 位数的新空间可用。5 位数老空间服务端固定返回 "
+    "500 add/delete dqc property of node failed!（2026-10-30 实测：6 位数 116687、116500 "
+    "成功；5 位数 32890、32889、71304 全部失败）。"
+)
+
+
+def _warn_legacy_project(project_id: int, target_node_project_id: Optional[int]) -> None:
+    """5 位数老空间必失败，发警告但仍放行（平台修复后可继续使用，不写死拦截）。"""
+    for pid in (project_id, target_node_project_id):
+        if pid is not None and pid < 100000:
+            errors.warn(f"project_id={pid}。{_LEGACY_PROJECT_RULE}", code="LegacyProject")
+
+
+@app.command("create-quality-relative-node")
+def create_quality_relative_node(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id",
+        help="质量实体所在工作空间 ID（必须 6 位数新空间；5 位老空间不支持，接口必报 500）"),
+    project_name: str = typer.Option(..., "--project-name", help=_PN_HELP),
+    table_name: str = typer.Option(..., "--table-name", help=_TBL_HELP),
+    match_expression: str = typer.Option(..., "--match-expression", help=_ME_HELP),
+    node_id: int = typer.Option(..., "--node-id",
+        help="要关联的调度节点 ID（get-node / list-files 取得）"),
+    env_type: str = typer.Option("odps", "--env-type", help=_ET_HELP),
+    target_node_project_id: Optional[int] = typer.Option(None, "--target-node-project-id",
+        help="节点所在空间 ID，默认取 --project-id（跨空间关联时才需显式指定）"),
+    target_node_project_name: Optional[str] = typer.Option(None, "--target-node-project-name",
+        help="节点所在空间名，默认取 --project-name"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """把质量实体关联到调度节点（强规则失败时阻塞该节点）。
+
+    ⚠️ 仅 6 位数新空间可用：5 位数的老空间服务端固定回 500
+    "add dqc property of node failed!"，与参数无关（2026-10-30 实测结论）。
+
+    \b
+    🚀 Examples:
+      # 同空间关联（target-node-project-* 自动取 project-*）
+      dw-cli create-quality-relative-node --project-id 123456 --project-name my_project \\
+        --table-name my_table --match-expression "dt=$\\[yyyymmdd]" --node-id 100001
+
+    \b
+      # 跨空间关联（节点在另一个空间）
+      dw-cli create-quality-relative-node --project-id 123456 --project-name my_project \\
+        --table-name my_table --match-expression "dt=$\\[yyyymmdd]" --node-id 100001 \\
+        --target-node-project-id 123457 --target-node-project-name other_project
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+
+    \b
+    ✅ 验证方式: get-quality-entity 的 HasRelativeNode=true、RelativeNode 含该 nodeId
+    """
+    _warn_legacy_project(project_id, target_node_project_id)
+    _call(ctx, "create_quality_relative_node", dw_models.CreateQualityRelativeNodeRequest(
+        project_id=project_id,
+        project_name=project_name,
+        table_name=table_name,
+        match_expression=match_expression,
+        node_id=node_id,
+        env_type=env_type,
+        target_node_project_id=target_node_project_id or project_id,
+        target_node_project_name=target_node_project_name or project_name,
+    ), query=query, output_fmt=output_fmt)
+
+
+@app.command("delete-quality-relative-node")
+def delete_quality_relative_node(
+    ctx: typer.Context,
+    project_id: int = typer.Option(..., "--project-id",
+        help="质量实体所在工作空间 ID（必须 6 位数新空间；5 位老空间不支持，接口必报 500）"),
+    project_name: str = typer.Option(..., "--project-name", help=_PN_HELP),
+    table_name: str = typer.Option(..., "--table-name", help=_TBL_HELP),
+    match_expression: str = typer.Option(..., "--match-expression", help=_ME_HELP),
+    node_id: int = typer.Option(..., "--node-id", help="已关联的调度节点 ID"),
+    env_type: str = typer.Option("odps", "--env-type", help=_ET_HELP),
+    target_node_project_id: Optional[int] = typer.Option(None, "--target-node-project-id",
+        help="节点所在空间 ID，默认取 --project-id"),
+    target_node_project_name: Optional[str] = typer.Option(None, "--target-node-project-name",
+        help="节点所在空间名，默认取 --project-name"),
+    confirm_flag: bool = typer.Option(False, "--confirm", help="高危操作，必须显式确认"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="仅预览，不真执行"),
+    query: Optional[str] = query_option(),
+    output_fmt: str = output_option(),
+):
+    """解除质量实体与调度节点的关联（高危）。
+
+    ⚠️ 仅 6 位数新空间可用：5 位数的老空间服务端固定回 500
+    "delete dqc property of node failed!"，与参数无关（2026-10-30 实测结论）。
+
+    \b
+    🚀 Examples:
+      dw-cli delete-quality-relative-node --project-id 123456 --project-name my_project \\
+        --table-name my_table --match-expression "dt=$\\[yyyymmdd]" --node-id 100001 --confirm
+
+    \b
+    📦 Output JSON Structure:
+      - 成功: {Data:true, Success:true}
+
+    \b
+    ⚠️ 高危操作，必须加 --confirm 执行。建议先用 --dry-run 预览。
+    """
+    decision = confirm.check_write(
+        "delete_quality_relative_node",
+        confirm=confirm_flag,
+        dry_run=dry_run,
+        dry_run_summary=(
+            f"将解除 project={project_name}({project_id}) table={table_name} "
+            f"match={match_expression} 与 node_id={node_id} 的关联"
+        ),
+    )
+    if not decision.will_execute:
+        return
+    _warn_legacy_project(project_id, target_node_project_id)
+    _call(ctx, "delete_quality_relative_node", dw_models.DeleteQualityRelativeNodeRequest(
+        project_id=project_id,
+        project_name=project_name,
+        table_name=table_name,
+        match_expression=match_expression,
+        node_id=node_id,
+        env_type=env_type,
+        target_node_project_id=target_node_project_id or project_id,
+        target_node_project_name=target_node_project_name or project_name,
+    ), query=query, output_fmt=output_fmt)

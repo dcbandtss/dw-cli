@@ -2,8 +2,9 @@
 name: dw-cli-quality
 description: |
   DataWorks 私有云数据质量 Skill（基于 dw-cli，阿里云 2020-05-18 SDK）。
-  覆盖质量实体（Entity）的创建/查询/删除、质量规则（Rule）的 CRUD、订阅人（Follower）的 CRUD。
-  触发关键词：数据质量、质量实体、质量规则、质量订阅人、分区表达式、告警模式、质量监控、质量规则创建、质量规则更新。
+  覆盖质量实体（Entity）的创建/查询/删除、质量规则（Rule）的 CRUD、订阅人（Follower）的 CRUD、
+  检查历史查询、以及质量实体与调度节点的关联/解除（仅 6 位数新空间可用）。
+  触发关键词：数据质量、质量实体、质量规则、质量订阅人、分区表达式、告警模式、质量监控、质量规则创建、质量规则更新、质量阻断调度、关联节点、检查历史。
   不触发：数据源管理、文件开发、元数据查询、SQL 执行、环境自检——用其他 Skill。
 ---
 
@@ -62,6 +63,13 @@ description: |
 | list-quality-results-by-entity | 实体的检查历史（全部规则） | 只读 |
 | list-quality-results-by-rule | 单条规则的检查历史 | 只读 |
 
+### 节点关联（强规则阻断调度）
+
+| 命令 | 说明 | 风险 |
+|---|---|---|
+| create-quality-relative-node | 把实体关联到调度节点 | 低危（影响调度阻断范围） |
+| delete-quality-relative-node | 解除实体与节点关联 | ⚠️高危 |
+
 ## v3.18.6 关键参数
 
 - **env_type=odps**（小写引擎类型），不是 PROD/DEV。这是第一坑。
@@ -73,7 +81,9 @@ description: |
 
 ## 私有云限制
 
-- **CreateQualityRelativeNode / DeleteQualityRelativeNode**：500 dqc property failed
+- **节点关联接口只支持 6 位数 project-id 的新空间**：5 位数 project-id 是老空间，服务端固定回
+  500 `add/delete dqc property of node failed!`，与参数无关（2026-10-30 实测：6 位 116687/116500
+  成功，5 位 32890/32889/71304 全部失败）。CLI 会对 5 位 id 打 `LegacyProject` 警告后仍放行。
 - **ListQualityResultsByEntity / ListQualityResultsByRule**：已封装为 list-quality-results-by-entity/rule。
   两个坑——StartDate/EndDate 必填（缺参服务端直接 500 而非 400，曾误判为接口不可用）；查询跨度约 7 天内。
   CheckResult：2=检查不通过（触发告警），-2=检查执行异常（SampleValue 为空）。
